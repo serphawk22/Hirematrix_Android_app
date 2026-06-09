@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "627294850313",
+    "project_id": "hirematrix-8e260",
+    "storage_bucket": "hirematrix-8e260.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:627294850313:android:a32ed2e9ae460509aad7d8",
+        "android_client_info": {
+          "package_name": "com.serphawk.hirematrix"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "627294850313-fkuq8eouhmio5r2gbf3m60nfpf5b8ah0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.serphawk.hirematrix",
+            "certificate_hash": "576cfd369eb61060363371a71cff57033f0d0fdf"
+          }
+        },
+        {
+          "client_id": "627294850313-m0va1nooqoiei9jv5uom0d809rtgbq6i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiayE6py5UWz3gJA47IeXurJbV87jtga8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "627294850313-m0va1nooqoiei9jv5uom0d809rtgbq6i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
