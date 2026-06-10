@@ -9,6 +9,7 @@ import 'package:hirematrix/controllers/dashboard_controller.dart';
 class ApplicationsController extends GetxController {
   final isLoading = false.obs;
   final applicationsList = <dynamic>[].obs;
+  final selectedApplicationIdForDetails = Rxn<int>();
 
   @override
   void onInit() {

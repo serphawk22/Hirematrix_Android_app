@@ -17,6 +17,7 @@ import 'package:hirematrix/views/screens/candidate/settings_screen.dart';
 import 'package:hirematrix/views/screens/candidate/blog_detail_screen.dart';
 import 'package:hirematrix/views/screens/candidate/applications_screens.dart';
 import 'package:hirematrix/views/screens/candidate/my_interview_bookings_screen.dart';
+import 'package:hirematrix/controllers/applications_controller.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -1839,10 +1840,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [
-            Color(0xFF1E1B4B), // Very deep premium indigo
-            Color(0xFF312E81), // Deep premium indigo
+            AppColors.getPrimary(isDark), // Primary theme color
+            AppColors.getPrimaryDark(isDark), // Darker shade of primary
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -1850,7 +1851,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1E1B4B).withOpacity(0.3),
+            color: AppColors.getPrimary(isDark).withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -1931,7 +1932,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               onPressed: () => Get.toNamed(AppRoutes.plans),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF312E81),
+                foregroundColor: AppColors.getPrimaryDark(isDark),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -2138,7 +2139,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
-            onTap: () {},
+            onTap: () {
+              try {
+                final ApplicationsController appsController = Get.isRegistered<ApplicationsController>()
+                    ? Get.find<ApplicationsController>()
+                    : Get.put(ApplicationsController());
+                final appId = int.tryParse(app['id']?.toString() ?? '');
+                if (appId != null) {
+                  appsController.selectedApplicationIdForDetails.value = appId;
+                }
+              } catch (_) {}
+              dashboardController.currentIndex.value = 2; // Switch to Applications tab (index 2)
+            },
           );
         },
       ),
