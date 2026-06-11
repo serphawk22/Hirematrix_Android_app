@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:provider/provider.dart';
-import '../../utils/app_constants.dart';
-import '../../controllers/dashboard_controller.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
 
 class AnalyticsDetailsScreen extends StatefulWidget {
   const AnalyticsDetailsScreen({super.key});

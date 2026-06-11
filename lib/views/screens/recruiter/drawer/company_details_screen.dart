@@ -5,10 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../utils/app_constants.dart';
-import '../../utils/responsive_helper.dart';
-import '../../services/api_service.dart';
-import '../../controllers/auth_controller.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart';
+import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 
 class CompanyDetailsScreen extends StatefulWidget {
   const CompanyDetailsScreen({super.key});

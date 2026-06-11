@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hirematrix/controllers/dashboard_controller.dart';
 import 'package:hirematrix/controllers/theme_controller.dart';
 import 'package:hirematrix/controllers/settings_controller.dart';
-import 'package:hirematrix/routes/app_routes.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' show Platform;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:hirematrix/routes/app_routes.dart';
@@ -9,6 +7,7 @@ import 'package:hirematrix/core/constants/api_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hirematrix/controllers/notification_controller.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthController extends GetxController {
   // Controllers
@@ -26,11 +25,6 @@ class AuthController extends GetxController {
   final isConfirmNewPasswordVisible = false.obs;
   final rememberMe = false.obs;
   final currentUser = {}.obs;
-
-  @override
-  void onClose() {
-    super.onClose();
-  }
 
   void togglePasswordVisibility() {
     isPasswordVisible.toggle();
@@ -98,7 +92,9 @@ class AuthController extends GetxController {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (data['status'] == 'success') {
+        final bool isSuccess = data['status'] == 'success' || data['success'] == true;
+
+        if (isSuccess) {
           Get.snackbar(
             'Success',
             'Login successful!',
@@ -107,11 +103,50 @@ class AuthController extends GetxController {
             colorText: Colors.white,
           );
           
-          final user = data['data']['user'];
+          Map<String, dynamic> user;
+          String token;
+          
+          if (data['recruiter'] != null) {
+            // Recruiter login response format
+            final recruiter = data['recruiter'];
+            user = {
+              'id': recruiter['id'],
+              'full_name': recruiter['full_name'] ?? '',
+              'name': recruiter['full_name'] ?? '', // for candidate profile usage in shared screens
+              'email': recruiter['email'] ?? '',
+              'phone': recruiter['phone'] ?? '',
+              'designation': recruiter['designation'] ?? '',
+              'company_id': recruiter['company_id'] ?? '',
+              'company_name': recruiter['company_name'] ?? '',
+              'company_logo': recruiter['company_logo'] ?? '',
+              'account_type': recruiter['account_type'] ?? 'basic',
+              'role': 'recruiter',
+            };
+            token = data['token']?.toString() ?? 'mock_token';
+          } else {
+            // Candidate login response format
+            user = data['data']['user'];
+            token = data['data']?['token']?.toString() ?? user['token']?.toString() ?? 'mock_token';
+          }
+          
           currentUser.value = user;
           await saveUserSession(user);
           
-          if (user['role'] == 'candidate' && user['onboarding_completed'] == 0) {
+          if (user['role'] == 'recruiter') {
+            try {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isLoggedIn', true);
+              await prefs.setString('recruiterId', user['id'].toString());
+              await prefs.setString('recruiterData', jsonEncode(user));
+
+              const storage = FlutterSecureStorage();
+              await storage.write(key: 'session_token', value: token);
+              await storage.write(key: 'session_token_${user['id']}', value: token);
+            } catch (e) {
+              debugPrint("Error saving recruiter provider session: $e");
+            }
+            Get.offAllNamed(AppRoutes.recruiterDashboard);
+          } else if (user['role'] == 'candidate' && user['onboarding_completed'] == 0) {
              Get.offAllNamed(AppRoutes.onboarding, arguments: {
                'user_id': int.tryParse(user['id'].toString()) ?? 0,
                'name': user['name'] ?? '',
@@ -192,7 +227,22 @@ class AuthController extends GetxController {
           currentUser.value = user;
           await saveUserSession(user);
           
-          if (user['onboarding_completed'] == 0) {
+          if (user['role'] == 'recruiter') {
+            try {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isLoggedIn', true);
+              await prefs.setString('recruiterId', user['id'].toString());
+              await prefs.setString('recruiterData', jsonEncode(user));
+
+              final token = data['data']?['token']?.toString() ?? user['token']?.toString() ?? 'mock_token';
+              const storage = FlutterSecureStorage();
+              await storage.write(key: 'session_token', value: token);
+              await storage.write(key: 'session_token_${user['id']}', value: token);
+            } catch (e) {
+              debugPrint("Error saving recruiter provider session: $e");
+            }
+            Get.offAllNamed(AppRoutes.recruiterDashboard);
+          } else if (user['role'] == 'candidate' && user['onboarding_completed'] == 0) {
              Get.offAllNamed(AppRoutes.onboarding, arguments: {
                'user_id': int.tryParse(user['id'].toString()) ?? 0,
                'name': user['name'] ?? '',

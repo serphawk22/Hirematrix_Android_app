@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../utils/app_constants.dart';
-import '../../utils/responsive_helper.dart';
-import '../../controllers/auth_controller.dart';
-import '../../controllers/applications_controller.dart';
-import '../../controllers/dashboard_controller.dart';
-import '../../models/application.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/applications_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/models/application.dart';
 
 class CandidateManagementScreen extends StatefulWidget {
   final String? jobId;

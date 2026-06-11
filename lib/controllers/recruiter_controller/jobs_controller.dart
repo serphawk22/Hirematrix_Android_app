@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
-import '../models/job.dart';
+import 'services/api_service.dart';
+import 'models/job.dart';
 
 class JobsController extends ChangeNotifier {
   final ApiService _apiService = ApiService();

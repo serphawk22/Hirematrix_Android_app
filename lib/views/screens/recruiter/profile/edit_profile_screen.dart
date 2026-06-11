@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../utils/app_constants.dart';
-import '../../controllers/auth_controller.dart';
-import '../../models/recruiter.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final Recruiter recruiter;

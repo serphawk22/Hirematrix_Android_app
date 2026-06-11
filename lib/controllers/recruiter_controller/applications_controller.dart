@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
-import '../models/application.dart';
+import 'services/api_service.dart';
+import 'models/application.dart';
 
 class ApplicationsController extends ChangeNotifier {
   final ApiService _apiService = ApiService();

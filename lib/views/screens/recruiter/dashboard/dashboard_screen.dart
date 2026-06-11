@@ -4,12 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../utils/app_constants.dart';
-import '../../utils/responsive_helper.dart';
-import '../../controllers/auth_controller.dart';
-import '../../controllers/dashboard_controller.dart';
-import '../../controllers/language_controller.dart';
-import '../../models/recruiter.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/language_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dart';
 import '../candidates/recruitment_pipeline_screen.dart';
 import '../jobs/interview_slots_screen.dart';
 import '../jobs/post_job_screen.dart';
@@ -473,6 +473,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final type = item['interview_type'] ?? 'Round';
     final mode = item['interview_mode'] ?? 'Online';
     final meetingLink = item['meeting_link'];
+    final bool isBooked = item['is_booked'] == true || item['is_booked'] == 'true';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -509,40 +510,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: InkWell(
-                   onTap: mode.toLowerCase() == 'online' ? () => _joinMeeting(meetingLink) : null,
-                   child: Container(
+          if (isBooked) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                     onTap: mode.toLowerCase() == 'online' ? () => _joinMeeting(meetingLink) : null,
+                     child: Container(
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: mode.toLowerCase() == 'online' ? AppColors.getPrimary(isDark) : Colors.grey.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(Provider.of<LanguageController>(context, listen: false).translate('join_meeting'), style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+                     ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => _showRescheduleSheet(item),
+                    child: Container(
                       height: 32,
                       decoration: BoxDecoration(
-                        color: mode.toLowerCase() == 'online' ? AppColors.getPrimary(isDark) : Colors.grey.withValues(alpha: 0.2),
+                        border: Border.all(color: AppColors.getBorder(isDark)),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       alignment: Alignment.center,
-                      child: Text(Provider.of<LanguageController>(context, listen: false).translate('join_meeting'), style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
-                   ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: InkWell(
-                  onTap: () => _showRescheduleSheet(item),
-                  child: Container(
-                    height: 32,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.getBorder(isDark)),
-                      borderRadius: BorderRadius.circular(8),
+                      child: Text(Provider.of<LanguageController>(context, listen: false).translate('reschedule'), style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600)),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(Provider.of<LanguageController>(context, listen: false).translate('reschedule'), style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600)),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ] else ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.info_outline_rounded, size: 12, color: Colors.grey),
+                const SizedBox(width: 4),
+                Text(
+                  'Waiting for candidate booking...',
+                  style: GoogleFonts.inter(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -766,7 +781,9 @@ class _RescheduleSheetState extends State<_RescheduleSheet> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildLabel(String text) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Text(text, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.grey)));

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../utils/app_constants.dart';
-import '../../controllers/auth_controller.dart';
-import '../main_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
+import 'package:hirematrix/views/screens/recruiter/main_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});

@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:hirematrix/views/screens/candidate/features_screen.dart';
 import 'package:hirematrix/views/screens/landing_screen.dart';
 import 'package:hirematrix/views/screens/candidate/dashboard_screen.dart';
@@ -19,6 +21,16 @@ import 'package:hirematrix/views/screens/candidate/premium_mentor_screen.dart';
 import 'package:hirematrix/views/screens/candidate/notification_screen.dart';
 import 'package:hirematrix/views/screens/candidate/messages_screen.dart';
 
+// Recruiter Screen and Controller Imports
+import 'package:hirematrix/views/screens/recruiter/main_screen.dart' as rec_main;
+import 'package:hirematrix/views/screens/recruiter/auth/login_screen.dart' as rec_auth;
+import 'package:provider/provider.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart' as rec_auth_ctrl;
+import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dart' as rec_model;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
+
 class AppRoutes {
   static const String landing = '/';
   static const String login = '/login';
@@ -38,7 +50,9 @@ class AppRoutes {
   static const String premiumMentor = '/candidate/premium-mentor';
   static const String notifications = '/candidate/notifications';
   static const String messages = '/candidate/messages';
-
+  static const String recruiterDashboard = '/recruiter/dashboard';
+  static const String recruiterLogin = '/recruiter/login';
+  
   static List<GetPage> pages = [
     GetPage(
       name: landing,
@@ -130,5 +144,42 @@ class AppRoutes {
       page: () => const MessagesScreen(),
       transition: Transition.fadeIn,
     ),
+    GetPage(
+      name: recruiterDashboard,
+      page: () => const RecruiterProviderWrapper(child: rec_main.MainScreen()),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: recruiterLogin,
+      page: () => const RecruiterProviderWrapper(child: rec_auth.LoginScreen()),
+      transition: Transition.fadeIn,
+    ),
   ];
+}
+
+class RecruiterProviderWrapper extends StatelessWidget {
+  final Widget child;
+  const RecruiterProviderWrapper({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final providerAuth = Provider.of<rec_auth_ctrl.AuthController>(context, listen: false);
+    if (providerAuth.currentRecruiter == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+          final savedId = prefs.getString('recruiterId');
+          final cachedData = prefs.getString('recruiterData');
+          if (isLoggedIn && savedId != null && cachedData != null) {
+            final recruiter = rec_model.Recruiter.fromJson(jsonDecode(cachedData));
+            providerAuth.updateRecruiterInfo(recruiter);
+          }
+        } catch (e) {
+          debugPrint("Wrapper: Error restoring recruiter session: $e");
+        }
+      });
+    }
+    return child;
+  }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hirematrix/views/widgets/animated_gradient_background.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/theme_controller.dart';
@@ -110,28 +109,28 @@ class LoginScreen extends StatelessWidget {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              const Color(0xFF1A1A2E).withOpacity(0.6),
-                              const Color(0xFF16213E).withOpacity(0.6),
+                              const Color(0xFF1A1A2E).withValues(alpha: 0.6),
+                              const Color(0xFF16213E).withValues(alpha: 0.6),
                             ],
                           )
                         : LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Colors.white.withOpacity(0.25),
-                              Colors.white.withOpacity(0.15),
+                              Colors.white.withValues(alpha: 0.25),
+                              Colors.white.withValues(alpha: 0.15),
                             ],
                           ),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color: isDark
-                          ? Colors.white.withOpacity(0.1)
-                          : Colors.white.withOpacity(0.3),
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.white.withValues(alpha: 0.3),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
+                        color: Colors.black.withValues(alpha: 0.15),
                         blurRadius: 60,
                         offset: const Offset(0, 20),
                       ),
@@ -151,7 +150,7 @@ class LoginScreen extends StatelessWidget {
                             decoration: BoxDecoration(
                               gradient: RadialGradient(
                                 colors: [
-                                  Colors.white.withOpacity(0.3),
+                                  Colors.white.withValues(alpha: 0.3),
                                   Colors.transparent,
                                 ],
                               ),
@@ -216,7 +215,7 @@ class LoginScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           backgroundColor: isDark
-              ? Colors.white.withOpacity(0.05)
+              ? Colors.white.withValues(alpha: 0.05)
               : Colors.white,
         ),
         child: Row(
@@ -245,7 +244,7 @@ class LoginScreen extends StatelessWidget {
       child: Image.network(
         'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
         errorBuilder: (context, error, stackTrace) {
-          return Icon(Icons.g_mobiledata, size: 20);
+          return const Icon(Icons.g_mobiledata, size: 20);
         },
       ),
     );
@@ -296,7 +295,7 @@ class LoginScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isDark ? Colors.white24 : Colors.grey[200]!,
@@ -355,7 +354,7 @@ class LoginScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isDark ? Colors.white24 : Colors.grey[200]!,

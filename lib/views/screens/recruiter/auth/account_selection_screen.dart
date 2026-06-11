@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../utils/app_constants.dart';
-import '../../controllers/auth_controller.dart';
-import '../../models/saved_account.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/models/saved_account.dart';
 import 'login_screen.dart';
-import '../main_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/main_screen.dart';
 
 class AccountSelectionScreen extends StatelessWidget {
   const AccountSelectionScreen({super.key});

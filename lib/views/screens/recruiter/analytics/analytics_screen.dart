@@ -3,9 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import '../../utils/app_constants.dart';
-import '../../utils/responsive_helper.dart';
-import '../../controllers/dashboard_controller.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart';
+import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});

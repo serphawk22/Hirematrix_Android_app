@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import '../../utils/app_constants.dart';
-import '../../utils/responsive_helper.dart';
-import '../../services/api_service.dart';
-import '../../controllers/auth_controller.dart';
-import '../../controllers/jobs_controller.dart';
-import '../../controllers/language_controller.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart';
+import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/language_controller.dart';
 
 class InterviewBookingsScreen extends StatefulWidget {
   const InterviewBookingsScreen({super.key});
@@ -147,45 +147,49 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
 
   Widget _buildMetricCard(String label, String val, IconData icon, Color color, bool isDark) {
     return Container(
-      width: 132,
-      margin: const EdgeInsets.only(right: 10),
+      width: 136,
+      margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.getCard(isDark) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ]
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey[200]!,
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8)
-                ),
-                child: Icon(icon, size: 14, color: color),
-              ),
               Text(
-                val, 
-                style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800)
+                val,
+                style: GoogleFonts.outfit(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                ),
+              ),
+              Icon(
+                icon,
+                size: 18,
+                color: color.withValues(alpha: 0.8),
               ),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: 8),
           Text(
-            label.toUpperCase(), 
-            style: GoogleFonts.inter(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.grey[500], letterSpacing: 0.5)
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

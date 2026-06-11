@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:hirematrix/core/constants/api_constants.dart';
 import 'package:hirematrix/controllers/auth_controller.dart';
-import 'package:hirematrix/core/constants/app_colors.dart';
 
 class CareerTransitionController extends GetxController {
   final isLoading = false.obs;

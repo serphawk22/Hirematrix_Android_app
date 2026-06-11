@@ -68,17 +68,17 @@ class ProfileController extends GetxController {
           educations.assignAll(pData['education'] ?? []);
           certifications.assignAll(pData['certifications'] ?? []);
           projects.assignAll(pData['projects'] ?? []);
-          stats.value = pData['stats'] ?? {};
-          completion.value = pData['completion'] ?? {};
+          stats.assignAll(pData['stats'] ?? {});
+          completion.assignAll(pData['completion'] ?? {});
           totalExperienceMonths.value = pData['totalExperienceMonths'] ?? 0;
-          user.value = pData['user'] ?? {};
+          user.assignAll(pData['user'] ?? {});
 
           // Sync updated user to AuthController and SharedPreferences
           try {
             final authController = Get.find<AuthController>();
-            if (user.value.isNotEmpty) {
+            if (user.isNotEmpty) {
               final updatedUser = Map<String, dynamic>.from(authController.currentUser);
-              user.value.forEach((key, val) {
+              user.forEach((key, val) {
                 updatedUser[key] = val;
               });
               authController.currentUser.value = updatedUser;
@@ -91,10 +91,10 @@ class ProfileController extends GetxController {
             if (Get.isRegistered<DashboardController>()) {
               final dashController = Get.find<DashboardController>();
               final updatedDashUser = Map<String, dynamic>.from(dashController.userProfile);
-              user.value.forEach((key, val) {
+              user.forEach((key, val) {
                 updatedDashUser[key] = val;
               });
-              dashController.userProfile.value = updatedDashUser;
+              dashController.userProfile.assignAll(updatedDashUser);
               dashController.profileStrength.value = int.tryParse(pData['profileStrength']?.toString() ?? '0') ?? 0;
             }
           } catch (e) {
@@ -139,8 +139,8 @@ class ProfileController extends GetxController {
             snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
       }
     } catch (e, s) {
-      print('Update section error: $e');
-      print(s);
+      debugPrint('Update section error: $e');
+      debugPrint(s.toString());
       Get.snackbar('Error', 'Could not connect to server: $e',
           snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
     } finally {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../utils/app_constants.dart';
-import '../../controllers/auth_controller.dart';
-import '../../controllers/language_controller.dart';
-import '../../services/api_service.dart';
-import '../../models/recruiter.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/language_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
+import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dart';
 import '../drawer/company_details_screen.dart';
 import '../drawer/team_management_screen.dart';
 import '../auth/login_screen.dart';

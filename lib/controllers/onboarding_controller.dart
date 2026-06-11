@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' show Platform;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
@@ -163,7 +161,7 @@ class OnboardingController extends GetxController {
         selectedResumeName.value = result.files.single.name;
       }
     } catch (e) {
-      print("FilePicker Error: $e");
+      debugPrint("FilePicker Error: $e");
       Get.snackbar('Error', 'Failed to pick file: $e', duration: const Duration(seconds: 5));
     }
   }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../utils/app_constants.dart';
-import '../../utils/responsive_helper.dart';
-import '../../controllers/auth_controller.dart';
-import '../../controllers/jobs_controller.dart';
-import '../../models/job.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/models/job.dart';
 import '../candidates/candidate_management_screen.dart';
 
 class ManageJobsScreen extends StatefulWidget {
@@ -107,67 +107,52 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
 
   Widget _buildCompactStatCard(String label, String count, IconData icon, Color color, bool isDark) {
     return Container(
-      width: 130,
-      height: 76,
-      margin: const EdgeInsets.only(right: 14),
+      width: 136,
+      height: 82,
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.getCard(isDark) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[200]!.withValues(alpha: 0.5),
+          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey[200]!,
           width: 1,
         ),
-        boxShadow: [
-          if (!isDark)
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-        ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            Positioned(
-              left: 0, top: 0, bottom: 0,
-              child: Container(width: 4, color: color),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    label.toUpperCase(),
-                    style: GoogleFonts.inter(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w800,
-                      color: color,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        count,
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: isDark ? Colors.white : const Color(0xFF16212B),
-                        ),
-                      ),
-                      Icon(icon, size: 18, color: color.withValues(alpha: 0.8)),
-                    ],
-                  ),
-                ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                count,
+                style: GoogleFonts.outfit(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                ),
               ),
+              Icon(
+                icon,
+                size: 18,
+                color: color.withValues(alpha: 0.8),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
             ),
-          ],
-        ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }

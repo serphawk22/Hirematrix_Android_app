@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../utils/app_constants.dart';
-import '../../controllers/auth_controller.dart';
-import '../../services/api_service.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
 import 'signup_screen.dart';
 import 'reset_password_screen.dart';
 import 'account_selection_screen.dart';
-import '../main_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/main_screen.dart';
 
-import '../../widgets/hirematrix_logo.dart';
+import 'package:hirematrix/views/screens/recruiter/widgets/hirematrix_logo.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

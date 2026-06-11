@@ -103,7 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             alignment: Alignment.center,
             children: [
               IconButton(
-                icon: Icon(Icons.notifications_none),
+                icon: const Icon(Icons.notifications_none),
                 onPressed: () => Get.toNamed(AppRoutes.notifications),
               ),
               if (unreadNotifs != '0')
@@ -218,7 +218,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             border: Border.all(
                               color: AppColors.getPrimary(
                                 isDark,
-                              ).withOpacity(0.2),
+                              ).withValues(alpha: 0.2),
                               width: 2,
                             ),
                           ),
@@ -226,7 +226,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             radius: 26,
                             backgroundColor: AppColors.getPrimary(
                               isDark,
-                            ).withOpacity(0.1),
+                            ).withValues(alpha: 0.1),
                             backgroundImage: photoUrl.isNotEmpty
                                 ? NetworkImage(photoUrl)
                                 : null,
@@ -507,7 +507,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final activeColor = AppColors.getPrimary(isDark);
     final textColor =
         color ?? (isDark ? Colors.grey[300] : const Color(0xFF374151));
-    final selectedBg = activeColor.withOpacity(0.08);
+    final selectedBg = activeColor.withValues(alpha: 0.08);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
@@ -538,7 +538,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: isActive
-                      ? activeColor.withOpacity(0.15)
+                      ? activeColor.withValues(alpha: 0.15)
                       : (isDark ? Colors.grey[800] : Colors.grey[200]),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -674,7 +674,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: 32),
               _buildProBanner(isDark),
               const SizedBox(height: 32),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               _buildBlogSection(isDark),
               _buildSectionHeader(
                 'Recent Applications',
@@ -692,8 +692,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildSummaryCard(bool isDark) {
-    final stats = dashboardController.stats;
-
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -704,7 +702,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -716,7 +714,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.getPrimary(isDark).withOpacity(0.1),
+              color: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -868,7 +866,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: badgeColor.withOpacity(0.3),
+                  color: badgeColor.withValues(alpha: 0.3),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -1104,7 +1102,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         width: 38,
                         height: 38,
                         decoration: BoxDecoration(
-                          color: AppColors.getPrimary(isDark).withOpacity(0.1),
+                          color: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Center(
@@ -1494,7 +1492,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         boxShadow: [
           BoxShadow(
             color: (isAi ? const Color(0xFF064E3B) : const Color(0xFF0F172A))
-                .withOpacity(0.3),
+                .withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -1575,9 +1573,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Text(
         title,
@@ -1660,7 +1658,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
+                        color: Colors.black.withValues(alpha: 0.02),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -1686,7 +1684,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               Container(
                                                 color: AppColors.getPrimary(
                                                   isDark,
-                                                ).withOpacity(0.1),
+                                                ).withValues(alpha: 0.1),
                                                 child: Icon(
                                                   Icons.newspaper,
                                                   color: AppColors.getPrimary(
@@ -1699,7 +1697,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   : Container(
                                       color: AppColors.getPrimary(
                                         isDark,
-                                      ).withOpacity(0.1),
+                                      ).withValues(alpha: 0.1),
                                       child: Icon(
                                         Icons.newspaper,
                                         color: AppColors.getPrimary(isDark),
@@ -1850,7 +1848,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1E1B4B).withOpacity(0.3),
+            color: const Color(0xFF1E1B4B).withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -1861,7 +1859,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.diamond, color: Color(0xFFFBBF24), size: 24),
+              const Icon(Icons.diamond, color: Color(0xFFFBBF24), size: 24),
               const SizedBox(width: 8),
               Text(
                 'HireMatrix Pro',
@@ -1944,7 +1942,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.arrow_forward, size: 16),
+                  const Icon(Icons.arrow_forward, size: 16),
                 ],
               ),
             ),
@@ -1963,9 +1961,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2125,7 +2123,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.1),
+                color: statusColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(

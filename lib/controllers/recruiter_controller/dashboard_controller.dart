@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
-import '../models/recruiter.dart';
+import 'services/api_service.dart';
+import 'models/recruiter.dart';
 import 'auth_controller.dart';
 
 class DashboardController extends ChangeNotifier {

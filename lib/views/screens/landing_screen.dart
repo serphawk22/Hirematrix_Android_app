@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hirematrix/controllers/theme_controller.dart';
 import 'package:hirematrix/routes/app_routes.dart';
-import 'package:hirematrix/views/widgets/animated_gradient_background.dart';
 import 'package:hirematrix/views/widgets/features_card.dart';
 import 'package:hirematrix/views/widgets/get_started_card.dart';
 import 'package:hirematrix/views/widgets/job_card.dart';
@@ -56,308 +55,16 @@ class _LandingScreenState extends State<LandingScreen> {
     });
   }
 
-  // ─── Sidebar Drawer ──────────────────────────────────────────────────────────
-
-  Widget _buildSideDrawer(bool isDark) {
-    return Drawer(
-      backgroundColor: isDark ? const Color(0xFF111827) : Colors.white,
-      child: SafeArea(
-        child: Column(
-          children: [
-            // ── Header ──
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.getPrimary(isDark),
-                    AppColors.getPrimary(isDark),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'H',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'HireMatrix',
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Connecting talent with\nopportunities through AI.',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: Colors.white70,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Scrollable Content ──
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                children: [
-                  // Primary actions
-                  _drawerAction(
-                    icon: Icons.login_rounded,
-                    label: 'Sign In',
-                    color: AppColors.getPrimary(isDark),
-                    isDark: isDark,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Get.toNamed(AppRoutes.login);
-                    },
-                  ),
-                  _drawerAction(
-                    icon: Icons.person_add_alt_1_rounded,
-                    label: 'Register as Candidate',
-                    color: const Color(0xFF0A80FF),
-                    isDark: isDark,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Get.toNamed(AppRoutes.register);
-                    },
-                  ),
-                  _drawerAction(
-                    icon: Icons.business_center_rounded,
-                    label: 'Register as Recruiter',
-                    color: AppColors.getSecondary(isDark),
-                    isDark: isDark,
-                    onTap: () {
-                      Navigator.pop(context);
-                      Get.toNamed(AppRoutes.recruiterRegister);
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Footer: Social + Copyright ──
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: isDark ? Colors.white12 : Colors.grey.shade200,
-                  ),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _socialBtn(
-                        FaIcon(
-                          FontAwesomeIcons.linkedin,
-                          size: 24,
-                          color: isDark
-                              ? Colors.white70
-                              : const Color(0xFF374151),
-                        ),
-                        isDark,
-                      ),
-                      const SizedBox(width: 12),
-                      _socialBtn(
-                        FaIcon(
-                          FontAwesomeIcons.xTwitter,
-                          size: 24,
-                          color: isDark
-                              ? Colors.white70
-                              : const Color(0xFF374151),
-                        ),
-                        isDark,
-                      ),
-                      const SizedBox(width: 12),
-                      _socialBtn(
-                        FaIcon(
-                          FontAwesomeIcons.instagram,
-                          size: 24,
-                          color: isDark
-                              ? Colors.white70
-                              : const Color(0xFF374151),
-                        ),
-                        isDark,
-                      ),
-                      const SizedBox(width: 12),
-                      _socialBtn(
-                        FaIcon(
-                          FontAwesomeIcons.facebook,
-                          size: 24,
-                          color: isDark
-                              ? Colors.white70
-                              : const Color(0xFF374151),
-                        ),
-                        isDark,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '© ${DateTime.now().year} HireMatrix. All rights reserved.',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: isDark ? Colors.white38 : Colors.grey.shade500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _drawerAction({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required bool isDark,
-    required VoidCallback onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: Material(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 14),
-                Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: color,
-                  ),
-                ),
-                const Spacer(),
-                Icon(Icons.arrow_forward_ios_rounded, color: color, size: 14),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _drawerLink({
-    required IconData icon,
-    required String label,
-    required bool isDark,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-      leading: Icon(
-        icon,
-        size: 20,
-        color: isDark ? Colors.grey[400] : Colors.grey[600],
-      ),
-      title: Text(
-        label,
-        style: GoogleFonts.inter(
-          fontSize: 14,
-          color: isDark ? Colors.grey[200] : Colors.grey[800],
-        ),
-      ),
-      onTap: onTap,
-      dense: true,
-    );
-  }
-
-  Widget _drawerDivider(bool isDark, {required String label}) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-      child: Row(
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
-              color: isDark ? Colors.white38 : Colors.grey.shade400,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Divider(
-              color: isDark ? Colors.white12 : Colors.grey.shade200,
-              height: 1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _socialBtn(Widget icon, bool isDark) {
-    return InkWell(
-      onTap: () {},
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.white.withOpacity(0.06) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: icon,
-      ),
-    );
-  }
-
   // ─── Header ──────────────────────────────────────────────────────────────────
 
   Widget _buildHeader(BuildContext context, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark ? Colors.transparent : Colors.white.withOpacity(0.98),
+        color: isDark ? Colors.transparent : Colors.white.withValues(alpha: 0.98),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -523,7 +230,7 @@ class _HeroSectionState extends State<HeroSection> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 40,
                   offset: const Offset(0, 15),
                 ),
@@ -668,7 +375,7 @@ class _HeroSectionState extends State<HeroSection> {
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: AppColors.getPrimary(widget.isDark).withOpacity(0.25),
+                color: AppColors.getPrimary(widget.isDark).withValues(alpha: 0.25),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -720,64 +427,66 @@ class _FeaturedJobsSectionState extends State<FeaturedJobsSection> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.getPrimary(
-                        widget.isDark,
-                      ).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.auto_awesome,
-                          size: 14,
-                          color: AppColors.getPrimary(widget.isDark),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Live Open Roles',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.getPrimary(
+                          widget.isDark,
+                        ).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.auto_awesome,
+                            size: 14,
                             color: AppColors.getPrimary(widget.isDark),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ShaderMask(
-                    shaderCallback: (bounds) =>
-                        AppColors.primaryGradient.createShader(bounds),
-                    child: Text(
-                      'Featured Jobs',
-                      style: GoogleFonts.inter(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                          const SizedBox(width: 4),
+                          Text(
+                            'Live Open Roles',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.getPrimary(widget.isDark),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Live openings pulled from the database.\nSign in to get personalized matching.',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: widget.isDark
-                          ? Colors.grey[400]
-                          : const Color(0xFF6B7280),
+                    const SizedBox(height: 12),
+                    ShaderMask(
+                      shaderCallback: (bounds) =>
+                          AppColors.primaryGradient.createShader(bounds),
+                      child: Text(
+                        'Featured Jobs',
+                        style: GoogleFonts.inter(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      'Live openings pulled from the database.\nSign in to get personalized matching.',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: widget.isDark
+                            ? Colors.grey[400]
+                            : const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               TextButton(
                 onPressed: () => Get.toNamed(AppRoutes.login),
@@ -1129,7 +838,7 @@ class FooterSection extends StatelessWidget {
                   ],
                 ),
 
-          Divider(color: Colors.white24, height: 48),
+          const Divider(color: Colors.white24, height: 48),
 
           // Bottom Bar - Responsive
           isMobile
@@ -1299,65 +1008,10 @@ class FooterSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: icon,
-      ),
-    );
-  }
-
-  Widget _buildSearchInput({
-    required IconData icon,
-    required String hint,
-    required bool isDark,
-  }) {
-    return SizedBox(
-      height: 48,
-      child: TextFormField(
-        style: GoogleFonts.inter(
-          fontSize: 14,
-          color: isDark ? Colors.white : Colors.black,
-        ),
-        decoration: InputDecoration(
-          prefixIcon: Icon(
-            icon,
-            size: 18,
-            color: isDark ? Colors.grey[400] : Colors.grey[500],
-          ),
-          hintText: hint,
-          hintStyle: GoogleFonts.inter(
-            fontSize: 14,
-            color: isDark ? Colors.grey[500] : Colors.grey[400],
-          ),
-          filled: true,
-          fillColor: isDark ? const Color(0xFF374151) : const Color(0xFFF9FAFB),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(
-              color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
-              width: 1,
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(
-              color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
-              width: 1,
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(
-              color: AppColors.getPrimary(isDark),
-              width: 2,
-            ),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 12,
-          ),
-        ),
       ),
     );
   }

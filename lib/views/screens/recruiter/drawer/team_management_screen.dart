@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../utils/app_constants.dart';
-import '../../services/api_service.dart';
-import '../../controllers/auth_controller.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 
 class TeamManagementScreen extends StatefulWidget {
   const TeamManagementScreen({super.key});

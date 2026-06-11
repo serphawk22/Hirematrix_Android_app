@@ -657,17 +657,30 @@ class _SmartJobsScreenState extends State<SmartJobsScreen>
 
   Widget _buildFilterBadgeButton(bool isDark, Color textColor) {
     int activeFiltersCount = 0;
-    if (jobsController.selectedCategory.value.isNotEmpty) activeFiltersCount++;
-    if (jobsController.selectedCompany.value.isNotEmpty) activeFiltersCount++;
-    if (jobsController.selectedLocation.value.isNotEmpty) activeFiltersCount++;
-    if (jobsController.selectedWorkMode.value.isNotEmpty) activeFiltersCount++;
-    if (jobsController.selectedSalaryRange.value.isNotEmpty)
+    if (jobsController.selectedCategory.value.isNotEmpty) {
       activeFiltersCount++;
-    if (jobsController.selectedEmploymentTypes.isNotEmpty) activeFiltersCount++;
-    if (jobsController.selectedExperienceLevels.isNotEmpty)
+    }
+    if (jobsController.selectedCompany.value.isNotEmpty) {
       activeFiltersCount++;
-    if (jobsController.selectedPostedWithin.value.isNotEmpty)
+    }
+    if (jobsController.selectedLocation.value.isNotEmpty) {
       activeFiltersCount++;
+    }
+    if (jobsController.selectedWorkMode.value.isNotEmpty) {
+      activeFiltersCount++;
+    }
+    if (jobsController.selectedSalaryRange.value.isNotEmpty) {
+      activeFiltersCount++;
+    }
+    if (jobsController.selectedEmploymentTypes.isNotEmpty) {
+      activeFiltersCount++;
+    }
+    if (jobsController.selectedExperienceLevels.isNotEmpty) {
+      activeFiltersCount++;
+    }
+    if (jobsController.selectedPostedWithin.value.isNotEmpty) {
+      activeFiltersCount++;
+    }
 
     return GestureDetector(
       onTap: () => _showFiltersBottomSheet(isDark, textColor),

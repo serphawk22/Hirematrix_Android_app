@@ -3,12 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
-import '../../utils/app_constants.dart';
-import '../../utils/responsive_helper.dart';
-import '../../services/api_service.dart';
-import '../../controllers/auth_controller.dart';
-import '../../controllers/jobs_controller.dart';
-import '../../controllers/dashboard_controller.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart';
+import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
 
 class PostJobScreen extends StatefulWidget {
   const PostJobScreen({super.key});
