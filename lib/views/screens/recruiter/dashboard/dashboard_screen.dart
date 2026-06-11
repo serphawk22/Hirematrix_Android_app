@@ -165,7 +165,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: CircleAvatar(
             backgroundColor: AppColors.getPrimary(isDark).withValues(alpha: 0.08),
             child: Text(
-              (recruiter?.fullName ?? 'R')[0].toUpperCase(),
+              (recruiter != null && recruiter.fullName.isNotEmpty)
+                  ? recruiter.fullName[0].toUpperCase()
+                  : 'R',
               style: GoogleFonts.inter(fontSize: Responsive.fontSize(16), fontWeight: FontWeight.w800, color: AppColors.getPrimary(isDark)),
             ),
           ),

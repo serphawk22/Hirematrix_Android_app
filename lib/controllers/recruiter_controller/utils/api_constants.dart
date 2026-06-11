@@ -1,6 +1,7 @@
 class ApiConstants {
   static const String emulatorIp = "10.0.2.2";
-  static const String pcIp = "192.168.1.63"; // Your actual PC IP for physical devices
+  static const String pcIp =
+      "10.25.155.26"; // Your actual PC IP for physical devices
   static const String apiBaseFolder = "ai-job-portal/public/api/mobile";
 
   // Mobile Endpoints

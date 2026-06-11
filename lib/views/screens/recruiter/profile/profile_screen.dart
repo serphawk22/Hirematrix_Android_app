@@ -92,7 +92,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             radius: Responsive.scale(34),
             backgroundColor: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
             child: Text(
-              recruiter?.fullName.substring(0, 1).toUpperCase() ?? 'R',
+              (recruiter != null && recruiter.fullName.isNotEmpty)
+                  ? recruiter.fullName.substring(0, 1).toUpperCase()
+                  : 'R',
               style: TextStyle(
                 fontSize: Responsive.fontSize(24),
                 fontWeight: FontWeight.bold,

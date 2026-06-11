@@ -116,7 +116,7 @@ class LocalNotificationService {
       "hirematrix_background_notifications_sync",
       "checkNotificationsTask",
       frequency: const Duration(minutes: 15),
-      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
       constraints: Constraints(
         networkType: NetworkType.connected,
       ),
