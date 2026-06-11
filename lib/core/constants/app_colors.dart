@@ -33,6 +33,12 @@ class AppColors {
   static const Color borderDark = Color(0xFF23343A); // --border
   static const Color textDarkSecondary = Color(0xFF7A8B96); // --text-light
 
+  // Status Colors (Common)
+  static const Color success = Color(0xFF53B86C);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color error = Color(0xFFEF4444);
+  static const Color info = Color(0xFF1FB7B5);
+
   // Gradients
   static const Gradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,

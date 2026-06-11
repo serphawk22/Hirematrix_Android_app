@@ -32,17 +32,39 @@ class _MainScreenState extends State<MainScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _searchDebounce;
 
-  final List<Widget> _screens = [
-    const DashboardScreen(),
-    const ManageJobsScreen(),
-    const CandidateManagementScreen(),
-    const ProfileScreen(),
-  ];
+  late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
+    _screens = [
+      DashboardScreen(onSwitchTab: switchTab),
+      const ManageJobsScreen(),
+      const CandidateManagementScreen(),
+      const ProfileScreen(),
+    ];
+  }
+
+  void switchTab(int index) {
+    setState(() {
+      _currentIndex = index;
+      _isSearching = false;
+    });
+    final auth = Provider.of<AuthController>(context, listen: false);
+    final recruiterId = auth.currentRecruiter?.id;
+    if (recruiterId != null) {
+      if (index == 0) {
+        Provider.of<DashboardController>(context, listen: false)
+            .fetchDashboard(recruiterId, auth: auth);
+      } else if (index == 1) {
+        Provider.of<JobsController>(context, listen: false)
+            .fetchJobs(recruiterId);
+      } else if (index == 2) {
+        Provider.of<ApplicationsController>(context, listen: false)
+            .fetchApplications(recruiterId);
+      }
+    }
   }
 
   void _onSearchChanged() {
@@ -114,26 +136,7 @@ class _MainScreenState extends State<MainScreen> {
             height: 66, // Increased slightly to prevent 1px overflow
             child: BottomNavigationBar(
               currentIndex: _currentIndex,
-              onTap: (index) {
-                setState(() {
-                  _currentIndex = index;
-                  _isSearching = false;
-                });
-                final auth = Provider.of<AuthController>(context, listen: false);
-                final recruiterId = auth.currentRecruiter?.id;
-                if (recruiterId != null) {
-                  if (index == 0) {
-                    Provider.of<DashboardController>(context, listen: false)
-                        .fetchDashboard(recruiterId, auth: auth);
-                  } else if (index == 1) {
-                    Provider.of<JobsController>(context, listen: false)
-                        .fetchJobs(recruiterId);
-                  } else if (index == 2) {
-                    Provider.of<ApplicationsController>(context, listen: false)
-                        .fetchApplications(recruiterId);
-                  }
-                }
-              },
+              onTap: switchTab,
               backgroundColor: Colors.transparent,
               selectedItemColor: primary,
               unselectedItemColor: isDarkMode ? Colors.white.withValues(alpha: 0.4) : Colors.grey[400],
@@ -285,7 +288,7 @@ class _MainScreenState extends State<MainScreen> {
       centerTitle: false,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-        onPressed: () => setState(() => _currentIndex = 0), // Go back to Home
+        onPressed: () => switchTab(0), // Go back to Home
       ),
       titleSpacing: 0,
       title: Text(

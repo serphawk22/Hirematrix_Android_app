@@ -9,6 +9,8 @@ class DashboardController extends ChangeNotifier {
   List<dynamic> _upcomingInterviews = [];
   List<dynamic> _recruiterActivity = [];
   List<dynamic> _notifications = [];
+  List<dynamic> _applications = [];
+  Map<String, dynamic> _conversionMetrics = {};
   bool _isLoading = true;
   int _notificationCount = 0;
 
@@ -16,6 +18,8 @@ class DashboardController extends ChangeNotifier {
   List<dynamic> get upcomingInterviews => _upcomingInterviews;
   List<dynamic> get recruiterActivity => _recruiterActivity;
   List<dynamic> get notifications => _notifications;
+  List<dynamic> get applications => _applications;
+  Map<String, dynamic> get conversionMetrics => _conversionMetrics;
   bool get isLoading => _isLoading;
   int get notificationCount => _notificationCount;
 
@@ -137,10 +141,72 @@ class DashboardController extends ChangeNotifier {
       debugPrint("-------------------------------------");
 
       _dashboardData['pipeline_stats'] = pipelineStats;
+      _applications = applications;
+
+      // Helper function to extract normalized status keys (matching normalizeApplicationStatus in PHP backend)
+      String getStatusKey(dynamic app) {
+        if (app is! Map) return 'applied';
+        if (app.containsKey('status_key') && app['status_key'] != null) {
+          final sk = app['status_key'].toString().toLowerCase().trim();
+          if (sk.isNotEmpty) return sk;
+        }
+        final status = (app['status'] ?? '').toString().toLowerCase().trim().replaceAll(' ', '_').replaceAll('-', '_');
+        if (status.isEmpty) return 'applied';
+        if (status == 'interview' || status == 'interview_scheduled' || status == 'interview_slot_booked') {
+          return 'interview_slot_booked';
+        }
+        if (status == 'offer' || status == 'offered' || status == 'selected') {
+          return 'selected';
+        }
+        if (status == 'on_hold') {
+          return 'hold';
+        }
+        return status;
+      }
+
+      // Calculate Conversion Metrics exactly matching DashboardController.php (web)
+      int total = applications.length;
+      int screenedCount = applications.where((app) {
+        final key = getStatusKey(app);
+        return key == 'shortlisted' || key == 'rejected' || key == 'hold';
+      }).length;
+
+      int shortlistedCount = applications.where((app) {
+        return getStatusKey(app) == 'shortlisted';
+      }).length;
+
+      int hrScheduledCount = applications.where((app) {
+        return getStatusKey(app) == 'interview_slot_booked';
+      }).length;
+
+      int hrCompletedCount = applications.where((app) {
+        return getStatusKey(app) == 'hr_interview_completed';
+      }).length;
+
+      int selectedCount = applications.where((app) {
+        return getStatusKey(app) == 'selected';
+      }).length;
+
+      double safeRate(int numerator, int denominator) {
+        if (denominator <= 0) return 0.0;
+        return double.parse(((numerator / denominator) * 100).toStringAsFixed(1));
+      }
+
+      // If denominator is 0 for stages, rate should be null (matching PHP backend)
+      _conversionMetrics = {
+        'application_to_screening': total > 0 ? safeRate(screenedCount, total) : null,
+        'screening_to_shortlist': screenedCount > 0 ? safeRate(shortlistedCount, screenedCount) : null,
+        'shortlist_to_hr_interview': shortlistedCount > 0 ? safeRate(hrScheduledCount, shortlistedCount) : null,
+        'hr_interview_to_selection': hrCompletedCount > 0 ? safeRate(selectedCount, hrCompletedCount) : null,
+        'overall_conversion': safeRate(selectedCount, total),
+      };
 
       // 3. Compute Operational Intelligence (Strict Prompt Logic)
       _dashboardData['stats'] ??= <String, dynamic>{};
       final stats = _dashboardData['stats'] as Map<String, dynamic>;
+
+      // Align Conversion Rate quick stat with overall_conversion (website behavior)
+      stats['conversion_rate'] = "${_conversionMetrics['overall_conversion'] ?? 0.0}%";
 
       // Active Roles → jobs.job_status='Active'
       stats['open_jobs'] ??= jobs.where((j) {
