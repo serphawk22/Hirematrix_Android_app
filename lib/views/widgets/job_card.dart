@@ -61,7 +61,7 @@ class JobCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
+                    color: AppColors.getPrimary(isDark),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -73,16 +73,12 @@ class JobCard extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Title
-                ShaderMask(
-                  shaderCallback: (bounds) =>
-                      AppColors.primaryGradient.createShader(bounds),
-                  child: Text(
-                    title,
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.getPrimary(isDark),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -203,7 +199,7 @@ class JobCard extends StatelessWidget {
                         widthFactor: matchScore / 100,
                         child: Container(
                           decoration: BoxDecoration(
-                            gradient: AppColors.primaryGradient,
+                            color: AppColors.getPrimary(isDark),
                             borderRadius: BorderRadius.circular(3),
                           ),
                         ),

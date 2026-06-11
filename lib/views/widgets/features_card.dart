@@ -87,18 +87,14 @@ class FeaturesCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  ShaderMask(
-                    shaderCallback: (bounds) =>
-                        AppColors.primaryGradient.createShader(bounds),
-                    child: Text(
-                      'Explore Portal Features',
-                      style: GoogleFonts.manrope(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
+                  Text(
+                    'Explore Portal Features',
+                    style: GoogleFonts.manrope(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.getPrimary(isDark),
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
                   Container(

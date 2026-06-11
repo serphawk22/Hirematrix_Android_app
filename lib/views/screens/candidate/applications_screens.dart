@@ -20,6 +20,63 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
   final ApplicationsController controller = Get.put(ApplicationsController());
 
   @override
+  void initState() {
+    super.initState();
+    ever(controller.selectedApplicationIdForDetails, (id) {
+      if (id != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _checkAndShowDetails(id);
+        });
+      }
+    });
+    ever(controller.applicationsList, (list) {
+      final id = controller.selectedApplicationIdForDetails.value;
+      if (id != null && list.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _checkAndShowDetails(id);
+        });
+      }
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (controller.selectedApplicationIdForDetails.value != null) {
+        _checkAndShowDetails(controller.selectedApplicationIdForDetails.value!);
+      }
+    });
+  }
+
+  void _checkAndShowDetails(int id) {
+    dynamic application;
+    for (var app in controller.applicationsList) {
+      if (int.tryParse(app['id']?.toString() ?? '') == id) {
+        application = app;
+        break;
+      }
+    }
+    if (application != null) {
+      // Clear immediately to prevent double triggers
+      controller.selectedApplicationIdForDetails.value = null;
+
+      Future.delayed(const Duration(milliseconds: 150), () {
+        final themeController = Get.find<ThemeController>();
+        final isDark = themeController.isDarkMode;
+        final cardColor = isDark ? AppColors.getCard(isDark) : Colors.white;
+        final textColor = isDark ? Colors.white : const Color(0xFF111827);
+        final subtitleColor = isDark
+            ? const Color(0xFF94A3B8)
+            : const Color(0xFF475569);
+
+        _showDetailsBottomSheet(
+          application,
+          isDark,
+          cardColor,
+          textColor,
+          subtitleColor,
+        );
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
 
