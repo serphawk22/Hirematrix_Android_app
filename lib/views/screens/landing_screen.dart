@@ -59,22 +59,14 @@ class _LandingScreenState extends State<LandingScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-<<<<<<< HEAD
         color: isDark ? Colors.transparent : Colors.white.withValues(alpha: 0.98),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
-=======
-        color: isDark ? Colors.transparent : Colors.white.withOpacity(0.98),
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? Colors.white10 : Colors.grey.shade200,
-            width: 1,
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
           ),
-        ),
+        ],
       ),
       child: SafeArea(
         child: Row(
@@ -268,15 +260,9 @@ class _HeroSectionState extends State<HeroSection> {
               ),
               boxShadow: [
                 BoxShadow(
-<<<<<<< HEAD
                   color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 40,
                   offset: const Offset(0, 15),
-=======
-                  color: Colors.black.withOpacity(0.06),
-                  blurRadius: 35,
-                  offset: const Offset(0, 12),
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
                 ),
               ],
             ),
@@ -447,7 +433,6 @@ class _HeroSectionState extends State<HeroSection> {
     return SizedBox(
       width: double.infinity,
       height: 48,
-<<<<<<< HEAD
       child: ElevatedButton(
         onPressed: () {
           Get.toNamed(AppRoutes.login);
@@ -476,33 +461,17 @@ class _HeroSectionState extends State<HeroSection> {
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
-=======
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.getPrimary(widget.isDark),
-              AppColors.getPrimary(widget.isDark).withOpacity(0.9),
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
             ],
           ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: ElevatedButton(
-          onPressed: () {
-            Get.toNamed(AppRoutes.login);
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            foregroundColor: Colors.white,
-            shadowColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+          child: Center(
+            child: Text(
+              'Search Jobs',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w800,
+                fontSize: 14,
+                color: Colors.white,
+              ),
             ),
-          ),
-          child: Text(
-            'Search Jobs',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 14),
           ),
         ),
       ),
@@ -1338,9 +1307,98 @@ class _FeaturedJobsSectionState extends State<FeaturedJobsSection> {
     _controller = Get.put(LandingController());
   }
 
+  Widget _buildHeaderColumn(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 4,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.getPrimary(widget.isDark).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.auto_awesome,
+                size: 14,
+                color: AppColors.getPrimary(widget.isDark),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'Live Open Roles',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.getPrimary(widget.isDark),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        ShaderMask(
+          shaderCallback: (bounds) =>
+              AppColors.primaryGradient.createShader(bounds),
+          child: Text(
+            'Featured Jobs',
+            style: GoogleFonts.inter(
+              fontSize: 32,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Live openings pulled from the database.\nSign in to get personalized matching.',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: widget.isDark ? Colors.grey[400] : const Color(0xFF6B7280),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildViewAllJobsButton(bool isDark) {
+    return TextButton(
+      onPressed: () => Get.toNamed(AppRoutes.login),
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'View all',
+            style: GoogleFonts.inter(
+              color: AppColors.getPrimary(isDark),
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 2),
+          Icon(
+            Icons.arrow_forward,
+            size: 14,
+            color: AppColors.getPrimary(isDark),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = widget.isDark;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -1369,6 +1427,7 @@ class _FeaturedJobsSectionState extends State<FeaturedJobsSection> {
                     fontSize: 9.5,
                     fontWeight: FontWeight.w800,
                     color: AppColors.getPrimary(isDark),
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],
@@ -1383,103 +1442,23 @@ class _FeaturedJobsSectionState extends State<FeaturedJobsSection> {
               color: isDark ? Colors.white : const Color(0xFF0F172A),
             ),
           ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-<<<<<<< HEAD
-                child: Column(
+          screenWidth < 600
+              ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.getPrimary(
-                          widget.isDark,
-                        ).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.auto_awesome,
-                            size: 14,
-                            color: AppColors.getPrimary(widget.isDark),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Live Open Roles',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.getPrimary(widget.isDark),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _buildHeaderColumn(isDark),
                     const SizedBox(height: 12),
-                    ShaderMask(
-                      shaderCallback: (bounds) =>
-                          AppColors.primaryGradient.createShader(bounds),
-                      child: Text(
-                        'Featured Jobs',
-                        style: GoogleFonts.inter(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Live openings pulled from the database.\nSign in to get personalized matching.',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: widget.isDark
-                            ? Colors.grey[400]
-                            : const Color(0xFF6B7280),
-                      ),
-                    ),
+                    _buildViewAllJobsButton(isDark),
                   ],
-=======
-                child: Text(
-                  'Live openings from database.',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: const Color(0xFF5D7083),
-                  ),
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
-                ),
-              ),
-              TextButton(
-                onPressed: () => Get.toNamed(AppRoutes.login),
-                child: Row(
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      'View all',
-                      style: GoogleFonts.inter(
-                        color: AppColors.getPrimary(isDark),
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 2),
-                    Icon(
-                      Icons.arrow_forward,
-                      size: 14,
-                      color: AppColors.getPrimary(isDark),
-                    ),
+                    Expanded(child: _buildHeaderColumn(isDark)),
+                    _buildViewAllJobsButton(isDark),
                   ],
                 ),
-              ),
-            ],
-          ),
           const SizedBox(height: 18),
 
           // Horizontal scroll of 6 roles
@@ -1866,23 +1845,6 @@ class FooterSection extends StatelessWidget {
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
-<<<<<<< HEAD
-
-          const Divider(color: Colors.white24, height: 48),
-
-          // Bottom Bar - Responsive
-          isMobile
-              ? Column(
-                  children: [
-                    _buildSocialIcons(),
-                    const SizedBox(height: 16),
-                    _buildCopyright(),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [_buildCopyright(), _buildSocialIcons()],
-=======
               ],
             ),
             child: Column(
@@ -1896,7 +1858,6 @@ class FooterSection extends StatelessWidget {
                     color: Colors.white,
                   ),
                   textAlign: TextAlign.center,
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
                 ),
                 const SizedBox(height: 6),
                 const Text(
@@ -1989,70 +1950,9 @@ class FooterSection extends StatelessWidget {
           color: isDark ? Colors.white10 : const Color(0xFFDDECEF),
         ),
       ),
-<<<<<<< HEAD
-    );
-  }
-
-  Widget _buildSocialIcons() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildSocialIcon(
-          FaIcon(FontAwesomeIcons.linkedin, size: 20, color: Colors.white),
-          'LinkedIn',
-          'https://linkedin.com/company/hirematrix',
-        ),
-        const SizedBox(width: 16),
-        _buildSocialIcon(
-          FaIcon(FontAwesomeIcons.xTwitter, size: 20, color: Colors.white),
-          'X (Twitter)',
-          'https://twitter.com/hirematrix',
-        ),
-        const SizedBox(width: 16),
-        _buildSocialIcon(
-          FaIcon(FontAwesomeIcons.instagram, size: 20, color: Colors.white),
-          'Instagram',
-          'https://instagram.com/hirematrix',
-        ),
-        const SizedBox(width: 16),
-        _buildSocialIcon(
-          FaIcon(FontAwesomeIcons.facebook, size: 20, color: Colors.white),
-          'Facebook',
-          'https://facebook.com/hirematrix',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSocialIcon(Widget icon, String label, String url) {
-    return InkWell(
-      onTap: () {
-        // Add url_launcher to open URLs
-        // launchUrl(Uri.parse(url));
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: icon,
-      ),
-    );
-  }
-
-  Widget _buildCopyright() {
-    return Text(
-      '© ${DateTime.now().year} HireMatrix. All rights reserved.',
-      style: GoogleFonts.inter(fontSize: 14, color: Colors.white60),
-    );
-  }
-=======
       child: Center(
         child: FaIcon(icon, size: 16, color: AppColors.getPrimary(isDark)),
       ),
     );
   }
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
 }

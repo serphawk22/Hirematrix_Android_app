@@ -5,6 +5,8 @@ import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
 import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/applications_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
 
 class RecruitmentPipelineScreen extends StatefulWidget {
   const RecruitmentPipelineScreen({super.key});
@@ -410,6 +412,10 @@ class _RecruitmentPipelineScreenState extends State<RecruitmentPipelineScreen>
                         if (!mounted) return;
                         if (response['success'] == true) {
                           Provider.of<DashboardController>(context, listen: false).refresh(recruiterId);
+                          try {
+                            Provider.of<ApplicationsController>(context, listen: false).fetchApplications(recruiterId);
+                            Provider.of<JobsController>(context, listen: false).fetchJobs(recruiterId);
+                          } catch (_) {}
                           await _loadApplications();
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

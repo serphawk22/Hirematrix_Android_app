@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hirematrix/views/widgets/animated_gradient_background.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/theme_controller.dart';
 
@@ -137,7 +137,6 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 420),
         margin: const EdgeInsets.symmetric(horizontal: 20),
-<<<<<<< HEAD
         child: TweenAnimationBuilder(
           tween: Tween<double>(begin: 0, end: 1),
           duration: const Duration(milliseconds: 800),
@@ -201,51 +200,42 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-=======
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.getCard(isDark) : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isDark ? Colors.white10 : const Color(0xFFDDECEF),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 40,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            children: [
-              // Google Sign In Button
-              _buildGoogleButton(authController, isDark),
-              const SizedBox(height: 20),
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
+                        Padding(
+                          padding: const EdgeInsets.all(28),
+                          child: Column(
+                            children: [
+                              // Google Sign In Button
+                              _buildGoogleButton(authController, isDark),
+                              const SizedBox(height: 20),
 
-              // Divider
-              _buildDivider(isDark),
-              const SizedBox(height: 20),
+                              // Divider
+                              _buildDivider(isDark),
+                              const SizedBox(height: 20),
 
-              // Email Field
-              _buildEmailField(authController, isDark),
-              const SizedBox(height: 16),
+                              // Email Field
+                              _buildEmailField(authController, isDark),
+                              const SizedBox(height: 16),
 
-              // Password Field
-              _buildPasswordField(authController, isDark),
-              const SizedBox(height: 16),
+                              // Password Field
+                              _buildPasswordField(authController, isDark),
+                              const SizedBox(height: 16),
 
-              // Remember me & Forgot password
-              _buildMetaRow(authController, isDark),
-              const SizedBox(height: 24),
+                              // Remember me & Forgot password
+                              _buildMetaRow(authController, isDark),
+                              const SizedBox(height: 24),
 
-              // Sign In Button
-              _buildSignInButton(authController, isDark),
-            ],
-          ),
+                              // Sign In Button
+                              _buildSignInButton(authController, isDark),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -267,11 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
             borderRadius: BorderRadius.circular(10),
           ),
           backgroundColor: isDark
-<<<<<<< HEAD
               ? Colors.white.withValues(alpha: 0.05)
-=======
-              ? Colors.white.withOpacity(0.04)
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
               : Colors.white,
         ),
         child: Row(
@@ -294,22 +280,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildGoogleIcon() {
-<<<<<<< HEAD
-    return SizedBox(
-      width: 20,
-      height: 20,
-      child: Image.network(
-        'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-        errorBuilder: (context, error, stackTrace) {
-          return const Icon(Icons.g_mobiledata, size: 20);
-        },
-      ),
-=======
     return Image.asset(
       'assets/google_logo.png',
       width: 18,
       height: 18,
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
     );
   }
 
@@ -358,13 +332,8 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-<<<<<<< HEAD
             color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
             borderRadius: BorderRadius.circular(12),
-=======
-            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: BorderRadius.circular(10),
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
             border: Border.all(
               color: _isEmailFocused
                   ? AppColors.getPrimary(isDark)
@@ -428,13 +397,8 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-<<<<<<< HEAD
               color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
               borderRadius: BorderRadius.circular(12),
-=======
-              color: isDark ? const Color(0xFF1E293B) : Colors.white,
-              borderRadius: BorderRadius.circular(10),
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
               border: Border.all(
                 color: _isPasswordFocused
                     ? AppColors.getPrimary(isDark)

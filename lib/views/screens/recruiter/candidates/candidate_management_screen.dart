@@ -6,6 +6,7 @@ import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart'
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/applications_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/models/application.dart';
 
 class CandidateManagementScreen extends StatefulWidget {
@@ -623,6 +624,9 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen> {
                             Provider.of<DashboardController>(context,
                                     listen: false)
                                 .refresh(recruiterId);
+                            Provider.of<JobsController>(context,
+                                    listen: false)
+                                .fetchJobs(recruiterId);
                           } else if (context.mounted) {
                             final message = Provider.of<ApplicationsController>(
                                         context,

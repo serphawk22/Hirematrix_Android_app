@@ -6,6 +6,8 @@ import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/leaderboard_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/applications_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
+import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
 
 class CandidateInsightsScreen extends StatefulWidget {
   final String? preselectedJobId;
@@ -384,10 +386,10 @@ class _CandidateInsightsScreenState extends State<CandidateInsightsScreen> {
     final requiredSkills = List<String>.from(candidate['required_skills'] ?? []);
     final candidateSkills = List<String>.from(candidate['candidate_skills'] ?? []);
 
-    final techScore = candidate['technical_score'] ?? 0.0;
-    final commScore = candidate['communication_score'] ?? 0.0;
-    final overallRating = candidate['overall_rating'] ?? 0.0;
-    final atsScore = candidate['ats_score'] ?? 0;
+    final techScore = candidate['technical_score'] != null ? (candidate['technical_score'] as num).toDouble() : 0.0;
+    final commScore = candidate['communication_score'] != null ? (candidate['communication_score'] as num).toDouble() : 0.0;
+    final overallRating = candidate['overall_rating'] != null ? (candidate['overall_rating'] as num).toDouble() : 0.0;
+    final atsScore = candidate['ats_score'] != null ? (candidate['ats_score'] as num).toInt() : 0;
     final status = candidate['status'] ?? 'applied';
 
     Widget rankBadge;
@@ -690,7 +692,6 @@ class _CandidateInsightsScreenState extends State<CandidateInsightsScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final isSaving = false;
           return Container(
             decoration: BoxDecoration(
               color: isDark ? AppColors.bgSoftDark : Colors.white,
@@ -756,7 +757,7 @@ class _CandidateInsightsScreenState extends State<CandidateInsightsScreen> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: stages.firstWhere(
+                  initialValue: stages.firstWhere(
                     (s) => s.toLowerCase() == candidate['status'].toString().toLowerCase(),
                     orElse: () => 'Applied',
                   ),
@@ -775,6 +776,10 @@ class _CandidateInsightsScreenState extends State<CandidateInsightsScreen> {
                       if (success) {
                         _loadData();
                         if (context.mounted) {
+                          try {
+                            Provider.of<DashboardController>(context, listen: false).refresh(recruiterId);
+                            Provider.of<JobsController>(context, listen: false).fetchJobs(recruiterId);
+                          } catch (_) {}
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Candidate moved to $val'), backgroundColor: AppColors.success));
                         }
                       } else {

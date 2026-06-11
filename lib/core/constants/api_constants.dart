@@ -1,11 +1,7 @@
 class ApiConstants {
   // Using the machine's specific local IPv4 address so that a physical
   // device on the same Wi-Fi/Network can connect to XAMPP.
-<<<<<<< HEAD
-  static const String baseUrl = 'http://192.168.1.63/ai-job-portal/public/api';
-=======
-  static const String baseUrl = 'http://10.25.155.26/ai-job-portal/public/api';
->>>>>>> 103a2e8c3cd0fad0bf2a0745f941358a3f2cdd17
+  static const String baseUrl = 'http://10.0.2.2/ai-job-portal/public/api';
 
   static String resolveImageUrl(String path) {
     var trimmed = path.trim();

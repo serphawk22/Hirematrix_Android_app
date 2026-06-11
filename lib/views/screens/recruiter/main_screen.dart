@@ -119,11 +119,18 @@ class _MainScreenState extends State<MainScreen> {
                   _currentIndex = index;
                   _isSearching = false;
                 });
-                if (index == 0) {
-                  final auth = Provider.of<AuthController>(context, listen: false);
-                  if (auth.currentRecruiter != null) {
+                final auth = Provider.of<AuthController>(context, listen: false);
+                final recruiterId = auth.currentRecruiter?.id;
+                if (recruiterId != null) {
+                  if (index == 0) {
                     Provider.of<DashboardController>(context, listen: false)
-                        .fetchDashboard(auth.currentRecruiter!.id, auth: auth);
+                        .fetchDashboard(recruiterId, auth: auth);
+                  } else if (index == 1) {
+                    Provider.of<JobsController>(context, listen: false)
+                        .fetchJobs(recruiterId);
+                  } else if (index == 2) {
+                    Provider.of<ApplicationsController>(context, listen: false)
+                        .fetchApplications(recruiterId);
                   }
                 }
               },
@@ -251,9 +258,8 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
       titleSpacing: 0,
-      title: HireMatrixLogo(
+      title: const HireMatrixLogo(
         height: 32,
-        imageUrl: Provider.of<AuthController>(context).currentRecruiter?.companyLogo,
       ),
       actions: [
         IconButton(

@@ -31,7 +31,7 @@ class HireMatrixLogo extends StatelessWidget {
             },
           )
         : Image.asset(
-            'assets/images/logo.png',
+            'assets/hirematrix_logo.png',
             height: height,
             errorBuilder: (context, error, stackTrace) {
               return Icon(

@@ -20,6 +20,11 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
   final List<String> _tabs = ['All Jobs', 'Active', 'Drafts', 'Expired', 'Closed'];
   final TextEditingController _searchController = TextEditingController();
 
+  String? _selectedWorkMode;
+  String? _selectedExperience;
+  String? _selectedDepartment;
+  String? _selectedLocation;
+
   @override
   void initState() {
     super.initState();
@@ -106,18 +111,36 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
   }
 
   Widget _buildCompactStatCard(String label, String count, IconData icon, Color color, bool isDark) {
+    String subtext = '';
+    if (label == 'Active') {
+      subtext = 'Live on portal';
+    } else if (label == 'Drafts') {
+      subtext = 'Unpublished';
+    } else if (label == 'Expired') {
+      subtext = 'Needs renewal';
+    } else {
+      subtext = 'Filled & closed';
+    }
+
     return Container(
-      width: 136,
-      height: 82,
+      width: 142,
+      height: 94,
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.getCard(isDark) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey[200]!,
           width: 1,
         ),
+        boxShadow: [
+          if (!isDark) BoxShadow(
+            color: Colors.black.withValues(alpha: 0.015),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,27 +153,46 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                 count,
                 style: GoogleFonts.outfit(
                   fontSize: 22,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: isDark ? Colors.white : const Color(0xFF0F172A),
                 ),
               ),
-              Icon(
-                icon,
-                size: 18,
-                color: color.withValues(alpha: 0.8),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  size: 16,
+                  color: color,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label.toUpperCase(),
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.grey[400] : const Color(0xFF475569),
+                  letterSpacing: 0.4,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtext,
+                style: GoogleFonts.inter(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.grey[500],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -158,6 +200,11 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
   }
 
   Widget _buildSearchRow(bool isDark) {
+    final hasActiveFilters = _selectedWorkMode != null ||
+        _selectedExperience != null ||
+        _selectedDepartment != null ||
+        _selectedLocation != null;
+
     return Padding(
       padding: EdgeInsets.fromLTRB(Responsive.paddingH, 8, Responsive.paddingH, 16),
       child: Row(
@@ -195,11 +242,20 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
             decoration: BoxDecoration(
               color: isDark ? AppColors.getCard(isDark) : Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+              border: Border.all(
+                color: hasActiveFilters 
+                    ? AppColors.getPrimary(isDark) 
+                    : (isDark ? Colors.white10 : Colors.grey[200]!),
+                width: hasActiveFilters ? 1.5 : 1,
+              ),
             ),
             child: IconButton(
-              icon: const Icon(Icons.tune_rounded, size: 20, color: Colors.grey),
-              onPressed: () {},
+              icon: Icon(
+                Icons.tune_rounded, 
+                size: 20, 
+                color: hasActiveFilters ? AppColors.getPrimary(isDark) : Colors.grey,
+              ),
+              onPressed: () => _showFilterBottomSheet(isDark),
             ),
           ),
         ],
@@ -217,13 +273,13 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
         tabAlignment: TabAlignment.start,
         dividerColor: Colors.transparent,
         indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(width: 3, color: AppColors.getPrimary(isDark)),
+          borderSide: BorderSide(width: 2.5, color: AppColors.getPrimary(isDark)),
           insets: const EdgeInsets.symmetric(horizontal: 16),
         ),
         labelColor: AppColors.getPrimary(isDark),
         unselectedLabelColor: Colors.grey[500],
-        labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800),
-        unselectedLabelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+        labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400),
         labelPadding: const EdgeInsets.symmetric(horizontal: 16),
         tabs: _tabs.map((t) => Tab(text: t)).toList(),
       ),
@@ -237,7 +293,23 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
       if (filterStatus == 'drafts') {
         filterStatus = 'draft';
       }
-      filteredJobs = allJobs.where((j) => j.status.toLowerCase() == filterStatus).toList();
+      filteredJobs = filteredJobs.where((j) => j.status.toLowerCase() == filterStatus).toList();
+    }
+
+    if (_selectedWorkMode != null) {
+      filteredJobs = filteredJobs.where((j) => j.workMode.toLowerCase() == _selectedWorkMode!.toLowerCase()).toList();
+    }
+
+    if (_selectedExperience != null) {
+      filteredJobs = filteredJobs.where((j) => j.experience.toLowerCase() == _selectedExperience!.toLowerCase()).toList();
+    }
+
+    if (_selectedDepartment != null) {
+      filteredJobs = filteredJobs.where((j) => (j.department ?? 'Engineering').toLowerCase() == _selectedDepartment!.toLowerCase()).toList();
+    }
+
+    if (_selectedLocation != null) {
+      filteredJobs = filteredJobs.where((j) => (j.location ?? 'Remote').toLowerCase() == _selectedLocation!.toLowerCase()).toList();
     }
 
     if (filteredJobs.isEmpty) return _buildEmptyATSState(isDark);
@@ -263,110 +335,191 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
     final pipeline = job.pipeline ?? {};
 
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.getCard(isDark) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.grey[200]!.withValues(alpha: 0.45)),
+        border: Border.all(
+          color: isDark ? AppColors.getBorder(isDark) : const Color(0xFFE2E8F0),
+          width: 1.2,
+        ),
         boxShadow: [
           if (!isDark) BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02), 
+            color: Colors.black.withValues(alpha: 0.015), 
             blurRadius: 10, 
-            offset: const Offset(0, 6)
+            offset: const Offset(0, 4),
           )
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 40, height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.getPrimary(isDark).withValues(alpha: 0.08), 
-                  borderRadius: BorderRadius.circular(10)
-                ),
-                child: Icon(Icons.business_center_rounded, size: 20, color: AppColors.getPrimary(isDark)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(job.jobTitle, 
-                      style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.getText(isDark), height: 1.1, letterSpacing: -0.3),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Container(
+                      width: 40, height: 40,
+                      decoration: BoxDecoration(
+                        color: AppColors.getPrimary(isDark).withValues(alpha: 0.08), 
+                        borderRadius: BorderRadius.circular(10)
+                      ),
+                      child: Icon(Icons.business_center_rounded, size: 20, color: AppColors.getPrimary(isDark)),
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(Icons.location_on_outlined, size: 12, color: Colors.grey[400]),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(job.location ?? 'Remote', 
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(job.jobTitle, 
+                            style: GoogleFonts.inter(
+                              fontSize: 16, 
+                              fontWeight: FontWeight.w600, 
+                              color: AppColors.getText(isDark), 
+                              height: 1.2, 
+                              letterSpacing: -0.2
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500)),
-                        ),
-                        const SizedBox(width: 10),
-                        Icon(Icons.access_time_rounded, size: 12, color: Colors.grey[400]),
-                        const SizedBox(width: 6),
-                        Text(job.jobType, 
-                          maxLines: 1,
-                          style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500)),
-                      ],
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Icon(Icons.location_on_outlined, size: 13, color: AppColors.getTextMuted(isDark)),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(job.location ?? 'Remote', 
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.5, 
+                                    color: AppColors.getTextMuted(isDark), 
+                                    fontWeight: FontWeight.w500
+                                  )),
+                              ),
+                              const SizedBox(width: 12),
+                              Icon(Icons.apartment_rounded, size: 13, color: AppColors.getTextMuted(isDark)),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(job.department ?? 'Engineering', 
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.5, 
+                                    color: AppColors.getTextMuted(isDark), 
+                                    fontWeight: FontWeight.w500
+                                  )),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
+                    _buildStatusIndicator(status, isDark),
                   ],
                 ),
-              ),
-              _buildStatusIndicator(status),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.02) : const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.grey[200]!.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildMetric(pipeline['Applied']?.toString() ?? '0', 'Applied', isDark, compact: true),
-                _buildMetric(pipeline['Shortlisted']?.toString() ?? '0', 'Shortlisted', isDark, compact: true),
-                _buildMetric(pipeline['Interview']?.toString() ?? '0', 'Interviews', isDark, compact: true),
-                _buildMetric(pipeline['Hired']?.toString() ?? '0', 'Hires', isDark, compact: true),
+                const SizedBox(height: 14),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    children: [
+                      _buildMetadataBadge('💼 ${job.experience}', isDark),
+                      const SizedBox(width: 8),
+                      _buildMetadataBadge('📍 ${job.workMode}', isDark),
+                      if (job.salary != null && job.salary!.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        _buildMetadataBadge('💰 ${job.salary}', isDark),
+                      ],
+                      const SizedBox(width: 8),
+                      _buildMetadataBadge('📅 Posted ${_formatDate(job.createdAt)}', isDark),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          SizedBox(
+          Container(
             width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () {
-                 Navigator.push(context, MaterialPageRoute(builder: (context) => Scaffold(
-                   appBar: AppBar(title: Text(job.jobTitle, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800))),
-                   body: CandidateManagementScreen(jobId: job.jobId, jobTitle: job.jobTitle),
-                 )));
-              },
-              style: OutlinedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: AppColors.getPrimary(isDark),
-                side: BorderSide(color: AppColors.getPrimary(isDark).withValues(alpha: 0.12)),
-                elevation: 0,
-                minimumSize: const Size(0, 40),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.getBorder(isDark).withValues(alpha: 0.15) : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isDark ? AppColors.getBorder(isDark).withValues(alpha: 0.3) : const Color(0xFFEDF2F7),
+                width: 1,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Manage workspace', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800)),
-                  const SizedBox(width: 8),
-                  Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.getPrimary(isDark)),
-                ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'APPLICANT PIPELINE',
+                      style: GoogleFonts.inter(
+                        fontSize: 9.5, 
+                        fontWeight: FontWeight.w700, 
+                        color: AppColors.getTextMuted(isDark), 
+                        letterSpacing: 0.5
+                      ),
+                    ),
+                    Icon(Icons.trending_up_rounded, size: 13, color: AppColors.getTextMuted(isDark)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _buildPipelineSegment(pipeline['Applied']?.toString() ?? '0', 'Applied', isDark),
+                    _buildPipelineDivider(isDark),
+                    _buildPipelineSegment(pipeline['Shortlisted']?.toString() ?? '0', 'Shortlisted', isDark),
+                    _buildPipelineDivider(isDark),
+                    _buildPipelineSegment(pipeline['Interview']?.toString() ?? '0', 'Interviews', isDark),
+                    _buildPipelineDivider(isDark),
+                    _buildPipelineSegment(pipeline['Hired']?.toString() ?? '0', 'Hires', isDark),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              height: 40,
+              child: OutlinedButton(
+                onPressed: () {
+                   Navigator.push(context, MaterialPageRoute(builder: (context) => Scaffold(
+                     appBar: AppBar(title: Text(job.jobTitle, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600))),
+                     body: CandidateManagementScreen(jobId: job.jobId, jobTitle: job.jobTitle),
+                   )));
+                },
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.white,
+                  foregroundColor: AppColors.getPrimary(isDark),
+                  side: BorderSide(
+                    color: isDark 
+                      ? AppColors.getPrimary(isDark).withValues(alpha: 0.3) 
+                      : AppColors.getPrimary(isDark).withValues(alpha: 0.4),
+                    width: 1.2
+                  ),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Manage Candidates', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                    const SizedBox(width: 6),
+                    Icon(Icons.arrow_forward_ios_rounded, size: 10, color: AppColors.getPrimary(isDark)),
+                  ],
+                ),
               ),
             ),
           ),
@@ -375,27 +528,98 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
     );
   }
 
-  Widget _buildStatusIndicator(String status) {
-    Color color = Colors.green;
-    if (status == 'DRAFT') color = Colors.orange;
-    if (status == 'EXPIRED' || status == 'CLOSED') color = Colors.redAccent;
+  Widget _buildStatusIndicator(String status, bool isDark) {
+    Color dotColor = Colors.green;
+    if (status == 'DRAFT') dotColor = Colors.orange;
+    if (status == 'EXPIRED' || status == 'CLOSED') dotColor = Colors.redAccent;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
-      child: Text(status, style: GoogleFonts.inter(fontSize: 8, fontWeight: FontWeight.w900, color: color, letterSpacing: 0.5)),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 7,
+          height: 7,
+          decoration: BoxDecoration(
+            color: dotColor,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          status[0].toUpperCase() + status.substring(1).toLowerCase(),
+          style: GoogleFonts.inter(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.grey[300] : const Color(0xFF334155),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildMetric(String val, String label, bool isDark, {bool compact = false}) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(val, style: GoogleFonts.inter(fontSize: compact ? 14 : 16, fontWeight: FontWeight.w800, color: AppColors.getText(isDark))),
-        const SizedBox(height: 4),
-        Text(label, style: GoogleFonts.inter(fontSize: compact ? 10 : 12, color: Colors.grey[500], fontWeight: FontWeight.w600)),
-      ],
+  Widget _buildMetadataBadge(String text, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: 0.03) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFE2E8F0),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: AppColors.getTextMuted(isDark),
+        ),
+      ),
     );
+  }
+
+  Widget _buildPipelineSegment(String count, String label, bool isDark) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            count,
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: AppColors.getTextMuted(isDark),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPipelineDivider(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Icon(
+        Icons.chevron_right_rounded,
+        size: 14,
+        color: isDark ? Colors.white24 : Colors.grey[350]!,
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return "${date.day} ${months[date.month - 1]}";
   }
 
   Widget _buildEmptyATSState(bool isDark) {
@@ -418,6 +642,329 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
           Text('Try refining your search or filters.', 
             style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[400], fontWeight: FontWeight.w500)),
         ],
+      ),
+    );
+  }
+
+  void _showFilterBottomSheet(bool isDark) {
+    final controller = Provider.of<JobsController>(context, listen: false);
+    final allJobs = controller.jobs;
+
+    final departments = allJobs
+        .map((j) => j.department ?? 'Engineering')
+        .where((d) => d.trim().isNotEmpty)
+        .toSet()
+        .toList();
+    departments.sort();
+
+    final locations = allJobs
+        .map((j) => j.location ?? 'Remote')
+        .where((l) => l.trim().isNotEmpty)
+        .toSet()
+        .toList();
+    locations.sort();
+
+    String? tempWorkMode = _selectedWorkMode;
+    String? tempExperience = _selectedExperience;
+    String? tempDepartment = _selectedDepartment;
+    String? tempLocation = _selectedLocation;
+    
+    int currentTabIdx = _tabController.index;
+    String? tempStatus = _tabs[currentTabIdx];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? AppColors.bgDark : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 24),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Filter Workspace Roles',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.getText(isDark),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setModalState(() {
+                              tempWorkMode = null;
+                              tempExperience = null;
+                              tempDepartment = null;
+                              tempLocation = null;
+                              tempStatus = 'All Jobs';
+                            });
+                          },
+                          child: Text(
+                            'Reset All',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.getPrimary(isDark),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(height: 1),
+                    const SizedBox(height: 16),
+
+                    _buildFilterSectionTitle('STATUS', isDark),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _tabs.map((status) {
+                        final isSelected = tempStatus == status;
+                        return ChoiceChip(
+                          label: Text(status),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setModalState(() => tempStatus = status);
+                            }
+                          },
+                          selectedColor: AppColors.getPrimary(isDark).withOpacity(0.15),
+                          backgroundColor: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F5F9),
+                          labelStyle: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: isSelected 
+                                ? AppColors.getPrimary(isDark) 
+                                : AppColors.getTextMuted(isDark),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(
+                              color: isSelected 
+                                  ? AppColors.getPrimary(isDark) 
+                                  : Colors.transparent,
+                              width: 1,
+                            ),
+                          ),
+                          showCheckmark: false,
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+
+                    _buildFilterSectionTitle('WORK MODE', isDark),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: ['Onsite', 'Hybrid', 'Remote'].map((mode) {
+                        final isSelected = tempWorkMode == mode;
+                        return ChoiceChip(
+                          label: Text(mode),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setModalState(() {
+                              tempWorkMode = selected ? mode : null;
+                            });
+                          },
+                          selectedColor: AppColors.getPrimary(isDark).withOpacity(0.15),
+                          backgroundColor: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F5F9),
+                          labelStyle: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: isSelected 
+                                ? AppColors.getPrimary(isDark) 
+                                : AppColors.getTextMuted(isDark),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(
+                              color: isSelected 
+                                  ? AppColors.getPrimary(isDark) 
+                                  : Colors.transparent,
+                              width: 1,
+                            ),
+                          ),
+                          showCheckmark: false,
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+
+                    _buildFilterSectionTitle('EXPERIENCE REQUIRED', isDark),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: ['Fresher', '1-2 Years', '3-5 Years', '5+ Years'].map((exp) {
+                        final isSelected = tempExperience == exp;
+                        return ChoiceChip(
+                          label: Text(exp),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setModalState(() {
+                              tempExperience = selected ? exp : null;
+                            });
+                          },
+                          selectedColor: AppColors.getPrimary(isDark).withOpacity(0.15),
+                          backgroundColor: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F5F9),
+                          labelStyle: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: isSelected 
+                                ? AppColors.getPrimary(isDark) 
+                                : AppColors.getTextMuted(isDark),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(
+                              color: isSelected 
+                                  ? AppColors.getPrimary(isDark) 
+                                  : Colors.transparent,
+                              width: 1,
+                            ),
+                          ),
+                          showCheckmark: false,
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+
+                    if (departments.isNotEmpty) ...[
+                      _buildFilterSectionTitle('DEPARTMENT', isDark),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: isDark ? Colors.white10 : Colors.grey[300]!),
+                        ),
+                        child: DropdownButton<String>(
+                          value: tempDepartment,
+                          isExpanded: true,
+                          underline: const SizedBox(),
+                          dropdownColor: isDark ? AppColors.bgCardDark : Colors.white,
+                          hint: Text('Select Department', style: GoogleFonts.inter(fontSize: 12.5, color: Colors.grey)),
+                          style: GoogleFonts.inter(fontSize: 13, color: AppColors.getText(isDark)),
+                          items: [
+                            DropdownMenuItem<String>(
+                              value: null,
+                              child: Text('All Departments', style: GoogleFonts.inter(fontSize: 13, color: AppColors.getTextMuted(isDark))),
+                            ),
+                            ...departments.map((d) => DropdownMenuItem<String>(
+                              value: d,
+                              child: Text(d),
+                            )),
+                          ],
+                          onChanged: (val) {
+                            setModalState(() => tempDepartment = val);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    if (locations.isNotEmpty) ...[
+                      _buildFilterSectionTitle('LOCATION', isDark),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: isDark ? Colors.white10 : Colors.grey[300]!),
+                        ),
+                        child: DropdownButton<String>(
+                          value: tempLocation,
+                          isExpanded: true,
+                          underline: const SizedBox(),
+                          dropdownColor: isDark ? AppColors.bgCardDark : Colors.white,
+                          hint: Text('Select Location', style: GoogleFonts.inter(fontSize: 12.5, color: Colors.grey)),
+                          style: GoogleFonts.inter(fontSize: 13, color: AppColors.getText(isDark)),
+                          items: [
+                            DropdownMenuItem<String>(
+                              value: null,
+                              child: Text('All Locations', style: GoogleFonts.inter(fontSize: 13, color: AppColors.getTextMuted(isDark))),
+                            ),
+                            ...locations.map((l) => DropdownMenuItem<String>(
+                              value: l,
+                              child: Text(l),
+                            )),
+                          ],
+                          onChanged: (val) {
+                            setModalState(() => tempLocation = val);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedWorkMode = tempWorkMode;
+                            _selectedExperience = tempExperience;
+                            _selectedDepartment = tempDepartment;
+                            _selectedLocation = tempLocation;
+                            if (tempStatus != null) {
+                              int tabIdx = _tabs.indexOf(tempStatus!);
+                              if (tabIdx != -1) {
+                                _tabController.animateTo(tabIdx);
+                              }
+                            }
+                          });
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.getPrimary(isDark),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Apply Filters',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterSectionTitle(String title, bool isDark) {
+    return Text(
+      title,
+      style: GoogleFonts.inter(
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        color: AppColors.getTextMuted(isDark),
+        letterSpacing: 0.5,
       ),
     );
   }
