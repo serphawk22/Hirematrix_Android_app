@@ -1822,30 +1822,6 @@ class FooterSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
-
-          // Social icons Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildSocialIcon(FontAwesomeIcons.linkedinIn),
-              const SizedBox(width: 14),
-              _buildSocialIcon(FontAwesomeIcons.xTwitter),
-              const SizedBox(width: 14),
-              _buildSocialIcon(FontAwesomeIcons.instagram),
-              const SizedBox(width: 14),
-              _buildSocialIcon(FontAwesomeIcons.facebookF),
-            ],
-          ),
-          const SizedBox(height: 18),
-
-          // Copyright
-          Text(
-            '© ${DateTime.now().year} HireMatrix. All rights reserved.',
-            style: GoogleFonts.inter(
-              fontSize: 12.5,
-              color: const Color(0xFF5D7083),
-            ),
-          ),
         ],
       ),
     );

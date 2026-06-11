@@ -174,7 +174,8 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                   onRefresh: _savedJobsController.fetchSavedJobs,
                   color: AppColors.getPrimary(isDark),
                   child: Obx(() {
-                    if (_savedJobsController.isLoading.value && _savedJobsController.savedJobsList.isEmpty) {
+                    if (_savedJobsController.isLoading.value &&
+                        _savedJobsController.savedJobsList.isEmpty) {
                       return Center(
                         child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
@@ -208,7 +209,8 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                           separatorBuilder: (context, index) =>
                               const SizedBox(height: 14),
                           itemBuilder: (context, index) {
-                            final job = _savedJobsController.savedJobsList[index];
+                            final job =
+                                _savedJobsController.savedJobsList[index];
                             return _buildSavedJobCard(
                               job,
                               isDark,
@@ -267,24 +269,22 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
               style: GoogleFonts.inter(fontSize: 13.5, color: subtitleColor),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: _navigateToBrowseJobs,
+              icon: const Icon(Icons.search, size: 16),
+              label: Text(
+                'Browse Jobs',
+                style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.getBackground(Get.isDarkMode),
+                backgroundColor: AppColors.getPrimary(Get.isDarkMode),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 12,
+                  horizontal: 14,
+                  vertical: 10,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Text(
-                'Browse Jobs',
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
@@ -432,7 +432,10 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                     buttonColor: Colors.redAccent,
                     onConfirm: () {
                       Get.back();
-                      _savedJobsController.handleUnsaveJob(jobIdInt, isExternal);
+                      _savedJobsController.handleUnsaveJob(
+                        jobIdInt,
+                        isExternal,
+                      );
                     },
                   );
                 },

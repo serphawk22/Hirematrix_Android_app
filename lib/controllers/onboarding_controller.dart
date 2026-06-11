@@ -1,133 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' show Platform;
-import 'dart:convert';
+import 'package:hirematrix/controllers/auth_controller.dart';
 import 'package:http/http.dart' as http;
-import 'package:file_picker/file_picker.dart';
-import 'package:hirematrix/routes/app_routes.dart';
-import 'package:hirematrix/controllers/auth_controller.dart'; // Just to re-use baseUrl if possible, or duplicate for now
+import 'dart:convert';
 import 'package:hirematrix/core/constants/api_constants.dart';
+import 'package:file_picker/file_picker.dart';
 
 class OnboardingController extends GetxController {
   final currentStep = 0.obs;
   final isLoading = false.obs;
-  int userId = 0; // We need to store user_id during login
 
-  // Personal Step
+  // Personal Step Controllers
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final locationController = TextEditingController();
-  final bioController = TextEditingController();
   final gender = ''.obs;
   final dateOfBirthController = TextEditingController();
+  final bioController = TextEditingController();
 
-  // Resume Step
-  final selectedResumePath = ''.obs;
+  // Resume Upload Fields
   final selectedResumeName = ''.obs;
+  final selectedResumePath = ''.obs;
 
-  // Skills Step
+  // Skills
   final skillsController = TextEditingController();
 
-  // Education Step
+  // Dynamic Lists
   final educations = <Map<String, dynamic>>[].obs;
-
-  // Experience Step
-  final isFresher = false.obs;
   final experiences = <Map<String, dynamic>>[].obs;
+  final isFresher = false.obs;
 
-  // Preferences Step
-  final resumeHeadlineController = TextEditingController();
-  final preferredJobTitlesController = TextEditingController();
-  final preferredLocationsController = TextEditingController();
-  final preferredEmploymentType = ''.obs;
-  final noticePeriod = ''.obs;
-  final expectedSalaryController = TextEditingController();
+  int userId = 0;
 
   @override
   void onInit() {
     super.onInit();
-    int uId = 0;
-    String uName = '';
-    String uPhone = '';
-    String uStep = 'personal';
-
-    if (Get.arguments != null) {
-      if (Get.arguments['user_id'] != null) uId = Get.arguments['user_id'];
-      if (Get.arguments['name'] != null) uName = Get.arguments['name'];
-      if (Get.arguments['phone'] != null) uPhone = Get.arguments['phone'];
-      if (Get.arguments['onboarding_step'] != null) uStep = Get.arguments['onboarding_step'];
-    } else {
-      try {
-        final authController = Get.find<AuthController>();
-        if (authController.currentUser.isNotEmpty) {
-          final user = authController.currentUser;
-          uId = int.tryParse(user['id']?.toString() ?? '') ?? 0;
-          uName = user['name'] ?? '';
-          uPhone = user['phone'] ?? '';
-          uStep = user['onboarding_step'] ?? 'personal';
-        }
-      } catch (e) {
-        // ignore
+    try {
+      final authController = Get.find<AuthController>();
+      final currentUser = authController.currentUser;
+      if (currentUser.isNotEmpty && currentUser['id'] != null) {
+        userId = int.tryParse(currentUser['id'].toString()) ?? 0;
+        nameController.text = currentUser['name'] ?? '';
+        phoneController.text = currentUser['phone'] ?? '';
       }
+    } catch (e) {
+      // Ignore if AuthController is not available
     }
 
-    userId = uId;
-    nameController.text = uName;
-    phoneController.text = uPhone;
-
-    switch (uStep) {
-      case 'resume': currentStep.value = 1; break;
-      case 'skills': currentStep.value = 2; break;
-      case 'education': currentStep.value = 3; break;
-      case 'experience': currentStep.value = 4; break;
-      case 'preferences': currentStep.value = 5; break;
-      case 'review': currentStep.value = 6; break;
-      default: currentStep.value = 0; break;
-    }
-    
-    // Add one empty education and experience to start
+    // Initialize with 1 default entry
     addEducation();
     addExperience();
   }
 
-  void setUserId(int id) {
-    userId = id;
-  }
-
-  Future<void> selectDateOfBirth(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 6570)), // Default 18 years ago
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFF4F46E5),
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null) {
-      dateOfBirthController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-    }
-  }
-
+  // Dynamic Lists Helpers
   void addEducation() {
-    educations.add({
-      'degree': TextEditingController(),
-      'field_of_study': TextEditingController(),
-      'institution': TextEditingController(),
-      'start_year': TextEditingController(),
-      'end_year': TextEditingController(),
-      'grade': TextEditingController(),
-    });
+    final degree = TextEditingController();
+    final fieldOfStudy = TextEditingController();
+    final institution = TextEditingController();
+    final startYear = TextEditingController();
+    final endYear = TextEditingController();
+    final grade = TextEditingController();
+
+    final education = {
+      'degree': degree,
+      'field_of_study': fieldOfStudy,
+      'institution': institution,
+      'start_year': startYear,
+      'end_year': endYear,
+      'grade': grade,
+    };
+    educations.add(education);
   }
 
   void removeEducation(int index) {
@@ -135,282 +77,415 @@ class OnboardingController extends GetxController {
   }
 
   void addExperience() {
-    experiences.add({
-      'job_title': TextEditingController(),
-      'company_name': TextEditingController(),
+    final jobTitle = TextEditingController();
+    final companyName = TextEditingController();
+    final location = TextEditingController();
+    final startDate = TextEditingController();
+    final endDate = TextEditingController();
+    final description = TextEditingController();
+
+    final experience = {
+      'job_title': jobTitle,
+      'company_name': companyName,
       'employment_type': 'Full-time',
-      'location': TextEditingController(),
-      'start_date': TextEditingController(),
-      'end_date': TextEditingController(),
+      'location': location,
+      'start_date': startDate,
+      'end_date': endDate,
       'is_current': false,
-      'description': TextEditingController(),
-    });
+      'description': description
+    };
+    experiences.add(experience);
   }
 
   void removeExperience(int index) {
     experiences.removeAt(index);
   }
 
-  Future<void> pickResume() async {
+  // Date Pickers
+  Future<void> selectDateOfBirth(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().subtract(const Duration(days: 365 * 20)),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      dateOfBirthController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+    }
+  }
+
+  Future<void> selectExperienceDate(BuildContext context, TextEditingController controllerField) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      controllerField.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+    }
+  }
+
+  // File Upload & AI Parse
+  Future<void> uploadAndParseResume(BuildContext context) async {
     try {
       FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'doc', 'docx'],
       );
 
-      if (result != null) {
-        selectedResumePath.value = result.files.single.path!;
+      if (result != null && result.files.single.path != null) {
+        isLoading.value = true;
         selectedResumeName.value = result.files.single.name;
-      }
-    } catch (e) {
-      print("FilePicker Error: $e");
-      Get.snackbar('Error', 'Failed to pick file: $e', duration: const Duration(seconds: 5));
-    }
-  }
+        selectedResumePath.value = result.files.single.path!;
 
-  // ─── Skip to Dashboard ────────────────────────────────────────────────────
-  void skipToDashboard() async {
-    // Call the review step API to mark onboarding_completed = 1
-    // so it doesn't keep showing up on every login.
-    isLoading.value = true;
-    try {
-      await saveStep('review', {'user_id': userId});
-      try {
-        final authController = Get.find<AuthController>();
-        final updatedUser = Map<String, dynamic>.from(authController.currentUser);
-        updatedUser['onboarding_completed'] = 1;
-        authController.currentUser.value = updatedUser;
-        await authController.saveUserSession(updatedUser);
-      } catch (e) {
-        // ignore
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse('${ApiConstants.baseUrl}/onboarding/parse-resume'),
+        );
+        request.files.add(
+          await http.MultipartFile.fromPath('resume', selectedResumePath.value),
+        );
+
+        var response = await request.send();
+        var responseData = await response.stream.bytesToString();
+        var resData = jsonDecode(responseData);
+
+        if (response.statusCode == 200 && resData['status'] == 'success') {
+          final parsed = resData['data'];
+          if (parsed != null) {
+            // Fill Personal
+            nameController.text = parsed['name'] ?? '';
+            phoneController.text = parsed['phone'] ?? '';
+            locationController.text = parsed['location'] ?? '';
+            gender.value = parsed['gender'] ?? '';
+            dateOfBirthController.text = parsed['date_of_birth'] ?? '';
+            bioController.text = parsed['bio'] ?? '';
+
+            // Fill Skills
+            if (parsed['skills'] != null) {
+              if (parsed['skills'] is List) {
+                skillsController.text = (parsed['skills'] as List).join(', ');
+              } else {
+                skillsController.text = parsed['skills'].toString();
+              }
+            }
+
+            // Fill Educations
+            educations.clear();
+            if (parsed['educations'] != null && parsed['educations'] is List) {
+              for (var edu in parsed['educations']) {
+                final degree = TextEditingController(text: edu['degree'] ?? '');
+                final fieldOfStudy = TextEditingController(text: edu['field_of_study'] ?? '');
+                final institution = TextEditingController(text: edu['institution'] ?? '');
+                final startYear = TextEditingController(text: edu['start_year']?.toString() ?? '');
+                final endYear = TextEditingController(text: edu['end_year']?.toString() ?? '');
+                final grade = TextEditingController(text: edu['grade']?.toString() ?? '');
+
+                educations.add({
+                  'degree': degree,
+                  'field_of_study': fieldOfStudy,
+                  'institution': institution,
+                  'start_year': startYear,
+                  'end_year': endYear,
+                  'grade': grade,
+                });
+              }
+            }
+            if (educations.isEmpty) {
+              addEducation();
+            }
+
+            // Fill Experiences
+            experiences.clear();
+            if (parsed['experiences'] != null && parsed['experiences'] is List) {
+              isFresher.value = false;
+              for (var exp in parsed['experiences']) {
+                final jobTitle = TextEditingController(text: exp['job_title'] ?? '');
+                final companyName = TextEditingController(text: exp['company_name'] ?? '');
+                final location = TextEditingController(text: exp['location'] ?? '');
+                final startDate = TextEditingController(text: exp['start_date'] ?? '');
+                final endDate = TextEditingController(text: exp['end_date'] ?? '');
+                final description = TextEditingController(text: exp['description'] ?? '');
+                final isCurrent = exp['is_current'] == true || exp['is_current'] == 1 || exp['is_current'] == '1';
+
+                experiences.add({
+                  'job_title': jobTitle,
+                  'company_name': companyName,
+                  'employment_type': exp['employment_type'] ?? 'Full-time',
+                  'location': location,
+                  'start_date': startDate,
+                  'end_date': endDate,
+                  'is_current': isCurrent,
+                  'description': description,
+                });
+              }
+            } else {
+              isFresher.value = true;
+            }
+            if (experiences.isEmpty && !isFresher.value) {
+              addExperience();
+            }
+          }
+          Get.snackbar('Success', 'Resume parsed & populated successfully!',
+              snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+        } else {
+          Get.snackbar('Error', resData['message'] ?? 'Failed to parse resume',
+              snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+        }
       }
     } catch (e) {
-      // ignore
+      Get.snackbar('Error', 'Error uploading/parsing resume: $e',
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
       isLoading.value = false;
-      Get.offAllNamed(AppRoutes.dashboard);
     }
   }
 
-  // ─── Mandatory field validation for the Personal step ────────────────────
-  bool validatePersonalStep() {
-    if (nameController.text.trim().isEmpty) {
-      Get.snackbar(
-        'Required',
-        'Full Name is required to continue.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return false;
-    }
-    if (phoneController.text.trim().isEmpty) {
-      Get.snackbar(
-        'Required',
-        'Phone number is required to continue.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return false;
-    }
-    return true;
-  }
-
-  Future<void> nextStep() async {
-    // Personal step is mandatory — block if invalid
-    if (currentStep.value == 0 && !validatePersonalStep()) return;
-
-    isLoading.value = true;
-    bool success = false;
-
-    // We do API call to save current step
-    switch (currentStep.value) {
-      case 0:
-        success = await saveStep('personal', {
-          'user_id': userId,
-          'name': nameController.text,
-          'phone': phoneController.text,
-          'location': locationController.text,
-          'bio': bioController.text,
-          'gender': gender.value,
-          'date_of_birth': dateOfBirthController.text,
-        });
-        break;
-      case 1:
-        // Resume is optional — skip saving if nothing selected
-        if (selectedResumePath.value.isEmpty) {
-          isLoading.value = false;
-          currentStep.value++;
-          return;
-        }
-        success = await uploadResume();
-        break;
-      case 2:
-        // Skills optional — save if provided, always continue
-        if (skillsController.text.trim().isNotEmpty) {
-          await saveStep('skills', {
-            'user_id': userId,
-            'skills': skillsController.text,
-          });
-        }
-        success = true;
-        break;
-      case 3:
-        // Education optional
-        List<Map<String, dynamic>> eduList = [];
-        for (var e in educations) {
-          if (e['degree'].text.isNotEmpty) {
-            eduList.add({
-              'degree': e['degree'].text,
-              'field_of_study': e['field_of_study'].text,
-              'institution': e['institution'].text,
-              'start_year': e['start_year'].text,
-              'end_year': e['end_year'].text,
-              'grade': e['grade'].text,
-            });
-          }
-        }
-        if (eduList.isNotEmpty) {
-          await saveStep('education', {'user_id': userId, 'educations': eduList});
-        }
-        success = true;
-        break;
-      case 4:
-        // Experience optional
-        List<Map<String, dynamic>> expList = [];
-        for (var e in experiences) {
-          if (e['job_title'].text.isNotEmpty) {
-            expList.add({
-              'job_title': e['job_title'].text,
-              'company_name': e['company_name'].text,
-              'employment_type': e['employment_type'],
-              'location': e['location'].text,
-              'start_date': e['start_date'].text,
-              'end_date': e['end_date'].text,
-              'is_current': e['is_current'],
-              'description': e['description'].text,
-            });
-          }
-        }
-        if (isFresher.value || expList.isNotEmpty) {
-          await saveStep('experience', {
-            'user_id': userId,
-            'is_fresher': isFresher.value,
-            'experiences': expList,
-          });
-        }
-        success = true;
-        break;
-      case 5:
-        // Preferences optional
-        await saveStep('preferences', {
-          'user_id': userId,
-          'resume_headline': resumeHeadlineController.text,
-          'preferred_job_titles': preferredJobTitlesController.text,
-          'preferred_locations': preferredLocationsController.text,
-          'preferred_employment_type': preferredEmploymentType.value,
-          'notice_period': noticePeriod.value,
-          'expected_salary': expectedSalaryController.text,
-        });
-        success = true;
-        break;
-      case 6: // Review — complete onboarding
-        success = await saveStep('review', {'user_id': userId});
-        if (success) {
-          try {
-            final authController = Get.find<AuthController>();
-            final updatedUser = Map<String, dynamic>.from(authController.currentUser);
-            updatedUser['onboarding_completed'] = 1;
-            authController.currentUser.value = updatedUser;
-            await authController.saveUserSession(updatedUser);
-          } catch (e) {
-            // ignore
-          }
-          isLoading.value = false;
-          Get.snackbar(
-            'Success',
-            'Onboarding Complete! Welcome to HireMatrix 🎉',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
-          Get.offAllNamed(AppRoutes.dashboard);
-          return;
-        }
-        // Even if server fails, let them in
-        try {
-          final authController = Get.find<AuthController>();
-          final updatedUser = Map<String, dynamic>.from(authController.currentUser);
-          updatedUser['onboarding_completed'] = 1;
-          authController.currentUser.value = updatedUser;
-          await authController.saveUserSession(updatedUser);
-        } catch (e) {
-          // ignore
-        }
-        isLoading.value = false;
-        Get.offAllNamed(AppRoutes.dashboard);
-        return;
-    }
-
-    isLoading.value = false;
-
-    if (success && currentStep.value < 6) {
-      currentStep.value++;
-    } else if (!success && currentStep.value == 0) {
-      // Only block on personal step failure
-      Get.snackbar(
-        'Error',
-        'Failed to save personal details. Please check your connection.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
-  }
-
+  // Stepper Logic
   void previousStep() {
     if (currentStep.value > 0) {
       currentStep.value--;
     }
   }
 
-  Future<bool> saveStep(String stepName, Map<String, dynamic> data) async {
-    try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/onboarding/$stepName'),
-        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-        body: jsonEncode(data),
-      );
-      if (response.statusCode == 200) {
-        final res = jsonDecode(response.body);
-        return res['status'] == 'success';
+  Future<void> nextStep() async {
+    if (isLoading.value) return;
+
+    if (currentStep.value == 0) {
+      // Validate Personal
+      if (nameController.text.isEmpty ||
+          phoneController.text.isEmpty ||
+          locationController.text.isEmpty ||
+          gender.value.isEmpty ||
+          dateOfBirthController.text.isEmpty ||
+          bioController.text.isEmpty) {
+        Get.snackbar('Required Fields', 'Please complete all required fields.',
+            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.orange, colorText: Colors.white);
+        return;
       }
-      return false;
-    } catch (e) {
-      return false;
+      final success = await savePersonalDetails();
+      if (success) currentStep.value++;
+    } else if (currentStep.value == 1) {
+      // Validate Skills
+      if (skillsController.text.isEmpty) {
+        Get.snackbar('Required Fields', 'Please enter at least one skill.',
+            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.orange, colorText: Colors.white);
+        return;
+      }
+      final success = await saveSkills();
+      if (success) currentStep.value++;
+    } else if (currentStep.value == 2) {
+      // Validate Education
+      for (var edu in educations) {
+        if (edu['degree']!.text.isEmpty ||
+            edu['field_of_study']!.text.isEmpty ||
+            edu['institution']!.text.isEmpty ||
+            edu['start_year']!.text.isEmpty ||
+            edu['end_year']!.text.isEmpty) {
+          Get.snackbar('Required Fields', 'Please complete all education details.',
+              snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.orange, colorText: Colors.white);
+          return;
+        }
+      }
+      final success = await saveEducation();
+      if (success) currentStep.value++;
+    } else if (currentStep.value == 3) {
+      // Validate Experience
+      if (!isFresher.value) {
+        for (var exp in experiences) {
+          if (exp['job_title']!.text.isEmpty ||
+              exp['company_name']!.text.isEmpty ||
+              exp['start_date']!.text.isEmpty) {
+            Get.snackbar('Required Fields', 'Please complete all work experience details.',
+                snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.orange, colorText: Colors.white);
+            return;
+          }
+        }
+      }
+      final success = await saveExperience();
+      if (success) currentStep.value++;
+    } else if (currentStep.value == 4) {
+      // Submit and Go to Dashboard
+      final success = await completeOnboarding();
+      if (success) {
+        skipToDashboard();
+      }
     }
   }
 
-  Future<bool> uploadResume() async {
+  // API Calls
+  Future<bool> savePersonalDetails() async {
+    isLoading.value = true;
     try {
-      var request = http.MultipartRequest('POST', Uri.parse('${ApiConstants.baseUrl}/onboarding/resume'));
-      request.fields['user_id'] = userId.toString();
-      
-      if (selectedResumePath.value.isNotEmpty) {
-        request.files.add(await http.MultipartFile.fromPath('resume', selectedResumePath.value));
-      }
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/onboarding/save-step'),
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'step': 'personal',
+          'name': nameController.text,
+          'phone': phoneController.text,
+          'location': locationController.text,
+          'gender': gender.value,
+          'date_of_birth': dateOfBirthController.text,
+          'bio': bioController.text,
+        }),
+      );
 
-      var response = await request.send();
-      var responseData = await response.stream.bytesToString();
-      
-      if (response.statusCode == 200) {
-        final res = jsonDecode(responseData);
-        return res['status'] == 'success';
+      final res = jsonDecode(response.body);
+      if (response.statusCode == 200 && res['status'] == 'success') {
+        return true;
+      } else {
+        Get.snackbar('Error', res['message'] ?? 'Failed to save personal details',
+            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
       }
-      return false;
     } catch (e) {
-      return false;
+      Get.snackbar('Error', 'Connection error: $e',
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      isLoading.value = false;
     }
+    return false;
+  }
+
+  Future<bool> saveSkills() async {
+    isLoading.value = true;
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/onboarding/save-step'),
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'step': 'skills',
+          'skills': skillsController.text,
+        }),
+      );
+
+      final res = jsonDecode(response.body);
+      if (response.statusCode == 200 && res['status'] == 'success') {
+        return true;
+      } else {
+        Get.snackbar('Error', res['message'] ?? 'Failed to save skills',
+            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Connection error: $e',
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      isLoading.value = false;
+    }
+    return false;
+  }
+
+  Future<bool> saveEducation() async {
+    isLoading.value = true;
+    try {
+      final educationPayload = educations.map((edu) => {
+        'degree': edu['degree']!.text,
+        'field_of_study': edu['field_of_study']!.text,
+        'institution': edu['institution']!.text,
+        'start_year': edu['start_year']!.text,
+        'end_year': edu['end_year']!.text,
+        'grade': edu['grade']?.text ?? '',
+      }).toList();
+
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/onboarding/save-step'),
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'step': 'education',
+          'educations': educationPayload,
+        }),
+      );
+
+      final res = jsonDecode(response.body);
+      if (response.statusCode == 200 && res['status'] == 'success') {
+        return true;
+      } else {
+        Get.snackbar('Error', res['message'] ?? 'Failed to save education',
+            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Connection error: $e',
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      isLoading.value = false;
+    }
+    return false;
+  }
+
+  Future<bool> saveExperience() async {
+    isLoading.value = true;
+    try {
+      final experiencePayload = isFresher.value ? [] : experiences.map((exp) => {
+        'job_title': exp['job_title']!.text,
+        'company_name': exp['company_name']!.text,
+        'employment_type': exp['employment_type'],
+        'location': exp['location']!.text,
+        'start_date': exp['start_date']!.text,
+        'end_date': exp['is_current'] == true ? '' : exp['end_date']!.text,
+        'is_current': exp['is_current'] == true ? 1 : 0,
+        'description': exp['description']!.text,
+      }).toList();
+
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/onboarding/save-step'),
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'step': 'experience',
+          'is_fresher': isFresher.value ? 1 : 0,
+          'experiences': experiencePayload,
+        }),
+      );
+
+      final res = jsonDecode(response.body);
+      if (response.statusCode == 200 && res['status'] == 'success') {
+        return true;
+      } else {
+        Get.snackbar('Error', res['message'] ?? 'Failed to save experience',
+            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Connection error: $e',
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      isLoading.value = false;
+    }
+    return false;
+  }
+
+  Future<bool> completeOnboarding() async {
+    isLoading.value = true;
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/onboarding/save-step'),
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode({
+          'user_id': userId,
+          'step': 'review',
+        }),
+      );
+
+      final res = jsonDecode(response.body);
+      if (response.statusCode == 200 && res['status'] == 'success') {
+        return true;
+      } else {
+        Get.snackbar('Error', res['message'] ?? 'Failed to complete onboarding',
+            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Connection error: $e',
+          snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      isLoading.value = false;
+    }
+    return false;
+  }
+
+  void skipToDashboard() {
+    Get.offAllNamed('/candidate/dashboard');
   }
 }
