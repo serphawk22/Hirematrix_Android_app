@@ -147,846 +147,1053 @@ class ProfileScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-
-                // Profile Completion Card
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.getCard(isDark) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.show_chart,
-                            color: AppColors.getPrimary(isDark),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Profile health',
-                            style: GoogleFonts.inter(
-                              color: AppColors.getPrimary(isDark),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Keep your profile ready for matching jobs',
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Complete your profile to improve matching accuracy and recruiter visibility.',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      LinearProgressIndicator(
-                        value: (completion['percentage'] ?? 0) / 100,
-                        backgroundColor: isDark
-                            ? Colors.grey[800]
-                            : Colors.grey[200],
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.getPrimary(isDark),
-                        ),
-                        minHeight: 8,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${completion['percentage'] ?? 0}% Complete',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Avatar Card
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.getCard(isDark) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () => _showPhotoActionSheet(context, controller, isDark, profilePhotoUrl.isNotEmpty),
-                        child: Stack(
-                          children: [
-                            CircleAvatar(
-                              radius: 50,
-                              backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
-                              backgroundImage: profilePhotoUrl.isNotEmpty
-                                  ? NetworkImage(profilePhotoUrl)
-                                  : null,
-                              child: profilePhotoUrl.isEmpty
-                                  ? Icon(
-                                      Icons.person,
-                                      size: 50,
+                            // Profile Completion Card
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? AppColors.getCard(isDark)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.grey[800]!
+                                      : Colors.grey[200]!,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.show_chart,
+                                        color: AppColors.getPrimary(isDark),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Profile health',
+                                        style: GoogleFonts.inter(
+                                          color: AppColors.getPrimary(isDark),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'Keep your profile ready for matching jobs',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Complete your profile to improve matching accuracy and recruiter visibility.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
                                       color: isDark
                                           ? Colors.grey[400]
                                           : Colors.grey[600],
-                                    )
-                                  : null,
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppColors.getPrimary(isDark),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isDark ? AppColors.getCard(isDark) : Colors.white,
-                                    width: 2,
+                                    ),
                                   ),
-                                ),
-                                child: Icon(
-                                  Icons.camera_alt,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        user['name'] ?? 'Candidate',
-                        style: GoogleFonts.inter(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Job Seeker',
-                        style: GoogleFonts.inter(
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildStatItem(
-                            '${stats['applications'] ?? 0}',
-                            'Applications',
-                            isDark,
-                          ),
-                          _buildStatItem(
-                            '${stats['interviews'] ?? 0}',
-                            'Interviews',
-                            isDark,
-                          ),
-                          _buildStatItem(
-                            '${stats['offers'] ?? 0}',
-                            'Offers',
-                            isDark,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Personal Info Card
-                _buildSectionCard(
-                  'Personal Information',
-                  Icons.person_outline,
-                  isDark,
-                  onEdit: () =>
-                      _showPersonalEditDialog(context, controller, isDark),
-                  children: [
-                    _buildInfoRow(
-                      'Full Name',
-                      user['name'] ?? 'Not provided',
-                      isDark,
-                    ),
-                    _buildInfoRow(
-                      'Email',
-                      user['email'] ?? 'Not provided',
-                      isDark,
-                    ),
-                    _buildInfoRow(
-                      'Phone',
-                      user['phone'] ?? 'Not provided',
-                      isDark,
-                    ),
-                    _buildInfoRow(
-                      'Location',
-                      user['location'] ?? 'Not provided',
-                      isDark,
-                    ),
-                    _buildInfoRow(
-                      'Gender',
-                      user['gender'] ?? 'Not provided',
-                      isDark,
-                    ),
-                    _buildInfoRow(
-                      'Date of Birth',
-                      user['date_of_birth'] ?? 'Not provided',
-                      isDark,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Career Details Card
-                _buildSectionCard(
-                  'Career Details',
-                  Icons.work_outline,
-                  isDark,
-                  onEdit: () =>
-                      _showCareerEditDialog(context, controller, isDark),
-                  children: [
-                    _buildInfoRow(
-                      'Resume Headline',
-                      user['resume_headline'] ?? 'Not provided',
-                      isDark,
-                    ),
-                    _buildInfoRow(
-                      'Candidate Type',
-                      ((user['is_fresher_candidate'] ?? '0') == '1' ||
-                              (user['is_fresher_candidate'] ?? 0) == 1)
-                          ? 'Fresher'
-                          : 'Experienced',
-                      isDark,
-                    ),
-                    _buildInfoRow(
-                      'Notice Period',
-                      user['notice_period'] ?? 'Not provided',
-                      isDark,
-                    ),
-                    _buildInfoRow(
-                      'Current Salary (LPA)',
-                      user['current_salary'] != null
-                          ? '${user['current_salary']}'
-                          : 'Not provided',
-                      isDark,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Preferences Card
-                _buildSectionCard(
-                  'Preferences',
-                  Icons.settings_outlined,
-                  isDark,
-                  onEdit: () =>
-                      _showPreferencesEditDialog(context, controller, isDark),
-                  children: [
-                    _buildInfoRow(
-                      'Preferred Job Titles',
-                      user['preferred_job_titles'] ?? 'Not provided',
-                      isDark,
-                    ),
-                    _buildInfoRow(
-                      'Preferred Locations',
-                      user['preferred_locations'] ?? 'Not provided',
-                      isDark,
-                    ),
-                    _buildInfoRow(
-                      'Preferred Employment Type',
-                      user['preferred_employment_type'] ?? 'Not provided',
-                      isDark,
-                    ),
-                    _buildInfoRow(
-                      'Expected Salary (LPA)',
-                      user['expected_salary'] != null
-                          ? '${user['expected_salary']}'
-                          : 'Not provided',
-                      isDark,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Resume Card
-                _buildSectionCard(
-                  'Resume',
-                  Icons.description_outlined,
-                  isDark,
-                  children: [
-                    if (resumeUrl.isNotEmpty) ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.05)
-                              : Colors.grey[50]!,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isDark ? Colors.white12 : Colors.grey[200]!,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.picture_as_pdf,
-                              color: Colors.red,
-                              size: 28,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
+                                  const SizedBox(height: 16),
+                                  LinearProgressIndicator(
+                                    value:
+                                        (completion['percentage'] ?? 0) / 100,
+                                    backgroundColor: isDark
+                                        ? Colors.grey[800]
+                                        : Colors.grey[200],
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppColors.getPrimary(isDark),
+                                    ),
+                                    minHeight: 8,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  const SizedBox(height: 8),
                                   Text(
-                                    user['resume_path']
-                                        .toString()
-                                        .split('/')
-                                        .last,
+                                    '${completion['percentage'] ?? 0}% Complete',
                                     style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
                                       color: isDark
                                           ? Colors.white
                                           : Colors.black,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'PDF/Word Document',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 11,
-                                      color: isDark
-                                          ? Colors.grey[400]
-                                          : Colors.grey[500],
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _launchURL(resumeUrl),
-                              icon: Icon(
-                                Icons.visibility_outlined,
-                                size: 18,
-                              ),
-                              label: const Text('Preview'),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: isDark
-                                      ? Colors.grey[700]!
-                                      : Colors.grey[300]!,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _launchURL(resumeUrl),
-                              icon: Icon(
-                                Icons.download_outlined,
-                                size: 18,
-                              ),
-                              label: const Text('Download'),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: isDark
-                                      ? Colors.grey[700]!
-                                      : Colors.grey[300]!,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                    ] else ...[
-                      Text(
-                        'No resume uploaded yet.',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    ElevatedButton.icon(
-                      onPressed: () => controller.uploadFile(
-                        'upload_resume',
-                        'resume',
-                        ['pdf', 'doc', 'docx'],
-                      ),
-                      icon: Icon(Icons.upload_file),
-                      label: Text(
-                        resumeUrl.isNotEmpty
-                            ? 'Update Resume'
-                            : 'Upload Resume',
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.getPrimary(isDark),
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
+                            const SizedBox(height: 24),
 
-                // Video Card
-                _buildSectionCard(
-                  'Video Introduction',
-                  Icons.videocam_outlined,
-                  isDark,
-                  children: [
-                    if (videoUrl.isNotEmpty) ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withOpacity(0.05)
-                              : Colors.grey[50]!,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isDark ? Colors.white12 : Colors.grey[200]!,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.video_library,
-                              color: Colors.blue,
-                              size: 28,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
+                            // Avatar Card
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? AppColors.getCard(isDark)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.grey[800]!
+                                      : Colors.grey[200]!,
+                                ),
+                              ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  GestureDetector(
+                                    onTap: () => _showPhotoActionSheet(
+                                      context,
+                                      controller,
+                                      isDark,
+                                      profilePhotoUrl.isNotEmpty,
+                                    ),
+                                    child: Stack(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 50,
+                                          backgroundColor: isDark
+                                              ? Colors.grey[800]
+                                              : Colors.grey[200],
+                                          backgroundImage:
+                                              profilePhotoUrl.isNotEmpty
+                                              ? NetworkImage(profilePhotoUrl)
+                                              : null,
+                                          child: profilePhotoUrl.isEmpty
+                                              ? Icon(
+                                                  Icons.person,
+                                                  size: 50,
+                                                  color: isDark
+                                                      ? Colors.grey[400]
+                                                      : Colors.grey[600],
+                                                )
+                                              : null,
+                                        ),
+                                        Positioned(
+                                          bottom: 0,
+                                          right: 0,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.getPrimary(
+                                                isDark,
+                                              ),
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: isDark
+                                                    ? AppColors.getCard(isDark)
+                                                    : Colors.white,
+                                                width: 2,
+                                              ),
+                                            ),
+                                            child: Icon(
+                                              Icons.camera_alt,
+                                              color: Colors.white,
+                                              size: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
                                   Text(
-                                    user['intro_video_path']
-                                        .toString()
-                                        .split('/')
-                                        .last,
+                                    user['name'] ?? 'Candidate',
                                     style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
                                       color: isDark
                                           ? Colors.white
                                           : Colors.black,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 2),
+                                  const SizedBox(height: 4),
                                   Text(
-                                    'MP4/MOV/WebM Video',
+                                    'Job Seeker',
                                     style: GoogleFonts.inter(
-                                      fontSize: 11,
                                       color: isDark
                                           ? Colors.grey[400]
-                                          : Colors.grey[500],
+                                          : Colors.grey[600],
                                     ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      _buildStatItem(
+                                        '${stats['applications'] ?? 0}',
+                                        'Applications',
+                                        isDark,
+                                      ),
+                                      _buildStatItem(
+                                        '${stats['interviews'] ?? 0}',
+                                        'Interviews',
+                                        isDark,
+                                      ),
+                                      _buildStatItem(
+                                        '${stats['offers'] ?? 0}',
+                                        'Offers',
+                                        isDark,
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
                             ),
+                            const SizedBox(height: 24),
+
+                            // Personal Info Card
+                            _buildSectionCard(
+                              'Personal Information',
+                              Icons.person_outline,
+                              isDark,
+                              onEdit: () => _showPersonalEditDialog(
+                                context,
+                                controller,
+                                isDark,
+                              ),
+                              children: [
+                                _buildInfoRow(
+                                  'Full Name',
+                                  user['name'] ?? 'Not provided',
+                                  isDark,
+                                ),
+                                _buildInfoRow(
+                                  'Email',
+                                  user['email'] ?? 'Not provided',
+                                  isDark,
+                                ),
+                                _buildInfoRow(
+                                  'Phone',
+                                  user['phone'] ?? 'Not provided',
+                                  isDark,
+                                ),
+                                _buildInfoRow(
+                                  'Location',
+                                  user['location'] ?? 'Not provided',
+                                  isDark,
+                                ),
+                                _buildInfoRow(
+                                  'Gender',
+                                  user['gender'] ?? 'Not provided',
+                                  isDark,
+                                ),
+                                _buildInfoRow(
+                                  'Date of Birth',
+                                  user['date_of_birth'] ?? 'Not provided',
+                                  isDark,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Career Details Card
+                            _buildSectionCard(
+                              'Career Details',
+                              Icons.work_outline,
+                              isDark,
+                              onEdit: () => _showCareerEditDialog(
+                                context,
+                                controller,
+                                isDark,
+                              ),
+                              children: [
+                                _buildInfoRow(
+                                  'Resume Headline',
+                                  user['resume_headline'] ?? 'Not provided',
+                                  isDark,
+                                ),
+                                _buildInfoRow(
+                                  'Candidate Type',
+                                  ((user['is_fresher_candidate'] ?? '0') ==
+                                              '1' ||
+                                          (user['is_fresher_candidate'] ?? 0) ==
+                                              1)
+                                      ? 'Fresher'
+                                      : 'Experienced',
+                                  isDark,
+                                ),
+                                _buildInfoRow(
+                                  'Notice Period',
+                                  user['notice_period'] ?? 'Not provided',
+                                  isDark,
+                                ),
+                                _buildInfoRow(
+                                  'Current Salary (LPA)',
+                                  user['current_salary'] != null
+                                      ? '${user['current_salary']}'
+                                      : 'Not provided',
+                                  isDark,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Preferences Card
+                            _buildSectionCard(
+                              'Preferences',
+                              Icons.settings_outlined,
+                              isDark,
+                              onEdit: () => _showPreferencesEditDialog(
+                                context,
+                                controller,
+                                isDark,
+                              ),
+                              children: [
+                                _buildInfoRow(
+                                  'Preferred Job Titles',
+                                  user['preferred_job_titles'] ??
+                                      'Not provided',
+                                  isDark,
+                                ),
+                                _buildInfoRow(
+                                  'Preferred Locations',
+                                  user['preferred_locations'] ?? 'Not provided',
+                                  isDark,
+                                ),
+                                _buildInfoRow(
+                                  'Preferred Employment Type',
+                                  user['preferred_employment_type'] ??
+                                      'Not provided',
+                                  isDark,
+                                ),
+                                _buildInfoRow(
+                                  'Expected Salary (LPA)',
+                                  user['expected_salary'] != null
+                                      ? '${user['expected_salary']}'
+                                      : 'Not provided',
+                                  isDark,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Resume Card
+                            _buildSectionCard(
+                              'Resume',
+                              Icons.description_outlined,
+                              isDark,
+                              children: [
+                                // AI Resume Studio Box
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: isDark
+                                          ? [
+                                              const Color(0xFF312E81),
+                                              const Color(0xFF1E1B4B),
+                                            ]
+                                          : [
+                                              const Color(0xFFEEF2FF),
+                                              const Color(0xFFE0E7FF),
+                                            ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isDark
+                                          ? const Color(0xFF4338CA)
+                                          : const Color(0xFFC7D2FE),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.auto_awesome,
+                                            color: isDark
+                                                ? const Color(0xFF818CF8)
+                                                : const Color(0xFF4F46E5),
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'AI Resume Studio',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : const Color(0xFF1E1B4B),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Create premium AI resume versions, choose templates, manage job-specific resumes, and export polished PDFs from a dedicated page.',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12.5,
+                                          color: isDark
+                                              ? Colors.grey[300]
+                                              : const Color(0xFF3730A3),
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          onPressed: () =>
+                                              controller.goToResumeStudio(),
+                                          icon: const Icon(
+                                            Icons.edit_document,
+                                            size: 16,
+                                          ),
+                                          label: const Text(
+                                            'Open Resume Studio',
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xFF4F46E5,
+                                            ),
+                                            foregroundColor: Colors.white,
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (resumeUrl.isNotEmpty) ...[
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? Colors.white.withOpacity(0.05)
+                                          : Colors.grey[50]!,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? Colors.white12
+                                            : Colors.grey[200]!,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.picture_as_pdf,
+                                          color: Colors.red,
+                                          size: 28,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                user['resume_path']
+                                                    .toString()
+                                                    .split('/')
+                                                    .last,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isDark
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                'PDF/Word Document',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 11,
+                                                  color: isDark
+                                                      ? Colors.grey[400]
+                                                      : Colors.grey[500],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () =>
+                                              _launchURL(resumeUrl),
+                                          icon: Icon(
+                                            Icons.visibility_outlined,
+                                            size: 18,
+                                          ),
+                                          label: const Text('Preview'),
+                                          style: OutlinedButton.styleFrom(
+                                            side: BorderSide(
+                                              color: isDark
+                                                  ? Colors.grey[700]!
+                                                  : Colors.grey[300]!,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () =>
+                                              _launchURL(resumeUrl),
+                                          icon: Icon(
+                                            Icons.download_outlined,
+                                            size: 18,
+                                          ),
+                                          label: const Text('Download'),
+                                          style: OutlinedButton.styleFrom(
+                                            side: BorderSide(
+                                              color: isDark
+                                                  ? Colors.grey[700]!
+                                                  : Colors.grey[300]!,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                ] else ...[
+                                  Text(
+                                    'No resume uploaded yet.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                                ElevatedButton.icon(
+                                  onPressed: () => controller.uploadFile(
+                                    'upload_resume',
+                                    'resume',
+                                    ['pdf', 'doc', 'docx'],
+                                  ),
+                                  icon: Icon(Icons.upload_file),
+                                  label: Text(
+                                    resumeUrl.isNotEmpty
+                                        ? 'Update Resume'
+                                        : 'Upload Resume',
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.getPrimary(
+                                      isDark,
+                                    ),
+                                    foregroundColor: Colors.white,
+                                    minimumSize: const Size.fromHeight(48),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Video Card
+                            _buildSectionCard(
+                              'Video Introduction',
+                              Icons.videocam_outlined,
+                              isDark,
+                              children: [
+                                if (videoUrl.isNotEmpty) ...[
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? Colors.white.withOpacity(0.05)
+                                          : Colors.grey[50]!,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? Colors.white12
+                                            : Colors.grey[200]!,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.video_library,
+                                          color: Colors.blue,
+                                          size: 28,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                user['intro_video_path']
+                                                    .toString()
+                                                    .split('/')
+                                                    .last,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isDark
+                                                      ? Colors.white
+                                                      : Colors.black,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                'MP4/MOV/WebM Video',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 11,
+                                                  color: isDark
+                                                      ? Colors.grey[400]
+                                                      : Colors.grey[500],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () => _launchURL(videoUrl),
+                                          icon: Icon(
+                                            Icons.play_circle_outline,
+                                            size: 18,
+                                          ),
+                                          label: const Text('Preview'),
+                                          style: OutlinedButton.styleFrom(
+                                            side: BorderSide(
+                                              color: isDark
+                                                  ? Colors.grey[700]!
+                                                  : Colors.grey[300]!,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () => _launchURL(videoUrl),
+                                          icon: Icon(
+                                            Icons.download_outlined,
+                                            size: 18,
+                                          ),
+                                          label: const Text('Download'),
+                                          style: OutlinedButton.styleFrom(
+                                            side: BorderSide(
+                                              color: isDark
+                                                  ? Colors.grey[700]!
+                                                  : Colors.grey[300]!,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                ] else ...[
+                                  Text(
+                                    'No video uploaded yet.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                                ElevatedButton.icon(
+                                  onPressed: () => controller.uploadFile(
+                                    'upload_video',
+                                    'intro_video',
+                                    ['mp4', 'mov', 'webm'],
+                                  ),
+                                  icon: Icon(Icons.video_call),
+                                  label: Text(
+                                    videoUrl.isNotEmpty
+                                        ? 'Update Video'
+                                        : 'Upload Video',
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.getPrimary(
+                                      isDark,
+                                    ),
+                                    foregroundColor: Colors.white,
+                                    minimumSize: const Size.fromHeight(48),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // GitHub Card
+                            _buildSectionCard(
+                              'GitHub Analysis',
+                              Icons.code,
+                              isDark,
+                              onEdit: () => _showGithubDialog(
+                                context,
+                                controller,
+                                isDark,
+                              ),
+                              children: [
+                                _buildInfoRow(
+                                  'Username',
+                                  controller.github['github_username'] ??
+                                      'Not connected',
+                                  isDark,
+                                ),
+                                if (controller.github['github_username'] !=
+                                    null) ...[
+                                  _buildInfoRow(
+                                    'Repositories',
+                                    '${controller.github['repo_count'] ?? 0}',
+                                    isDark,
+                                  ),
+                                  _buildInfoRow(
+                                    'Total Commits',
+                                    '${controller.github['commit_count'] ?? 0}',
+                                    isDark,
+                                  ),
+                                  _buildInfoRow(
+                                    'Languages',
+                                    controller.github['languages_used'] ??
+                                        'None',
+                                    isDark,
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Skills Card
+                            _buildSectionCard(
+                              'Skills',
+                              Icons.star_outline,
+                              isDark,
+                              onEdit: () => _showSkillsDialog(
+                                context,
+                                controller,
+                                isDark,
+                              ),
+                              children: [
+                                if (controller.skills['skill_name'] != null &&
+                                    controller.skills['skill_name']
+                                        .toString()
+                                        .isNotEmpty)
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: controller.skills['skill_name']
+                                        .toString()
+                                        .split(',')
+                                        .map(
+                                          (s) => Chip(
+                                            label: Text(s.trim()),
+                                            backgroundColor: isDark
+                                                ? Colors.grey[800]
+                                                : Colors.grey[200],
+                                            labelStyle: TextStyle(
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  )
+                                else
+                                  Text(
+                                    'No skills added yet.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Interests Card
+                            _buildSectionCard(
+                              'Interests',
+                              Icons.favorite_outline,
+                              isDark,
+                              onEdit: () => _showInterestsDialog(
+                                context,
+                                controller,
+                                isDark,
+                              ),
+                              children: [
+                                if (controller.interests.isNotEmpty)
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: controller.interests
+                                        .map(
+                                          (s) => Chip(
+                                            label: Text(s.toString().trim()),
+                                            backgroundColor: isDark
+                                                ? Colors.grey[800]
+                                                : Colors.grey[200],
+                                            labelStyle: TextStyle(
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  )
+                                else
+                                  Text(
+                                    'No interests added yet.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Experience Card
+                            _buildSectionCard(
+                              'Work Experience',
+                              Icons.business_center_outlined,
+                              isDark,
+                              onAdd: () => _showExperienceDialog(
+                                context,
+                                controller,
+                                isDark,
+                                null,
+                              ),
+                              children: [
+                                if (controller.workExperiences.isNotEmpty)
+                                  ...controller.workExperiences
+                                      .map(
+                                        (exp) => _buildExperienceItem(
+                                          exp,
+                                          isDark,
+                                          controller,
+                                          context,
+                                        ),
+                                      )
+                                      .toList()
+                                else
+                                  Text(
+                                    'No work experience added yet.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Projects Card
+                            _buildSectionCard(
+                              'Projects',
+                              Icons.folder_open_outlined,
+                              isDark,
+                              onAdd: () => _showProjectDialog(
+                                context,
+                                controller,
+                                isDark,
+                                null,
+                              ),
+                              children: [
+                                if (controller.projects.isNotEmpty)
+                                  ...controller.projects
+                                      .map(
+                                        (proj) => _buildProjectItem(
+                                          proj,
+                                          isDark,
+                                          controller,
+                                          context,
+                                        ),
+                                      )
+                                      .toList()
+                                else
+                                  Text(
+                                    'No projects added yet.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Education Card
+                            _buildSectionCard(
+                              'Education',
+                              Icons.school_outlined,
+                              isDark,
+                              onAdd: () => _showEducationDialog(
+                                context,
+                                controller,
+                                isDark,
+                                null,
+                              ),
+                              children: [
+                                if (controller.educations.isNotEmpty)
+                                  ...controller.educations
+                                      .map(
+                                        (edu) => _buildEducationItem(
+                                          edu,
+                                          isDark,
+                                          controller,
+                                          context,
+                                        ),
+                                      )
+                                      .toList()
+                                else
+                                  Text(
+                                    'No education added yet.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Certifications Card
+                            _buildSectionCard(
+                              'Certifications',
+                              Icons.workspace_premium_outlined,
+                              isDark,
+                              onAdd: () => _showCertificationDialog(
+                                context,
+                                controller,
+                                isDark,
+                                null,
+                              ),
+                              children: [
+                                if (controller.certifications.isNotEmpty)
+                                  ...controller.certifications
+                                      .map(
+                                        (cert) => _buildCertificationItem(
+                                          cert,
+                                          isDark,
+                                          controller,
+                                          context,
+                                        ),
+                                      )
+                                      .toList()
+                                else
+                                  Text(
+                                    'No certifications added yet.',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 100),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _launchURL(videoUrl),
-                              icon: Icon(
-                                Icons.play_circle_outline,
-                                size: 18,
-                              ),
-                              label: const Text('Preview'),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: isDark
-                                      ? Colors.grey[700]!
-                                      : Colors.grey[300]!,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () => _launchURL(videoUrl),
-                              icon: Icon(
-                                Icons.download_outlined,
-                                size: 18,
-                              ),
-                              label: const Text('Download'),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: isDark
-                                      ? Colors.grey[700]!
-                                      : Colors.grey[300]!,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                    ] else ...[
-                      Text(
-                        'No video uploaded yet.',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    ElevatedButton.icon(
-                      onPressed: () => controller.uploadFile(
-                        'upload_video',
-                        'intro_video',
-                        ['mp4', 'mov', 'webm'],
-                      ),
-                      icon: Icon(Icons.video_call),
-                      label: Text(
-                        videoUrl.isNotEmpty ? 'Update Video' : 'Upload Video',
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.getPrimary(isDark),
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // GitHub Card
-                _buildSectionCard(
-                  'GitHub Analysis',
-                  Icons.code,
-                  isDark,
-                  onEdit: () => _showGithubDialog(context, controller, isDark),
-                  children: [
-                    _buildInfoRow(
-                      'Username',
-                      controller.github['github_username'] ?? 'Not connected',
-                      isDark,
-                    ),
-                    if (controller.github['github_username'] != null) ...[
-                      _buildInfoRow(
-                        'Repositories',
-                        '${controller.github['repo_count'] ?? 0}',
-                        isDark,
-                      ),
-                      _buildInfoRow(
-                        'Total Commits',
-                        '${controller.github['commit_count'] ?? 0}',
-                        isDark,
-                      ),
-                      _buildInfoRow(
-                        'Languages',
-                        controller.github['languages_used'] ?? 'None',
-                        isDark,
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Skills Card
-                _buildSectionCard(
-                  'Skills',
-                  Icons.star_outline,
-                  isDark,
-                  onEdit: () => _showSkillsDialog(context, controller, isDark),
-                  children: [
-                    if (controller.skills['skill_name'] != null &&
-                        controller.skills['skill_name'].toString().isNotEmpty)
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: controller.skills['skill_name']
-                            .toString()
-                            .split(',')
-                            .map(
-                              (s) => Chip(
-                                label: Text(s.trim()),
-                                backgroundColor: isDark
-                                    ? Colors.grey[800]
-                                    : Colors.grey[200],
-                                labelStyle: TextStyle(
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      )
-                    else
-                      Text(
-                        'No skills added yet.',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Interests Card
-                _buildSectionCard(
-                  'Interests',
-                  Icons.favorite_outline,
-                  isDark,
-                  onEdit: () =>
-                      _showInterestsDialog(context, controller, isDark),
-                  children: [
-                    if (controller.interests.isNotEmpty)
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: controller.interests
-                            .map(
-                              (s) => Chip(
-                                label: Text(s.toString().trim()),
-                                backgroundColor: isDark
-                                    ? Colors.grey[800]
-                                    : Colors.grey[200],
-                                labelStyle: TextStyle(
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      )
-                    else
-                      Text(
-                        'No interests added yet.',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Experience Card
-                _buildSectionCard(
-                  'Work Experience',
-                  Icons.business_center_outlined,
-                  isDark,
-                  onAdd: () =>
-                      _showExperienceDialog(context, controller, isDark, null),
-                  children: [
-                    if (controller.workExperiences.isNotEmpty)
-                      ...controller.workExperiences
-                          .map(
-                            (exp) => _buildExperienceItem(
-                              exp,
-                              isDark,
-                              controller,
-                              context,
-                            ),
-                          )
-                          .toList()
-                    else
-                      Text(
-                        'No work experience added yet.',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Projects Card
-                _buildSectionCard(
-                  'Projects',
-                  Icons.folder_open_outlined,
-                  isDark,
-                  onAdd: () =>
-                      _showProjectDialog(context, controller, isDark, null),
-                  children: [
-                    if (controller.projects.isNotEmpty)
-                      ...controller.projects
-                          .map(
-                            (proj) => _buildProjectItem(
-                              proj,
-                              isDark,
-                              controller,
-                              context,
-                            ),
-                          )
-                          .toList()
-                    else
-                      Text(
-                        'No projects added yet.',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Education Card
-                _buildSectionCard(
-                  'Education',
-                  Icons.school_outlined,
-                  isDark,
-                  onAdd: () =>
-                      _showEducationDialog(context, controller, isDark, null),
-                  children: [
-                    if (controller.educations.isNotEmpty)
-                      ...controller.educations
-                          .map(
-                            (edu) => _buildEducationItem(
-                              edu,
-                              isDark,
-                              controller,
-                              context,
-                            ),
-                          )
-                          .toList()
-                    else
-                      Text(
-                        'No education added yet.',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Certifications Card
-                _buildSectionCard(
-                  'Certifications',
-                  Icons.workspace_premium_outlined,
-                  isDark,
-                  onAdd: () => _showCertificationDialog(
-                    context,
-                    controller,
-                    isDark,
-                    null,
                   ),
-                  children: [
-                    if (controller.certifications.isNotEmpty)
-                      ...controller.certifications
-                          .map(
-                            (cert) => _buildCertificationItem(
-                              cert,
-                              isDark,
-                              controller,
-                              context,
-                            ),
-                          )
-                          .toList()
-                    else
-                      Text(
-                        'No certifications added yet.',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                  ],
-                ),
-
-                const SizedBox(height: 100),
-              ],
-            ),
-          ),
-        ),
-        ),
-        ],
-        ),
-        if (controller.isLoading.value)
-          Container(
-            color: Colors.black.withOpacity(0.35),
-            child: Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.getPrimary(isDark)),
+                ],
               ),
-            ),
+              if (controller.isLoading.value)
+                Container(
+                  color: Colors.black.withOpacity(0.35),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.getPrimary(isDark),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
-      ],
-    ),
-  ),
-);
-});
-}
+        ),
+      );
+    });
+  }
 
   Widget _buildStatItem(String value, String label, bool isDark) {
     return Column(
@@ -1119,17 +1326,23 @@ class ProfileScreen extends StatelessWidget {
         fontSize: 14,
         color: isDark ? Colors.grey[400] : Colors.grey[600],
       ),
-      prefixIcon: icon != null ? Icon(icon, color: AppColors.getPrimary(isDark), size: 20) : null,
+      prefixIcon: icon != null
+          ? Icon(icon, color: AppColors.getPrimary(isDark), size: 20)
+          : null,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       filled: true,
       fillColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+        borderSide: BorderSide(
+          color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+        borderSide: BorderSide(
+          color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -1196,7 +1409,10 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2.5,
+                      ),
                       decoration: BoxDecoration(
                         color: isDark ? Colors.grey[800] : Colors.grey[200],
                         borderRadius: BorderRadius.circular(6),
@@ -1217,7 +1433,11 @@ class ProfileScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.edit_outlined, size: 16, color: Colors.blue[400]),
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: 16,
+                      color: Colors.blue[400],
+                    ),
                     onPressed: () =>
                         _showExperienceDialog(context, controller, isDark, exp),
                     padding: EdgeInsets.zero,
@@ -1225,7 +1445,11 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: Icon(Icons.delete_outline, size: 16, color: Colors.red[400]),
+                    icon: Icon(
+                      Icons.delete_outline,
+                      size: 16,
+                      color: Colors.red[400],
+                    ),
                     onPressed: () => controller.deleteItem(
                       'delete_experience',
                       int.parse(exp['id'].toString()),
@@ -1237,7 +1461,8 @@ class ProfileScreen extends StatelessWidget {
               ),
             ],
           ),
-          if (exp['description'] != null && exp['description'].toString().trim().isNotEmpty) ...[
+          if (exp['description'] != null &&
+              exp['description'].toString().trim().isNotEmpty) ...[
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.only(left: 42),
@@ -1303,14 +1528,19 @@ class ProfileScreen extends StatelessWidget {
                         color: isDark ? Colors.white : const Color(0xFF111827),
                       ),
                     ),
-                    if (proj['project_url'] != null && proj['project_url'].toString().trim().isNotEmpty) ...[
+                    if (proj['project_url'] != null &&
+                        proj['project_url'].toString().trim().isNotEmpty) ...[
                       const SizedBox(height: 6),
                       GestureDetector(
                         onTap: () => _launchURL(proj['project_url']),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.link, size: 14, color: Colors.blue),
+                            const Icon(
+                              Icons.link,
+                              size: 14,
+                              color: Colors.blue,
+                            ),
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
@@ -1335,7 +1565,11 @@ class ProfileScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.edit_outlined, size: 16, color: Colors.blue[400]),
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: 16,
+                      color: Colors.blue[400],
+                    ),
                     onPressed: () =>
                         _showProjectDialog(context, controller, isDark, proj),
                     padding: EdgeInsets.zero,
@@ -1343,7 +1577,11 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: Icon(Icons.delete_outline, size: 16, color: Colors.red[400]),
+                    icon: Icon(
+                      Icons.delete_outline,
+                      size: 16,
+                      color: Colors.red[400],
+                    ),
                     onPressed: () => controller.deleteItem(
                       'delete_project',
                       int.parse(proj['id'].toString()),
@@ -1355,7 +1593,8 @@ class ProfileScreen extends StatelessWidget {
               ),
             ],
           ),
-          if (proj['description'] != null && proj['description'].toString().trim().isNotEmpty) ...[
+          if (proj['description'] != null &&
+              proj['description'].toString().trim().isNotEmpty) ...[
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.only(left: 42),
@@ -1434,7 +1673,10 @@ class ProfileScreen extends StatelessWidget {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2.5,
+                          ),
                           decoration: BoxDecoration(
                             color: isDark ? Colors.grey[800] : Colors.grey[200],
                             borderRadius: BorderRadius.circular(6),
@@ -1444,14 +1686,20 @@ class ProfileScreen extends StatelessWidget {
                             style: GoogleFonts.inter(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w500,
-                              color: isDark ? Colors.grey[300] : Colors.grey[700],
+                              color: isDark
+                                  ? Colors.grey[300]
+                                  : Colors.grey[700],
                             ),
                           ),
                         ),
-                        if (edu['grade'] != null && edu['grade'].toString().isNotEmpty) ...[
+                        if (edu['grade'] != null &&
+                            edu['grade'].toString().isNotEmpty) ...[
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2.5,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.green.withOpacity(0.12),
                               borderRadius: BorderRadius.circular(6),
@@ -1475,7 +1723,11 @@ class ProfileScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.edit_outlined, size: 16, color: Colors.blue[400]),
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: 16,
+                      color: Colors.blue[400],
+                    ),
                     onPressed: () =>
                         _showEducationDialog(context, controller, isDark, edu),
                     padding: EdgeInsets.zero,
@@ -1483,7 +1735,11 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: Icon(Icons.delete_outline, size: 16, color: Colors.red[400]),
+                    icon: Icon(
+                      Icons.delete_outline,
+                      size: 16,
+                      color: Colors.red[400],
+                    ),
                     onPressed: () => controller.deleteItem(
                       'delete_education',
                       int.parse(edu['id'].toString()),
@@ -1558,7 +1814,10 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2.5,
+                      ),
                       decoration: BoxDecoration(
                         color: isDark ? Colors.grey[800] : Colors.grey[200],
                         borderRadius: BorderRadius.circular(6),
@@ -1579,7 +1838,11 @@ class ProfileScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.edit_outlined, size: 16, color: Colors.blue[400]),
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: 16,
+                      color: Colors.blue[400],
+                    ),
                     onPressed: () => _showCertificationDialog(
                       context,
                       controller,
@@ -1591,7 +1854,11 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: Icon(Icons.delete_outline, size: 16, color: Colors.red[400]),
+                    icon: Icon(
+                      Icons.delete_outline,
+                      size: 16,
+                      color: Colors.red[400],
+                    ),
                     onPressed: () => controller.deleteItem(
                       'delete_certification',
                       int.parse(cert['id'].toString()),
@@ -1659,7 +1926,10 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                      icon: Icon(
+                        Icons.close,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -1753,12 +2023,20 @@ class ProfileScreen extends StatelessWidget {
       (setState) => [
         TextField(
           controller: nameCtrl,
-          decoration: _inputDecoration('Full Name', Icons.person_outline, isDark),
+          decoration: _inputDecoration(
+            'Full Name',
+            Icons.person_outline,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: emailCtrl,
-          decoration: _inputDecoration('Email Address', Icons.email_outlined, isDark),
+          decoration: _inputDecoration(
+            'Email Address',
+            Icons.email_outlined,
+            isDark,
+          ),
           keyboardType: TextInputType.emailAddress,
         ),
         const SizedBox(height: 16),
@@ -1770,7 +2048,11 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 16),
         TextField(
           controller: locationCtrl,
-          decoration: _inputDecoration('Location', Icons.location_on_outlined, isDark),
+          decoration: _inputDecoration(
+            'Location',
+            Icons.location_on_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
@@ -1793,7 +2075,11 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 16),
         TextField(
           controller: dobCtrl,
-          decoration: _inputDecoration('Date of Birth (YYYY-MM-DD)', Icons.calendar_today_outlined, isDark),
+          decoration: _inputDecoration(
+            'Date of Birth (YYYY-MM-DD)',
+            Icons.calendar_today_outlined,
+            isDark,
+          ),
           readOnly: true,
           onTap: () => _selectDate(context, dobCtrl),
         ),
@@ -1844,7 +2130,11 @@ class ProfileScreen extends StatelessWidget {
       (setState) => [
         TextField(
           controller: headlineCtrl,
-          decoration: _inputDecoration('Resume Headline', Icons.badge_outlined, isDark),
+          decoration: _inputDecoration(
+            'Resume Headline',
+            Icons.badge_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         Container(
@@ -1873,13 +2163,20 @@ class ProfileScreen extends StatelessWidget {
             ),
             value: isFresher,
             onChanged: (val) => setState(() => isFresher = val),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
           ),
         ),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
           value: noticePeriod,
-          decoration: _inputDecoration('Notice Period', Icons.timer_outlined, isDark),
+          decoration: _inputDecoration(
+            'Notice Period',
+            Icons.timer_outlined,
+            isDark,
+          ),
           dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
           items:
               [
@@ -1896,7 +2193,11 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 16),
         TextField(
           controller: salaryCtrl,
-          decoration: _inputDecoration('Current Salary (LPA)', Icons.payments_outlined, isDark),
+          decoration: _inputDecoration(
+            'Current Salary (LPA)',
+            Icons.payments_outlined,
+            isDark,
+          ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
         ),
       ],
@@ -1944,17 +2245,29 @@ class ProfileScreen extends StatelessWidget {
       (setState) => [
         TextField(
           controller: titlesCtrl,
-          decoration: _inputDecoration('Preferred Job Titles', Icons.work_outline, isDark),
+          decoration: _inputDecoration(
+            'Preferred Job Titles',
+            Icons.work_outline,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: locationsCtrl,
-          decoration: _inputDecoration('Preferred Locations', Icons.location_on_outlined, isDark),
+          decoration: _inputDecoration(
+            'Preferred Locations',
+            Icons.location_on_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
           value: empType,
-          decoration: _inputDecoration('Preferred Employment Type', Icons.work_history_outlined, isDark),
+          decoration: _inputDecoration(
+            'Preferred Employment Type',
+            Icons.work_history_outlined,
+            isDark,
+          ),
           dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
           items:
               [
@@ -1971,7 +2284,11 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 16),
         TextField(
           controller: salaryCtrl,
-          decoration: _inputDecoration('Expected Salary (LPA)', Icons.payments_outlined, isDark),
+          decoration: _inputDecoration(
+            'Expected Salary (LPA)',
+            Icons.payments_outlined,
+            isDark,
+          ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
         ),
       ],
@@ -2001,7 +2318,11 @@ class ProfileScreen extends StatelessWidget {
       (setState) => [
         TextField(
           controller: usernameCtrl,
-          decoration: _inputDecoration('GitHub Username', Icons.code_rounded, isDark),
+          decoration: _inputDecoration(
+            'GitHub Username',
+            Icons.code_rounded,
+            isDark,
+          ),
         ),
       ],
       () {
@@ -2025,7 +2346,11 @@ class ProfileScreen extends StatelessWidget {
       (setState) => [
         TextField(
           controller: skillsCtrl,
-          decoration: _inputDecoration('Skill Name', Icons.star_border_rounded, isDark),
+          decoration: _inputDecoration(
+            'Skill Name',
+            Icons.star_border_rounded,
+            isDark,
+          ),
         ),
       ],
       () {
@@ -2049,7 +2374,11 @@ class ProfileScreen extends StatelessWidget {
       (setState) => [
         TextField(
           controller: interestsCtrl,
-          decoration: _inputDecoration('Interests (comma separated)', Icons.favorite_border_rounded, isDark),
+          decoration: _inputDecoration(
+            'Interests (comma separated)',
+            Icons.favorite_border_rounded,
+            isDark,
+          ),
         ),
       ],
       () {
@@ -2091,17 +2420,29 @@ class ProfileScreen extends StatelessWidget {
       (setState) => [
         TextField(
           controller: titleCtrl,
-          decoration: _inputDecoration('Job Title', Icons.badge_outlined, isDark),
+          decoration: _inputDecoration(
+            'Job Title',
+            Icons.badge_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: companyCtrl,
-          decoration: _inputDecoration('Company', Icons.business_outlined, isDark),
+          decoration: _inputDecoration(
+            'Company',
+            Icons.business_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: startCtrl,
-          decoration: _inputDecoration('Start Date', Icons.calendar_today_outlined, isDark),
+          decoration: _inputDecoration(
+            'Start Date',
+            Icons.calendar_today_outlined,
+            isDark,
+          ),
           readOnly: true,
           onTap: () => _selectDate(context, startCtrl),
         ),
@@ -2125,14 +2466,21 @@ class ProfileScreen extends StatelessWidget {
             ),
             value: isCurrent,
             onChanged: (val) => setState(() => isCurrent = val),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
           ),
         ),
         if (!isCurrent) ...[
           const SizedBox(height: 16),
           TextField(
             controller: endCtrl,
-            decoration: _inputDecoration('End Date', Icons.calendar_today_outlined, isDark),
+            decoration: _inputDecoration(
+              'End Date',
+              Icons.calendar_today_outlined,
+              isDark,
+            ),
             readOnly: true,
             onTap: () => _selectDate(context, endCtrl),
           ),
@@ -2140,7 +2488,11 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 16),
         TextField(
           controller: descCtrl,
-          decoration: _inputDecoration('Description', Icons.description_outlined, isDark),
+          decoration: _inputDecoration(
+            'Description',
+            Icons.description_outlined,
+            isDark,
+          ),
           maxLines: 3,
         ),
       ],
@@ -2182,17 +2534,29 @@ class ProfileScreen extends StatelessWidget {
       (setState) => [
         TextField(
           controller: titleCtrl,
-          decoration: _inputDecoration('Project Title', Icons.folder_open_outlined, isDark),
+          decoration: _inputDecoration(
+            'Project Title',
+            Icons.folder_open_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: urlCtrl,
-          decoration: _inputDecoration('Project URL', Icons.link_outlined, isDark),
+          decoration: _inputDecoration(
+            'Project URL',
+            Icons.link_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: descCtrl,
-          decoration: _inputDecoration('Description', Icons.description_outlined, isDark),
+          decoration: _inputDecoration(
+            'Description',
+            Icons.description_outlined,
+            isDark,
+          ),
           maxLines: 3,
         ),
       ],
@@ -2240,17 +2604,29 @@ class ProfileScreen extends StatelessWidget {
       (setState) => [
         TextField(
           controller: degreeCtrl,
-          decoration: _inputDecoration('Degree (e.g., Bachelor\'s)', Icons.school_outlined, isDark),
+          decoration: _inputDecoration(
+            'Degree (e.g., Bachelor\'s)',
+            Icons.school_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: fieldCtrl,
-          decoration: _inputDecoration('Field of Study', Icons.science_outlined, isDark),
+          decoration: _inputDecoration(
+            'Field of Study',
+            Icons.science_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: instCtrl,
-          decoration: _inputDecoration('Institution Name', Icons.apartment_outlined, isDark),
+          decoration: _inputDecoration(
+            'Institution Name',
+            Icons.apartment_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         Row(
@@ -2258,7 +2634,11 @@ class ProfileScreen extends StatelessWidget {
             Expanded(
               child: TextField(
                 controller: startYearCtrl,
-                decoration: _inputDecoration('Start Year', Icons.calendar_today_outlined, isDark),
+                decoration: _inputDecoration(
+                  'Start Year',
+                  Icons.calendar_today_outlined,
+                  isDark,
+                ),
                 keyboardType: TextInputType.number,
               ),
             ),
@@ -2266,7 +2646,11 @@ class ProfileScreen extends StatelessWidget {
             Expanded(
               child: TextField(
                 controller: endYearCtrl,
-                decoration: _inputDecoration('End Year', Icons.calendar_today_outlined, isDark),
+                decoration: _inputDecoration(
+                  'End Year',
+                  Icons.calendar_today_outlined,
+                  isDark,
+                ),
                 keyboardType: TextInputType.number,
               ),
             ),
@@ -2275,7 +2659,11 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 16),
         TextField(
           controller: gradeCtrl,
-          decoration: _inputDecoration('Grade / CGPA', Icons.grade_outlined, isDark),
+          decoration: _inputDecoration(
+            'Grade / CGPA',
+            Icons.grade_outlined,
+            isDark,
+          ),
         ),
       ],
       () {
@@ -2316,17 +2704,29 @@ class ProfileScreen extends StatelessWidget {
       (setState) => [
         TextField(
           controller: nameCtrl,
-          decoration: _inputDecoration('Certification Name', Icons.workspace_premium_outlined, isDark),
+          decoration: _inputDecoration(
+            'Certification Name',
+            Icons.workspace_premium_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: orgCtrl,
-          decoration: _inputDecoration('Issuing Organization', Icons.verified_outlined, isDark),
+          decoration: _inputDecoration(
+            'Issuing Organization',
+            Icons.verified_outlined,
+            isDark,
+          ),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: dateCtrl,
-          decoration: _inputDecoration('Issue Date', Icons.calendar_today_outlined, isDark),
+          decoration: _inputDecoration(
+            'Issue Date',
+            Icons.calendar_today_outlined,
+            isDark,
+          ),
           readOnly: true,
           onTap: () => _selectDate(context, dateCtrl),
         ),
@@ -2343,7 +2743,12 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showPhotoActionSheet(BuildContext context, ProfileController controller, bool isDark, bool hasPhoto) {
+  void _showPhotoActionSheet(
+    BuildContext context,
+    ProfileController controller,
+    bool isDark,
+    bool hasPhoto,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.getCard(isDark) : Colors.white,
@@ -2365,7 +2770,10 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               ListTile(
-                leading: Icon(Icons.photo_library, color: AppColors.getPrimary(isDark)),
+                leading: Icon(
+                  Icons.photo_library,
+                  color: AppColors.getPrimary(isDark),
+                ),
                 title: Text(
                   hasPhoto ? 'Change Profile Photo' : 'Upload Profile Photo',
                   style: GoogleFonts.inter(
@@ -2374,11 +2782,13 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  controller.uploadFile(
-                    'upload_photo',
-                    'profile_photo',
-                    ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-                  );
+                  controller.uploadFile('upload_photo', 'profile_photo', [
+                    'jpg',
+                    'jpeg',
+                    'png',
+                    'gif',
+                    'webp',
+                  ]);
                 },
               ),
               if (hasPhoto)
@@ -2386,9 +2796,7 @@ class ProfileScreen extends StatelessWidget {
                   leading: Icon(Icons.delete_outline, color: Colors.redAccent),
                   title: Text(
                     'Remove Profile Photo',
-                    style: GoogleFonts.inter(
-                      color: Colors.redAccent,
-                    ),
+                    style: GoogleFonts.inter(color: Colors.redAccent),
                   ),
                   onTap: () {
                     Navigator.pop(context);
@@ -2403,7 +2811,11 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _confirmDeletePhoto(BuildContext context, ProfileController controller, bool isDark) {
+  void _confirmDeletePhoto(
+    BuildContext context,
+    ProfileController controller,
+    bool isDark,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -2438,7 +2850,10 @@ class ProfileScreen extends StatelessWidget {
             },
             child: const Text(
               'Remove',
-              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

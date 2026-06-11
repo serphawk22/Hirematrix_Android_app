@@ -238,4 +238,8 @@ class ProfileController extends GetxController {
       isLoading.value = false;
     }
   }
+
+  void goToResumeStudio() {
+    Get.toNamed('/candidate/resume-studio');
+  }
 }
