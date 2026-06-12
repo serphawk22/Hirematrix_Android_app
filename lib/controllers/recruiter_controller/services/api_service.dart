@@ -88,11 +88,30 @@ class ApiService {
   /// Returns absolute URL for assets/images
   Future<String> getImageUrl(String? path) async {
     if (path == null || path.isEmpty) return '';
-    if (path.startsWith('http')) return path;
-    // CI4 public folder pathing
+    
+    var resolvedPath = path.trim();
     final baseUrl = await getBaseUrl();
+    
+    // Extract authority from baseUrl to replace localhost/127.0.0.1
+    String targetAuthority = 'localhost';
+    try {
+      final uri = Uri.parse(baseUrl);
+      targetAuthority = uri.authority;
+    } catch (_) {}
+
+    if (resolvedPath.contains('localhost')) {
+      resolvedPath = resolvedPath.replaceAll('localhost', targetAuthority);
+    } else if (resolvedPath.contains('127.0.0.1')) {
+      resolvedPath = resolvedPath.replaceAll('127.0.0.1', targetAuthority);
+    }
+
+    if (resolvedPath.startsWith('http://') || resolvedPath.startsWith('https://')) {
+      return resolvedPath;
+    }
+
+    // CI4 public folder pathing
     final publicUrl = baseUrl.split('api/mobile').first;
-    return '$publicUrl$path';
+    return '$publicUrl$resolvedPath';
   }
 
   /// Internal health check for the API server.

@@ -134,32 +134,32 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
   }
 
   void _populateFields() {
-    _nameController.text = _companyData['company_name'] ?? '';
+    _nameController.text = _companyData['name'] ?? _companyData['company_name'] ?? '';
     _websiteController.text = _companyData['website'] ?? '';
-    _careersController.text = _companyData['careers_page_url'] ?? '';
+    _careersController.text = _companyData['career_page'] ?? _companyData['careers_page_url'] ?? '';
     _industryController.text = _companyData['industry'] ?? '';
-    _sizeController.text = _companyData['company_size'] ?? '';
-    _hqController.text = _companyData['hq_location'] ?? '';
-    _branchesController.text = _companyData['branch_locations'] ?? '';
+    _sizeController.text = _companyData['size'] ?? _companyData['company_size'] ?? '';
+    _hqController.text = _companyData['hq'] ?? _companyData['hq_location'] ?? '';
+    _branchesController.text = _companyData['branches'] ?? _companyData['branch_locations'] ?? '';
     _shortDescController.text = _companyData['short_description'] ?? '';
-    _aboutController.text = _companyData['about_company'] ?? '';
+    _aboutController.text = _companyData['what_we_do'] ?? _companyData['about_company'] ?? '';
 
-    _linkedinController.text = _companyData['linkedin_url'] ?? '';
-    _twitterController.text = _companyData['twitter_url'] ?? '';
-    _facebookController.text = _companyData['facebook_url'] ?? '';
-    _instagramController.text = _companyData['instagram_url'] ?? '';
-    _youtubeController.text = _companyData['youtube_url'] ?? '';
+    _linkedinController.text = _companyData['linkedin'] ?? _companyData['linkedin_url'] ?? '';
+    _twitterController.text = _companyData['twitter'] ?? _companyData['twitter_url'] ?? '';
+    _facebookController.text = _companyData['facebook'] ?? _companyData['facebook_url'] ?? '';
+    _instagramController.text = _companyData['instagram'] ?? _companyData['instagram_url'] ?? '';
+    _youtubeController.text = _companyData['youtube'] ?? _companyData['youtube_url'] ?? '';
 
     _missionController.text = _companyData['mission_values'] ?? '';
-    _cultureController.text = _companyData['culture_environment'] ?? '';
+    _cultureController.text = _companyData['culture_summary'] ?? _companyData['culture_environment'] ?? '';
     _benefitsController.text = _companyData['employee_benefits'] ?? '';
     _tourTitleController.text = _companyData['office_tour_title'] ?? '';
     _tourUrlController.text = _companyData['office_tour_url'] ?? '';
     _tourSummaryController.text = _companyData['office_tour_summary'] ?? '';
 
-    _hrEmailController.text = _companyData['hr_support_email'] ?? '';
-    _recruiterPhoneController.text = _companyData['recruiter_phone'] ?? '';
-    _isContactPublic = _companyData['public_contact_visibility'] == 1 || _companyData['public_contact_visibility'] == true;
+    _hrEmailController.text = _companyData['contact_email'] ?? _companyData['hr_support_email'] ?? '';
+    _recruiterPhoneController.text = _companyData['contact_phone'] ?? _companyData['recruiter_phone'] ?? '';
+    _isContactPublic = _companyData['contact_public'] == 1 || _companyData['contact_public'] == true || _companyData['public_contact_visibility'] == 1 || _companyData['public_contact_visibility'] == true;
   }
 
   Future<void> _pickLogo() async {
@@ -231,30 +231,30 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
 
     final data = {
       'recruiter_id': recruiter!.id,
-      'company_id': _companyData['company_id'],
-      'company_name': _nameController.text,
+      'company_id': _companyData['id'] ?? _companyData['company_id'],
+      'name': _nameController.text,
       'website': _websiteController.text,
-      'careers_page_url': _careersController.text,
+      'career_page': _careersController.text,
       'industry': _industryController.text,
-      'company_size': _sizeController.text,
-      'hq_location': _hqController.text,
-      'branch_locations': _branchesController.text,
+      'size': _sizeController.text,
+      'hq': _hqController.text,
+      'branches': _branchesController.text,
       'short_description': _shortDescController.text,
-      'about_company': _aboutController.text,
-      'linkedin_url': _linkedinController.text,
-      'twitter_url': _twitterController.text,
-      'facebook_url': _facebookController.text,
-      'instagram_url': _instagramController.text,
-      'youtube_url': _youtubeController.text,
+      'what_we_do': _aboutController.text,
+      'linkedin': _linkedinController.text,
+      'twitter': _twitterController.text,
+      'facebook': _facebookController.text,
+      'instagram': _instagramController.text,
+      'youtube': _youtubeController.text,
       'mission_values': _missionController.text,
-      'culture_environment': _cultureController.text,
+      'culture_summary': _cultureController.text,
       'employee_benefits': _benefitsController.text,
       'office_tour_title': _tourTitleController.text,
       'office_tour_url': _tourUrlController.text,
       'office_tour_summary': _tourSummaryController.text,
-      'hr_support_email': _hrEmailController.text,
-      'recruiter_phone': _recruiterPhoneController.text,
-      'public_contact_visibility': _isContactPublic ? 1 : 0,
+      'contact_email': _hrEmailController.text,
+      'contact_phone': _recruiterPhoneController.text,
+      'contact_public': _isContactPublic ? 1 : 0,
     };
 
     final response = await _apiService.updateCompanyProfile(data);
@@ -404,7 +404,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
       _buildTextField(_websiteController, 'Main Website', 'https://...', Icons.language_rounded, isDark),
       _buildTextField(_careersController, 'Careers Page URL', 'https://...', Icons.link_rounded, isDark),
       _buildTextField(_industryController, 'Industry', 'e.g. Technology', Icons.category_rounded, isDark),
-      _buildTextField(_sizeController, 'Company Size', 'e.g. 50-100 employees', Icons.people_rounded, isDark),
+      _buildCompanySizeDropdown(isDark),
       _buildTextField(_hqController, 'HQ Location', 'City, Country', Icons.location_on_rounded, isDark),
       _buildTextField(_branchesController, 'Branch Locations', 'Other offices', Icons.map_rounded, isDark),
       _buildTextField(_shortDescController, 'Short Description', 'Brief tagline', Icons.description_rounded, isDark, maxLines: 2),
@@ -487,6 +487,43 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
     );
   }
 
+  Widget _buildCompanySizeDropdown(bool isDark) {
+    final sizes = ['1-10', '10-50', '50-200', '200-500', '500-1000', '1000+'];
+    final currentVal = sizes.contains(_sizeController.text) ? _sizeController.text : null;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: DropdownButtonFormField<String>(
+        value: currentVal,
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white : Colors.black,
+        ),
+        decoration: InputDecoration(
+          labelText: 'Company Size',
+          labelStyle: GoogleFonts.inter(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
+          prefixIcon: Icon(Icons.people_rounded, size: 18, color: AppColors.getPrimary(isDark)),
+          border: UnderlineInputBorder(borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey[100]!)),
+          enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey[100]!)),
+          focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.getPrimary(isDark))),
+          contentPadding: const EdgeInsets.symmetric(vertical: 8),
+        ),
+        dropdownColor: isDark ? AppColors.getCard(isDark) : Colors.white,
+        items: sizes
+            .map((size) => DropdownMenuItem<String>(
+                  value: size,
+                  child: Text(size, style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+                ))
+            .toList(),
+        onChanged: (val) {
+          setState(() {
+            _sizeController.text = val ?? '';
+          });
+        },
+      ),
+    );
+  }
+
   Widget _buildPhotosGrid(bool isDark) {
     return Column(
       children: [
@@ -508,6 +545,11 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                         width: 120, height: 120,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        errorWidget: (context, url, error) => Container(
+                          width: 120, height: 120,
+                          color: isDark ? Colors.white10 : Colors.grey[200],
+                          child: Icon(Icons.broken_image_rounded, color: AppColors.getPrimary(isDark)),
+                        ),
                       ),
                     ),
                     Positioned(
