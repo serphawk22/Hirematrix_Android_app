@@ -246,6 +246,32 @@ class ApiService {
         data['message']?.toString() ?? 'Unable to load applications');
   }
 
+  Future<Map<String, dynamic>> fetchCandidates(String recruiterId, {
+    String? keyword,
+    String? skills,
+    String? location,
+    String? expMin,
+    String? expMax,
+    String? resume,
+    String? jobId,
+  }) async {
+    final Map<String, String> params = {'recruiter_id': recruiterId};
+    if (keyword != null && keyword.isNotEmpty) params['keyword'] = keyword;
+    if (skills != null && skills.isNotEmpty) params['skills'] = skills;
+    if (location != null && location.isNotEmpty) params['location'] = location;
+    if (expMin != null && expMin.isNotEmpty) params['exp_min'] = expMin;
+    if (expMax != null && expMax.isNotEmpty) params['exp_max'] = expMax;
+    if (resume != null && resume.isNotEmpty) params['resume'] = resume;
+    if (jobId != null && jobId.isNotEmpty) params['job_id'] = jobId;
+
+    final data = await _performGet(ApiConstants.candidates, params);
+    if (data['success'] == true) {
+      return data;
+    }
+    throw ApiException(
+        data['message']?.toString() ?? 'Unable to load candidates');
+  }
+
   Future<List<dynamic>> fetchJobs(String recruiterId, {String? query}) async {
     final Map<String, String> params = {'recruiter_id': recruiterId};
     if (query != null) params['q'] = query;
@@ -259,6 +285,53 @@ class ApiService {
 
   Future<Map<String, dynamic>> addJob(Map<String, dynamic> jobData) async {
     return _performPost("${ApiConstants.jobs}/add", jobData);
+  }
+
+  Future<Map<String, dynamic>> inviteCandidate(String recruiterId, String candidateId, String jobId, String? message) async {
+    return _performPost(ApiConstants.inviteCandidate, {
+      'recruiter_id': recruiterId,
+      'candidate_id': candidateId,
+      'job_id': jobId,
+      if (message != null && message.isNotEmpty) 'message': message,
+    });
+  }
+
+  Future<Map<String, dynamic>> fetchCandidateProfile(
+      String recruiterId, String candidateId, {String? applicationId, String? jobId}) async {
+    final Map<String, String> params = {'recruiter_id': recruiterId};
+    if (applicationId != null && applicationId.isNotEmpty) params['application_id'] = applicationId;
+    if (jobId != null && jobId.isNotEmpty) params['job_id'] = jobId;
+    
+    return _performGet("candidates/$candidateId", params);
+  }
+
+  Future<Map<String, dynamic>> logCandidateAction(
+      String recruiterId, String candidateId, String action, {String? applicationId, String? jobId}) async {
+    return _performPost("candidates/$candidateId/action", {
+      'recruiter_id': recruiterId,
+      'action': action,
+      if (applicationId != null && applicationId.isNotEmpty) 'application_id': applicationId,
+      if (jobId != null && jobId.isNotEmpty) 'job_id': jobId,
+    });
+  }
+
+  Future<Map<String, dynamic>> sendCandidateMessage(
+      String recruiterId, String candidateId, String message, {String? applicationId, String? jobId}) async {
+    return _performPost("candidates/$candidateId/message", {
+      'recruiter_id': recruiterId,
+      'message': message,
+      if (applicationId != null && applicationId.isNotEmpty) 'application_id': applicationId,
+      if (jobId != null && jobId.isNotEmpty) 'job_id': jobId,
+    });
+  }
+
+  Future<Map<String, dynamic>> saveCandidateNotes(
+      String recruiterId, String candidateId, String tags, String notes) async {
+    return _performPost("candidates/$candidateId/notes", {
+      'recruiter_id': recruiterId,
+      'tags': tags,
+      'notes': notes,
+    });
   }
 
   Future<List<dynamic>> fetchNotifications(String recruiterId) async {

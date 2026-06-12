@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hirematrix/views/screens/landing_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
@@ -426,7 +427,7 @@ class MainDrawer extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => savedCount > 0
-                        ? const AccountSelectionScreen()
+                        ? const LandingScreen()
                         : const LoginScreen(),
                   ),
                   (route) => false,

@@ -26,34 +26,37 @@ void callbackDispatcher() {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final List notifications = data['notifications'] ?? [];
-        final int unreadCount = int.tryParse(data['unread_count']?.toString() ?? '0') ?? 0;
+        if (data['status'] == 'success') {
+          final payload = data['data'] ?? {};
+          final List notifications = payload['notifications'] ?? [];
+          final int unreadCount = int.tryParse(payload['unread_count']?.toString() ?? '0') ?? 0;
 
-        if (unreadCount > 0) {
-          final lastNotifiedId = prefs.getInt('last_notified_notification_id') ?? 0;
-          int maxId = lastNotifiedId;
+          if (unreadCount > 0) {
+            final lastNotifiedId = prefs.getInt('last_notified_notification_id') ?? 0;
+            int maxId = lastNotifiedId;
 
-          for (var notif in notifications) {
-            final int notifId = int.tryParse(notif['id']?.toString() ?? '0') ?? 0;
-            final bool isRead = (notif['is_read'] == 1 || notif['is_read'] == true || notif['is_read'] == '1');
-            
-            if (!isRead && notifId > lastNotifiedId) {
-              if (notifId > maxId) {
-                maxId = notifId;
-              }
+            for (var notif in notifications) {
+              final int notifId = int.tryParse(notif['id']?.toString() ?? '0') ?? 0;
+              final bool isRead = (notif['is_read'] == 1 || notif['is_read'] == true || notif['is_read'] == '1');
               
-              // Trigger local notification
-              await LocalNotificationService.showNotification(
-                id: notifId,
-                title: notif['title'] ?? 'New Notification',
-                body: notif['message'] ?? '',
-                payload: 'notifications_screen',
-              );
+              if (!isRead && notifId > lastNotifiedId) {
+                if (notifId > maxId) {
+                  maxId = notifId;
+                }
+                
+                // Trigger local notification
+                await LocalNotificationService.showNotification(
+                  id: notifId,
+                  title: notif['title'] ?? 'New Notification',
+                  body: notif['message'] ?? '',
+                  payload: 'notifications_screen',
+                );
+              }
             }
-          }
-          
-          if (maxId > lastNotifiedId) {
-            await prefs.setInt('last_notified_notification_id', maxId);
+            
+            if (maxId > lastNotifiedId) {
+              await prefs.setInt('last_notified_notification_id', maxId);
+            }
           }
         }
       }

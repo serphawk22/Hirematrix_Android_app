@@ -11,6 +11,8 @@ class ApiConstants {
   static const String dashboard = "dashboard";
   static const String jobs = "jobs";
   static const String applications = "applications";
+  static const String candidates = "candidates";
+  static const String inviteCandidate = "candidates/invite";
   static const String interviews = "interviews";
   static const String interviewSlots = "interview_slots";
   static const String interviewBookings = "interview_bookings";
