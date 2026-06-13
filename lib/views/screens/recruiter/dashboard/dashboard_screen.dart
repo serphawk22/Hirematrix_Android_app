@@ -13,6 +13,8 @@ import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dar
 import '../candidates/recruitment_pipeline_screen.dart';
 import '../jobs/interview_slots_screen.dart';
 import '../jobs/post_job_screen.dart';
+import 'package:hirematrix/controllers/recruiter_controller/models/job.dart';
+import '../jobs/job_detail_responses_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final void Function(int)? onSwitchTab;
@@ -430,143 +432,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   vertical: 10,
                 ),
               ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final int totalPending = pendingScreening + hrInterviewsToday;
-    if (totalPending > 0 && _showPendingActionsAlert) {
-      return Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2C2213) : const Color(0xFFFEF3C7),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? const Color(0xFF5D4017) : const Color(0xFFFDE68A),
-          ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.warning_amber_rounded,
-              color: isDark ? const Color(0xFFF59E0B) : const Color(0xFFD97706),
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Pending Actions:',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isDark
-                          ? const Color(0xFFF59E0B)
-                          : const Color(0xFFB45309),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      if (pendingScreening > 0) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF5D4017)
-                                : const Color(0xFFF59E0B),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            pendingScreening.toString(),
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          ' applications to screen',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: isDark
-                                ? const Color(0xFFE0A040)
-                                : const Color(0xFF78350F),
-                          ),
-                        ),
-                      ],
-                      if (pendingScreening > 0 && hrInterviewsToday > 0)
-                        Text(
-                          ', ',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            color: isDark
-                                ? const Color(0xFFE0A040)
-                                : const Color(0xFF78350F),
-                          ),
-                        ),
-                      if (hrInterviewsToday > 0) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.getPrimary(isDark),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            hrInterviewsToday.toString(),
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          ' HR interviews today',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: isDark
-                                ? const Color(0xFFE0A040)
-                                : const Color(0xFF78350F),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  _showPendingActionsAlert = false;
-                });
-              },
-              icon: Icon(
-                Icons.close_rounded,
-                color: isDark
-                    ? const Color(0xFFF59E0B)
-                    : const Color(0xFFD97706),
-                size: 16,
-              ),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
             ),
           ],
         ),
@@ -1081,10 +946,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 return InkWell(
                   onTap: () {
+                    final authController = Provider.of<AuthController>(context, listen: false);
+                    final job = Job(
+                      jobId: app['job_id']?.toString() ?? '',
+                      recruiterId: app['recruiter_id']?.toString() ?? authController.currentRecruiter?.id.toString() ?? '',
+                      companyId: app['company_id']?.toString(),
+                      jobTitle: jobTitle,
+                      jobType: app['job_type']?.toString() ?? 'Full Time',
+                      workMode: 'Onsite',
+                      experience: app['experience_level']?.toString() ?? 'N/A',
+                      status: 'Active',
+                      createdAt: DateTime.now(),
+                    );
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const RecruitmentPipelineScreen(),
+                        builder: (context) => JobDetailResponsesScreen(job: job),
                       ),
                     ).then((_) => _loadData());
                   },

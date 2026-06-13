@@ -6,7 +6,7 @@ import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart'
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/models/job.dart';
-import '../candidates/candidate_management_screen.dart';
+import 'job_detail_responses_screen.dart';
 
 class ManageJobsScreen extends StatefulWidget {
   const ManageJobsScreen({super.key});
@@ -476,9 +476,9 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    _buildPipelineSegment(pipeline['Applied']?.toString() ?? '0', 'Applied', isDark),
+                    _buildPipelineSegment((job.applicationsCount ?? 0).toString(), 'Applied', isDark),
                     _buildPipelineDivider(isDark),
-                    _buildPipelineSegment(pipeline['Shortlisted']?.toString() ?? '0', 'Shortlisted', isDark),
+                    _buildPipelineSegment((job.shortlistedCount ?? 0).toString(), 'Shortlisted', isDark),
                     _buildPipelineDivider(isDark),
                     _buildPipelineSegment(pipeline['Interview']?.toString() ?? '0', 'Interviews', isDark),
                     _buildPipelineDivider(isDark),
@@ -495,10 +495,7 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
               height: 40,
               child: OutlinedButton(
                 onPressed: () {
-                   Navigator.push(context, MaterialPageRoute(builder: (context) => Scaffold(
-                     appBar: AppBar(title: Text(job.jobTitle, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600))),
-                     body: CandidateManagementScreen(jobId: job.jobId, jobTitle: job.jobTitle),
-                   )));
+                   Navigator.push(context, MaterialPageRoute(builder: (context) => JobDetailResponsesScreen(job: job)));
                 },
                 style: OutlinedButton.styleFrom(
                   backgroundColor: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.white,
@@ -515,7 +512,7 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Manage Candidates', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                    Text('Pipeline', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
                     const SizedBox(width: 6),
                     Icon(Icons.arrow_forward_ios_rounded, size: 10, color: AppColors.getPrimary(isDark)),
                   ],

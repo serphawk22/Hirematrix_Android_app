@@ -28,24 +28,25 @@ class _PostJobScreenState extends State<PostJobScreen> {
   final _skillsController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _openingsController = TextEditingController(text: '1');
+  final _experienceController = TextEditingController();
   
   // Company/Client Info
   final _clientCompanyNameController = TextEditingController();
-  String _postingFor = 'Own company';
-  String _category = 'Technology';
-  String _employmentType = 'Full Time';
-  String _workMode = 'Onsite';
+  String _postingFor = 'own_company';
+  String _payrollType = '';
+  String _clientDisclosure = 'visible';
+  String _category = '';
+  String _employmentType = 'Full-time';
 
   // Hiring Preferences
-  String _experience = 'Fresher';
   DateTime? _deadline;
   
   // AI Interview Policy
-  String _aiPolicy = 'Optional';
-  final _aiCutoffController = TextEditingController(text: '0');
+  String _aiPolicy = 'REQUIRED_HARD';
+  final _aiCutoffController = TextEditingController();
 
   // Questionnaire
-  final List<Map<String, String>> _customQuestions = [];
+  final List<Map<String, dynamic>> _customQuestions = [];
 
   bool _isPosting = false;
 
@@ -65,22 +66,23 @@ class _PostJobScreenState extends State<PostJobScreen> {
     try {
       final response = await _apiService.addJob({
         'recruiter_id': recruiterId,
-        'job_title': _titleController.text.trim(),
-        'posting_for': _postingFor,
-        'client_company_name': _clientCompanyNameController.text.trim(),
+        'title': _titleController.text.trim(),
+        'posted_for': _postingFor,
+        'payroll_type': _payrollType,
+        'client_company_name': _postingFor == 'client' ? _clientCompanyNameController.text.trim() : '',
+        'client_disclosure': _clientDisclosure,
         'category': _category,
         'employment_type': _employmentType,
-        'work_mode': _workMode,
-        'experience_required': _experience,
+        'experience_level': _experienceController.text.trim(),
         'salary_range': _salaryController.text.trim(),
-        'job_location': _locationController.text.trim(),
-        'job_description': _descriptionController.text.trim(),
-        'skills_required': _skillsController.text.trim(),
+        'location': _locationController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'required_skills': _skillsController.text.trim(),
         'application_deadline': _deadline != null ? DateFormat('yyyy-MM-dd').format(_deadline!) : '',
-        'openings_count': _openingsController.text.trim(),
-        'ai_policy': _aiPolicy,
-        'ai_cutoff': _aiCutoffController.text.trim(),
-        'questions': jsonEncode(_customQuestions),
+        'openings': _openingsController.text.trim(),
+        'ai_interview_policy': _aiPolicy,
+        'min_ai_cutoff_score': _aiCutoffController.text.trim(),
+        'questionnaire': jsonEncode(_customQuestions),
       });
 
       if (mounted) {
@@ -121,91 +123,125 @@ class _PostJobScreenState extends State<PostJobScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionCard('Role Information', isDark, [
-                _buildTextField(_titleController, 'Job Title *', 'e.g. Senior Software Engineer'),
-                const SizedBox(height: 16),
-                _buildDropdown('Category *', ['Technology', 'Design', 'Marketing', 'Sales', 'Finance', 'HR', 'Operations'], _category, (v) => setState(() => _category = v!)),
-                const SizedBox(height: 16),
-                _buildTextField(_locationController, 'Location *', 'e.g. Pune, India (Hybrid)'),
-                const SizedBox(height: 16),
-                _buildTextField(_descriptionController, 'Description *', 'Roles and responsibilities...', maxLines: 5),
-              ]),
-
-              const SizedBox(height: 16),
-              _buildSectionCard('Client & Setup', isDark, [
-                _buildDropdown('Posting For', ['Own company', 'Client company'], _postingFor, (v) => setState(() => _postingFor = v!)),
-                if (_postingFor == 'Client company') ...[
+              _buildSectionCard('Posting Details', isDark, [
+                Row(
+                  children: [
+                    Expanded(child: _buildDropdown('Posting For *', {'own_company': 'Own company', 'client': 'Client company'}, _postingFor, (v) => setState(() => _postingFor = v!))),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildDropdown('Payroll Type', {'': 'Select payroll type', 'company_payroll': 'Company payroll', 'client_payroll': 'Client payroll', 'consultancy_payroll': 'Consultancy payroll', 'third_party_contract': 'Third-party contract'}, _payrollType, (v) => setState(() => _payrollType = v!))),
+                  ],
+                ),
+                if (_postingFor == 'client') ...[
                   const SizedBox(height: 16),
-                  _buildTextField(_clientCompanyNameController, 'Client Name *', 'Company name for client'),
+                  Row(
+                    children: [
+                      Expanded(child: _buildTextField(_clientCompanyNameController, 'Client Company Name *', 'Company name for client')),
+                      const SizedBox(width: 12),
+                      Expanded(child: _buildDropdown('Client Disclosure', {'visible': 'Visible to candidates', 'confidential': 'Confidential'}, _clientDisclosure, (v) => setState(() => _clientDisclosure = v!))),
+                    ],
+                  ),
                 ],
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: _buildDropdown('Employment Type', ['Full Time', 'Part Time', 'Contract', 'Internship'], _employmentType, (v) => setState(() => _employmentType = v!))),
-                    const SizedBox(width: 12),
-                    Expanded(child: _buildDropdown('Work Mode', ['Onsite', 'Hybrid', 'Remote'], _workMode, (v) => setState(() => _workMode = v!))),
-                  ],
-                ),
               ]),
 
               const SizedBox(height: 16),
-              _buildSectionCard('Requirements & Budget', isDark, [
+              _buildSectionCard('Job Information', isDark, [
+                _buildTextField(_titleController, 'Job Title *', 'Job Title'),
+                const SizedBox(height: 16),
+                _buildDropdown('Category *', {
+                  '': 'Select Job Category',
+                  'Software Development': 'Software Development',
+                  'Data Science': 'Data Science',
+                  'DevOps': 'DevOps',
+                  'Quality Assurance': 'Quality Assurance',
+                  'UI/UX Design': 'UI/UX Design',
+                  'Product Management': 'Product Management',
+                  'Project Management': 'Project Management',
+                  'Marketing': 'Marketing',
+                  'Sales': 'Sales',
+                  'Human Resources': 'Human Resources',
+                  'Finance': 'Finance',
+                  'Operations': 'Operations',
+                  'Customer Support': 'Customer Support',
+                  'Business Analysis': 'Business Analysis',
+                  'Cybersecurity': 'Cybersecurity'
+                }, _category, (v) => setState(() => _category = v!)),
+                const SizedBox(height: 16),
+                _buildTextField(_locationController, 'Location *', 'Location'),
+                const SizedBox(height: 16),
+                _buildTextField(_descriptionController, 'Description *', 'Job Description', maxLines: 9),
+              ]),
+
+              const SizedBox(height: 16),
+              _buildSectionCard('Requirements & Terms', isDark, [
                 Row(
                   children: [
-                    Expanded(child: _buildDropdown('Experience', ['Fresher', '1-2 Years', '2-3 Years', '3-5 Years', '5+ Years'], _experience, (v) => setState(() => _experience = v!))),
+                    Expanded(child: _buildTextField(_experienceController, 'Experience', 'e.g., 2-3 years')),
                     const SizedBox(width: 12),
-                    Expanded(child: _buildTextField(_openingsController, 'Openings *', '1', type: TextInputType.number)),
+                    Expanded(child: _buildDropdown('Employment Type', {'Full-time': 'Full-time', 'Part-time': 'Part-time', 'Contract': 'Contract', 'Internship': 'Internship'}, _employmentType, (v) => setState(() => _employmentType = v!))),
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildTextField(_salaryController, 'Salary Range', 'e.g. ₹12L - ₹18L'),
+                _buildTextField(_salaryController, 'Salary Range', 'e.g., 5-8 LPA'),
                 const SizedBox(height: 16),
-                _buildTextField(_skillsController, 'Required Skills *', 'Flutter, Dart, Provider (Comma separated)'),
+                Row(
+                  children: [
+                    Expanded(child: _buildDatePicker('Application Deadline', isDark)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildTextField(_openingsController, 'Number of Openings *', '1', type: TextInputType.number)),
+                  ],
+                ),
                 const SizedBox(height: 16),
-                _buildDatePicker('Application Deadline', isDark),
+                _buildTextField(_skillsController, 'Required Skills', 'Comma separated skills'),
               ]),
 
               const SizedBox(height: 16),
               _buildSectionCard('AI Interview Policy', isDark, [
-                _buildDropdown('Policy Type', ['Mandatory', 'Optional', 'Manual', 'Combined'], _aiPolicy, (v) => setState(() => _aiPolicy = v!)),
+                _buildDropdown('AI Interview Policy', {
+                  'REQUIRED_HARD': 'AI Interview: Mandatory (Strict)',
+                  'REQUIRED_SOFT': 'AI Interview: Mandatory (Recruiter Can Override)',
+                  'OPTIONAL': 'AI Interview: Optional',
+                  'OFF': 'AI Interview: Not Required'
+                }, _aiPolicy, (v) => setState(() => _aiPolicy = v!)),
                 const SizedBox(height: 8),
-                Text(_getPolicyHint(), style: GoogleFonts.inter(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w500)),
+                Text('Choose how AI interview affects applications: strict reject, recruiter override, optional, or disabled.', style: GoogleFonts.inter(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 16),
-                _buildTextField(_aiCutoffController, 'Min. Screening Score (0-100)', 'Qualification threshold', type: TextInputType.number),
+                _buildTextField(_aiCutoffController, 'Minimum AI Cutoff Score', '0-100', type: TextInputType.number),
               ]),
 
               const SizedBox(height: 16),
-              _buildSectionCard('Custom Questionnaire', isDark, [
-                Text('Add screening questions for applicants.', style: GoogleFonts.inter(fontSize: 11, color: Colors.grey)),
+              _buildSectionCard('Application Questionnaire', isDark, [
+                Text('Add optional screening prompts. You can use this for a cover letter, notice period, motivation, or any short written response.', style: GoogleFonts.inter(fontSize: 11, color: Colors.grey)),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 10, runSpacing: 10,
                   children: [
-                    _buildGhostButton('Add Short Answer', Icons.short_text_rounded, isDark, () {
-                      setState(() => _customQuestions.add({'text': '', 'type': 'short_answer'}));
+                    _buildGhostButton('Add Cover Letter Prompt', Icons.article_outlined, isDark, () {
+                      setState(() => _customQuestions.add({
+                        'label': 'Cover letter / Why are you a fit?',
+                        'type': 'textarea',
+                        'placeholder': 'Share why you are interested in this role and what makes you a strong fit.',
+                        'required': true,
+                        'knockout': false,
+                        'knockout_answer': '',
+                        'knockout_match': 'exact'
+                      }));
                     }),
-                    _buildGhostButton('Add Link/Portfolio', Icons.link_rounded, isDark, () {
-                      setState(() => _customQuestions.add({'text': 'Portfolio/Project Link', 'type': 'link'}));
+                    _buildGhostButton('Add Question', Icons.add_circle_outline, isDark, () {
+                      setState(() => _customQuestions.add({
+                        'label': '',
+                        'type': 'text',
+                        'placeholder': '',
+                        'required': false,
+                        'knockout': false,
+                        'knockout_answer': '',
+                        'knockout_match': 'exact'
+                      }));
                     }),
                   ],
                 ),
                 if (_customQuestions.isNotEmpty) ...[
                    const SizedBox(height: 20),
-                   ..._customQuestions.asMap().entries.map((e) => Padding(
-                     padding: const EdgeInsets.only(bottom: 12),
-                     child: Row(
-                       crossAxisAlignment: CrossAxisAlignment.end,
-                       children: [
-                         Expanded(child: _buildTextField(null, 'Question ${e.key + 1} (${e.value['type']})', 'Type here...', 
-                           onChanged: (val) => _customQuestions[e.key]['text'] = val)),
-                         const SizedBox(width: 8),
-                         IconButton(
-                           onPressed: () => setState(() => _customQuestions.removeAt(e.key)),
-                           icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 20),
-                         ),
-                       ],
-                     ),
-                   )),
+                   ..._customQuestions.asMap().entries.map((e) => _buildQuestionnaireRow(e.key, e.value, isDark)),
                 ]
               ]),
 
@@ -232,16 +268,6 @@ class _PostJobScreenState extends State<PostJobScreen> {
     );
   }
 
-  String _getPolicyHint() {
-    switch (_aiPolicy) {
-      case 'Mandatory': return 'Candidates must complete AI interview before you see them.';
-      case 'Optional': return 'Recruiters can trigger AI interviews manually.';
-      case 'Manual': return 'Standard human-led screening only.';
-      case 'Combined': return 'AI score and recruiter notes are weighted together.';
-      default: return '';
-    }
-  }
-
   Widget _buildSectionCard(String title, bool isDark, List<Widget> children) {
     return Container(
       width: double.infinity,
@@ -262,7 +288,7 @@ class _PostJobScreenState extends State<PostJobScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController? controller, String label, String hint, {int maxLines = 1, TextInputType type = TextInputType.text, Function(String)? onChanged}) {
+  Widget _buildTextField(TextEditingController? controller, String label, String hint, {int maxLines = 1, TextInputType type = TextInputType.text, Function(String)? onChanged, String? initialValue}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -273,7 +299,7 @@ class _PostJobScreenState extends State<PostJobScreen> {
           maxLines: maxLines,
           keyboardType: type,
           onChanged: onChanged,
-          initialValue: controller == null ? null : null, // Handle null controller if using onChanged only
+          initialValue: controller == null ? initialValue : null,
           style: const TextStyle(fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
@@ -283,28 +309,32 @@ class _PostJobScreenState extends State<PostJobScreen> {
             fillColor: Colors.grey.withValues(alpha: 0.03),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
           ),
-          validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+          validator: (v) {
+            if (label.contains('*') && (v == null || v.trim().isEmpty)) return 'Required';
+            return null;
+          },
         ),
       ],
     );
   }
 
-  Widget _buildDropdown(String label, List<String> items, String value, Function(String?) onChanged) {
+  Widget _buildDropdown(String label, Map<String, String> items, String value, Function(String?) onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          initialValue: value,
-          style: GoogleFonts.inter(fontSize: 14, color: Colors.blueAccent, fontWeight: FontWeight.w600),
+          value: items.containsKey(value) ? value : (items.isNotEmpty ? items.keys.first : null),
+          style: GoogleFonts.inter(fontSize: 13, color: Colors.blueAccent, fontWeight: FontWeight.w600),
+          isExpanded: true,
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             filled: true,
             fillColor: Colors.grey.withValues(alpha: 0.03),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
           ),
-          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+          items: items.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value, overflow: TextOverflow.ellipsis))).toList(),
           onChanged: onChanged,
         ),
       ],
@@ -385,6 +415,100 @@ class _PostJobScreenState extends State<PostJobScreen> {
           const SizedBox(height: 12),
           Text('Setting a minimum AI score helps you focus only on qualified candidates. You can adjust this later from the job management workspace.', 
             style: GoogleFonts.inter(fontSize: 11, color: Colors.blueGrey[600], fontWeight: FontWeight.w500, height: 1.4)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuestionnaireRow(int index, Map<String, dynamic> item, bool isDark) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1B2A2F) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isDark ? const Color(0xFF23343A) : Colors.grey[300]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 2,
+                child: _buildTextField(null, 'Question Prompt', 'e.g. Why are you a fit?', initialValue: item['label'], onChanged: (val) => item['label'] = val),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 1,
+                child: _buildDropdown('Field Type', const {'textarea': 'Long answer', 'text': 'Short answer'}, item['type'], (val) => setState(() => item['type'] = val!)),
+              ),
+              IconButton(
+                onPressed: () => setState(() => _customQuestions.removeAt(index)),
+                icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(null, 'Placeholder (Optional)', 'Optional helper text', initialValue: item['placeholder'], onChanged: (val) => item['placeholder'] = val),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 16,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Checkbox(
+                    value: item['required'] ?? false,
+                    onChanged: (val) => setState(() => item['required'] = val),
+                  ),
+                  const Text('Required question', style: TextStyle(fontSize: 12)),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Checkbox(
+                    value: item['knockout'] ?? false,
+                    onChanged: (val) {
+                      setState(() {
+                        item['knockout'] = val;
+                        if (val == true) item['required'] = true;
+                      });
+                    },
+                  ),
+                  const Text('Knock-out must-have', style: TextStyle(fontSize: 12)),
+                ],
+              ),
+            ],
+          ),
+          if (item['knockout'] == true) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withValues(alpha: 0.03) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: _buildTextField(null, 'Expected Answer', 'e.g. Yes, Y', initialValue: item['knockout_answer'], onChanged: (val) => item['knockout_answer'] = val),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    flex: 1,
+                    child: _buildDropdown('Match Type', const {'exact': 'Exact answer', 'contains': 'Answer contains'}, item['knockout_match'], (val) => setState(() => item['knockout_match'] = val!)),
+                  ),
+                ],
+              ),
+            ),
+          ]
         ],
       ),
     );

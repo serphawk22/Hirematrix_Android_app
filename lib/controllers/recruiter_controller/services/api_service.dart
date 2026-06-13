@@ -372,6 +372,63 @@ class ApiService {
     return _performPost("${ApiConstants.company}/update", data);
   }
 
+  Future<Map<String, dynamic>> fetchApplicationsWithStage(String recruiterId, {String? jobId, String? stage, String? query, Map<String, String>? filters}) async {
+    final Map<String, String> params = {'recruiter_id': recruiterId};
+    if (jobId != null && jobId.isNotEmpty) params['job_id'] = jobId;
+    if (stage != null && stage.isNotEmpty) params['stage'] = stage;
+    if (query != null && query.isNotEmpty) params['q'] = query;
+    if (filters != null) {
+      params.addAll(filters);
+    }
+
+    final data = await _performGet(ApiConstants.applications, params);
+    if (data['success'] == true) {
+      return data;
+    }
+    throw ApiException(data['message']?.toString() ?? 'Unable to load applications');
+  }
+
+  Future<Map<String, dynamic>> fetchInterviewsForJob(String recruiterId, {String? jobId}) async {
+    final Map<String, String> params = {'recruiter_id': recruiterId};
+    if (jobId != null && jobId.isNotEmpty) params['job_id'] = jobId;
+
+    final data = await _performGet(ApiConstants.interviews, params);
+    if (data['success'] == true) {
+      return {
+        'interviews': data['interviews'] ?? [],
+        'slots': data['slots'] ?? [],
+      };
+    }
+    throw ApiException(data['message']?.toString() ?? 'Unable to load interviews');
+  }
+
+  Future<Map<String, dynamic>> bulkUpdateStatus(String recruiterId, List<String> applicationIds, String status) async {
+    return _performPost("applications/bulk_update_status", {
+      'recruiter_id': recruiterId,
+      'application_ids': applicationIds.join(','),
+      'status': status,
+    });
+  }
+
+  Future<Map<String, dynamic>> bulkSendEmail(String recruiterId, List<String> candidateIds, String subject, String body) async {
+    return _performPost("applications/bulk_email", {
+      'recruiter_id': recruiterId,
+      'candidate_ids': candidateIds.join(','),
+      'subject': subject,
+      'body': body,
+    });
+  }
+
+  Future<Map<String, dynamic>> bulkSendMessage(String recruiterId, List<String> candidateIds, String message, {String? applicationId, String? jobId}) async {
+    return _performPost("applications/bulk_message", {
+      'recruiter_id': recruiterId,
+      'candidate_ids': candidateIds.join(','),
+      'message': message,
+      if (applicationId != null && applicationId.isNotEmpty) 'application_id': applicationId,
+      if (jobId != null && jobId.isNotEmpty) 'job_id': jobId,
+    });
+  }
+
   // --- Network Helpers ---
 
   Future<Map<String, dynamic>> _performPost(
@@ -572,6 +629,11 @@ class ApiService {
   Future<Map<String, dynamic>> addInterviewSlot(
       Map<String, dynamic> slotData) async {
     return _performPost("${ApiConstants.interviewSlots}/add", slotData);
+  }
+
+  Future<Map<String, dynamic>> updateInterviewSlot(
+      Map<String, dynamic> slotData) async {
+    return _performPost("${ApiConstants.interviewSlots}/update", slotData);
   }
 
   Future<Map<String, dynamic>> deleteInterviewSlot(

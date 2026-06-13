@@ -12,6 +12,8 @@ class Job {
   final String? description;
   final String status;
   final Map<String, int>? pipeline;
+  final int? applicationsCount;
+  final int? shortlistedCount;
   final DateTime createdAt;
 
   Job({
@@ -28,6 +30,8 @@ class Job {
     this.description,
     required this.status,
     this.pipeline,
+    this.applicationsCount = 0,
+    this.shortlistedCount = 0,
     required this.createdAt,
   });
 
@@ -57,6 +61,8 @@ class Job {
         return 'Active';
       })(),
       pipeline: json['pipeline'] != null ? Map<String, int>.from(json['pipeline']) : null,
+      applicationsCount: int.tryParse(json['applications_count']?.toString() ?? '') ?? 0,
+      shortlistedCount: int.tryParse(json['shortlisted_count']?.toString() ?? '') ?? 0,
       createdAt: DateTime.parse(json['created_at']),
     );
   }
