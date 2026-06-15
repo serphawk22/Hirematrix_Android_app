@@ -30,7 +30,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (_formKey.currentState!.validate()) {
       if (_passwordController.text != _confirmController.text) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Passwords do not match'), backgroundColor: AppColors.error),
+          const SnackBar(
+            content: Text('Passwords do not match'),
+            backgroundColor: AppColors.error,
+          ),
         );
         return;
       }
@@ -39,18 +42,27 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
       try {
         final api = ApiService();
-        final response = await api.resetPassword(widget.token, _passwordController.text.trim());
+        final response = await api.resetPassword(
+          widget.token,
+          _passwordController.text.trim(),
+        );
 
         if (mounted) {
           setState(() => _isLoading = false);
           if (response['success'] == true) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Password updated successfully! Please login.'), backgroundColor: AppColors.success),
+              const SnackBar(
+                content: Text('Password updated successfully! Please login.'),
+                backgroundColor: AppColors.success,
+              ),
             );
             Navigator.pop(context); // Go back to login
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(response['message'] ?? 'Reset failed'), backgroundColor: AppColors.error),
+              SnackBar(
+                content: Text(response['message'] ?? 'Reset failed'),
+                backgroundColor: AppColors.error,
+              ),
             );
           }
         }
@@ -58,7 +70,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         if (mounted) {
           setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Connection error'), backgroundColor: AppColors.error),
+            const SnackBar(
+              content: Text('Connection error'),
+              backgroundColor: AppColors.error,
+            ),
           );
         }
       }
@@ -72,7 +87,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDark),
       appBar: AppBar(
-        title: Text('New Password', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800)),
+        title: Text(
+          'New Password',
+          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -83,60 +101,102 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             decoration: BoxDecoration(
               color: AppColors.getCard(isDark),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.getBorder(isDark).withValues(alpha: 0.1)),
+              border: Border.all(
+                color: AppColors.getBorder(isDark).withValues(alpha: 0.1),
+              ),
             ),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Reset Your Password', style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800)),
+                  Text(
+                    'Reset Your Password',
+                    style: GoogleFonts.inter(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text('Create a strong password for your recruiter workspace.', 
-                    style: GoogleFonts.inter(fontSize: 13, color: AppColors.getTextMuted(isDark))),
-                  
+                  Text(
+                    'Create a strong password for your recruiter workspace.',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: AppColors.getTextMuted(isDark),
+                    ),
+                  ),
+
                   const SizedBox(height: 32),
-                  
+
                   _buildLabel('New Password'),
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePass,
                     decoration: InputDecoration(
                       hintText: '••••••••',
-                      prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                      prefixIcon: const Icon(
+                        Icons.lock_outline_rounded,
+                        size: 20,
+                      ),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscurePass ? Icons.visibility_off_rounded : Icons.visibility_rounded, size: 20),
-                        onPressed: () => setState(() => _obscurePass = !_obscurePass),
+                        icon: Icon(
+                          _obscurePass
+                              ? Icons.visibility_off_rounded
+                              : Icons.visibility_rounded,
+                          size: 20,
+                        ),
+                        onPressed: () =>
+                            setState(() => _obscurePass = !_obscurePass),
                       ),
                     ),
-                    validator: (v) => (v == null || v.length < 6) ? 'Min 6 characters' : null,
+                    validator: (v) =>
+                        (v == null || v.length < 6) ? 'Min 6 characters' : null,
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   _buildLabel('Confirm Password'),
                   TextFormField(
                     controller: _confirmController,
                     obscureText: _obscureConfirm,
                     decoration: InputDecoration(
                       hintText: '••••••••',
-                      prefixIcon: const Icon(Icons.lock_reset_rounded, size: 20),
+                      prefixIcon: const Icon(
+                        Icons.lock_reset_rounded,
+                        size: 20,
+                      ),
                       suffixIcon: IconButton(
-                        icon: Icon(_obscureConfirm ? Icons.visibility_off_rounded : Icons.visibility_rounded, size: 20),
-                        onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                        icon: Icon(
+                          _obscureConfirm
+                              ? Icons.visibility_off_rounded
+                              : Icons.visibility_rounded,
+                          size: 20,
+                        ),
+                        onPressed: () =>
+                            setState(() => _obscureConfirm = !_obscureConfirm),
                       ),
                     ),
-                    validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'Required' : null,
                   ),
-                  
+
                   const SizedBox(height: 40),
-                  
+
                   ElevatedButton(
                     onPressed: _isLoading ? null : _handleReset,
-                    style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 54)),
-                    child: _isLoading 
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('UPDATE PASSWORD'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 54),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('UPDATE PASSWORD'),
                   ),
                 ],
               ),
@@ -147,5 +207,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     );
   }
 
-  Widget _buildLabel(String text) => Padding(padding: const EdgeInsets.only(bottom: 8, left: 4), child: Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)));
+  Widget _buildLabel(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 8, left: 4),
+    child: Text(
+      text,
+      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+    ),
+  );
 }

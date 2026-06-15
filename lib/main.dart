@@ -16,7 +16,6 @@ import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller
 import 'package:hirematrix/controllers/recruiter_controller/applications_controller.dart' as rec_app_ctrl;
 import 'package:hirematrix/controllers/recruiter_controller/candidates_controller.dart' as rec_candidates_ctrl;
 import 'package:hirematrix/views/screens/recruiter/utils/theme_provider.dart' as rec_theme;
-import 'package:hirematrix/controllers/recruiter_controller/language_controller.dart' as rec_lang_ctrl;
 import 'package:hirematrix/controllers/recruiter_controller/leaderboard_controller.dart' as rec_leaderboard_ctrl;
 
 
@@ -81,7 +80,6 @@ class HireMatrixApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => rec_app_ctrl.ApplicationsController()),
         ChangeNotifierProvider(create: (_) => rec_candidates_ctrl.CandidatesController()),
         ChangeNotifierProvider(create: (_) => rec_theme.ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => rec_lang_ctrl.LanguageController()),
         ChangeNotifierProvider(create: (_) => rec_leaderboard_ctrl.LeaderboardController()),
       ],
       child: Obx(

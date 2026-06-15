@@ -8,7 +8,7 @@ import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart';
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
-import 'package:hirematrix/controllers/recruiter_controller/language_controller.dart';
+
 import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dart';
 import '../candidates/recruitment_pipeline_screen.dart';
 import '../jobs/interview_slots_screen.dart';
@@ -26,7 +26,9 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  bool _showPendingActionsAlert = true;
+
+
+  String? _lastFetchedRecruiterId;
 
   @override
   void initState() {
@@ -36,9 +38,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final auth = Provider.of<AuthController>(context);
+    if (auth.currentRecruiter != null &&
+        auth.currentRecruiter!.id != _lastFetchedRecruiterId) {
+      _lastFetchedRecruiterId = auth.currentRecruiter!.id;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadData();
+      });
+    }
+  }
+
   Future<void> _loadData() async {
     final auth = Provider.of<AuthController>(context, listen: false);
     if (auth.currentRecruiter != null) {
+      _lastFetchedRecruiterId = auth.currentRecruiter!.id;
       try {
         await Provider.of<DashboardController>(
           context,
@@ -59,7 +75,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Responsive().init(context);
     final recruiter = Provider.of<AuthController>(context).currentRecruiter;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final lang = Provider.of<LanguageController>(context);
 
     return Consumer<DashboardController>(
       builder: (context, dashboard, child) {
@@ -107,7 +122,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   isDarkMode,
                 ),
                 _buildSectionHeader(
-                  lang.translate('hiring_overview'),
+                  'Hiring Overview',
                   isDarkMode,
                   null,
                 ),
@@ -136,7 +151,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 SizedBox(height: Responsive.spacing(28)),
                 _buildSectionHeader(
-                  lang.translate('upcoming_interviews'),
+                  'Upcoming Interviews',
                   isDarkMode,
                   null,
                 ),
@@ -144,7 +159,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 _buildInterviewList(dashboard.upcomingInterviews, isDarkMode),
                 SizedBox(height: Responsive.spacing(28)),
                 _buildSectionHeader(
-                  lang.translate('recruiter_activity'),
+                  'Recruiter Activity',
                   isDarkMode,
                   null,
                 ),
@@ -171,7 +186,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
+        color: AppColors.getPrimary(isDark),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -445,7 +460,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildHiringOverviewGrid(Map<String, dynamic> data, bool isDark) {
     final stats =
         (data['stats'] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-    final lang = Provider.of<LanguageController>(context);
 
     return GridView.count(
       shrinkWrap: true,
@@ -456,7 +470,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       childAspectRatio: 1.4,
       children: [
         _buildHiringOverviewCard(
-          lang.translate('total_applications'),
+          'Total Applications',
           stats['total_applications']?.toString() ?? '0',
           'Across all active jobs',
           Icons.description_rounded,
@@ -472,7 +486,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
         ),
         _buildHiringOverviewCard(
-          lang.translate('open_jobs'),
+          'Open Jobs',
           stats['open_jobs']?.toString() ?? '0',
           'Currently hiring',
           Icons.business_center_rounded,
@@ -488,7 +502,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
         ),
         _buildHiringOverviewCard(
-          lang.translate('conversion_rate'),
+          'Conversion Rate',
           stats['conversion_rate']?.toString() ?? '0%',
           'Pipeline efficiency',
           Icons.pie_chart_rounded,
@@ -497,7 +511,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           null,
         ),
         _buildHiringOverviewCard(
-          lang.translate('interview_bookings'),
+          'Interview Bookings',
           stats['interview_bookings']?.toString() ?? '0',
           'HR rounds scheduled',
           Icons.calendar_today_rounded,
@@ -946,10 +960,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 return InkWell(
                   onTap: () {
-                    final authController = Provider.of<AuthController>(context, listen: false);
+                    final authController = Provider.of<AuthController>(
+                      context,
+                      listen: false,
+                    );
                     final job = Job(
                       jobId: app['job_id']?.toString() ?? '',
-                      recruiterId: app['recruiter_id']?.toString() ?? authController.currentRecruiter?.id.toString() ?? '',
+                      recruiterId:
+                          app['recruiter_id']?.toString() ??
+                          authController.currentRecruiter?.id.toString() ??
+                          '',
                       companyId: app['company_id']?.toString(),
                       jobTitle: jobTitle,
                       jobType: app['job_type']?.toString() ?? 'Full Time',
@@ -961,7 +981,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => JobDetailResponsesScreen(job: job),
+                        builder: (context) =>
+                            JobDetailResponsesScreen(job: job),
                       ),
                     ).then((_) => _loadData());
                   },
@@ -1502,7 +1523,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Original helper lists & details (Interviews & Activity)
   Widget _buildInterviewList(List<dynamic> interviews, bool isDark) {
-    final lang = Provider.of<LanguageController>(context);
     if (interviews.isEmpty) {
       return Container(
         width: double.infinity,
@@ -1523,7 +1543,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              lang.translate('no_upcoming_interviews'),
+              'No upcoming interviews',
               style: GoogleFonts.inter(
                 fontSize: Responsive.fontSize(11),
                 fontWeight: FontWeight.w500,
@@ -1651,10 +1671,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        Provider.of<LanguageController>(
-                          context,
-                          listen: false,
-                        ).translate('join_meeting'),
+                        'Join Meeting',
                         style: GoogleFonts.inter(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -1676,10 +1693,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        Provider.of<LanguageController>(
-                          context,
-                          listen: false,
-                        ).translate('reschedule'),
+                        'Reschedule',
                         style: GoogleFonts.inter(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,

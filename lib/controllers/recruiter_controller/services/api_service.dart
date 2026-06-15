@@ -355,13 +355,7 @@ class ApiService {
     return _performPost("${ApiConstants.profile}/update", data);
   }
 
-  Future<Map<String, dynamic>> fetchSettings(String recruiterId) async {
-    return _performGet("settings", {'recruiter_id': recruiterId});
-  }
 
-  Future<Map<String, dynamic>> updateSettings(Map<String, dynamic> data) async {
-    return _performPost("settings/update", data);
-  }
 
   Future<Map<String, dynamic>> fetchCompanyProfile(String recruiterId) async {
     return _performGet(ApiConstants.company, {'recruiter_id': recruiterId});
@@ -548,25 +542,15 @@ class ApiService {
     });
   }
 
-  Future<Map<String, dynamic>> fetchTeam(String recruiterId) async {
-    return _performGet(ApiConstants.team, {'recruiter_id': recruiterId});
-  }
-
-  Future<Map<String, dynamic>> inviteMember(
-      String recruiterId, String email, String role) async {
-    return _performPost("${ApiConstants.team}/invite", {
+  Future<Map<String, dynamic>> deleteNotification(
+      String notificationId, String recruiterId) async {
+    return _performPost("notifications/delete", {
+      'notification_id': notificationId,
       'recruiter_id': recruiterId,
-      'email': email,
-      'role': role,
     });
   }
 
-  Future<Map<String, dynamic>> removeMember(
-          String recruiterId, String memberId) async =>
-      {'success': false};
-  Future<Map<String, dynamic>> updateMemberRole(
-          String recruiterId, String memberId, String role) async =>
-      {'success': false};
+
   Future<Map<String, dynamic>> fetchVerificationStatus(
           String recruiterId) async =>
       {'success': false};

@@ -1035,60 +1035,28 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
     final recruiterJobs = _data?['recruiter_jobs'] as List? ?? [];
     final rawInvitations = _data?['job_invitations'];
     final Map<dynamic, dynamic> jobInvitations = (rawInvitations is Map) ? rawInvitations : {};
+    
+    // Extract saved tags for the display badges
+    final recruiterNoteData = _data?['recruiter_note'] as Map?;
+    final savedTagsRaw = recruiterNoteData?['tags']?.toString() ?? '';
+    final List<String> existingTags = savedTagsRaw
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Notes & Tags section
-          _buildSectionHeader('Recruiter Notes & Tags'),
-          Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: isDark ? Colors.white10 : Colors.grey[200]!),
-            ),
-            color: isDark ? AppColors.getCard(isDark) : Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Tags (comma separated)',
-                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 6),
-                  _buildTextInput(_tagsController, 'e.g. Strong communication, Backend, Immediate joiner', isDark),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Private Notes',
-                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 6),
-                  _buildTextInput(_notesController, 'Add private notes for this candidate...', isDark, maxLines: 4),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _isSavingNotes ? null : _saveNotes,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.getPrimary(isDark),
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(double.infinity, 44),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: _isSavingNotes
-                        ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('Save Notes'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
           // Invite to Apply section
           _buildSectionHeader('Invite to Apply'),
+          Text(
+            'Send a direct invitation for one of your open roles. The candidate gets an in-app alert and an email if their notification settings allow it.',
+            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 12),
           Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -1157,6 +1125,77 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                     child: _isSendingInvite
                         ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                         : const Text('Send Invitation'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Notes & Tags section
+          _buildSectionHeader('Recruiter Notes & Tags'),
+          Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: isDark ? Colors.white10 : Colors.grey[200]!),
+            ),
+            color: isDark ? AppColors.getCard(isDark) : Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (existingTags.isNotEmpty) ...[
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: existingTags.map((tag) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey[100],
+                            border: Border.all(color: isDark ? Colors.white24 : Colors.grey[300]!),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            tag,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  Text(
+                    'Tags (comma separated)',
+                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 6),
+                  _buildTextInput(_tagsController, 'e.g. Strong communication, Backend, Immediate joiner', isDark),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Private Notes',
+                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 6),
+                  _buildTextInput(_notesController, 'Add private notes for this candidate...', isDark, maxLines: 4),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _isSavingNotes ? null : _saveNotes,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.getPrimary(isDark),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 44),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: _isSavingNotes
+                        ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('Save Notes'),
                   ),
                 ],
               ),

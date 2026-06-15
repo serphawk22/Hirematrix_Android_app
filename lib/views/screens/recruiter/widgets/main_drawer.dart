@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:hirematrix/views/screens/landing_screen.dart';
+
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
 import 'package:hirematrix/views/screens/recruiter/drawer/company_details_screen.dart';
-import 'package:hirematrix/views/screens/recruiter/drawer/team_management_screen.dart';
 import 'package:hirematrix/views/screens/recruiter/candidates/candidate_management_screen.dart';
-import 'package:hirematrix/views/screens/recruiter/drawer/help_support_screen.dart';
+
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/views/screens/recruiter/auth/login_screen.dart';
 import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dart';
 
-import 'package:hirematrix/views/screens/recruiter/auth/account_selection_screen.dart';
 import 'package:hirematrix/views/screens/recruiter/dashboard/candidate_insights_screen.dart';
 
 import 'package:hirematrix/views/screens/recruiter/jobs/interview_slots_screen.dart';
 import 'package:hirematrix/views/screens/recruiter/jobs/interview_bookings_screen.dart';
-import 'package:hirematrix/views/screens/recruiter/profile/settings_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/theme_provider.dart';
+import 'package:hirematrix/views/screens/recruiter/auth/recruiter_change_password_screen.dart';
 
 class MainDrawer extends StatelessWidget {
   const MainDrawer({super.key});
@@ -96,8 +96,9 @@ class MainDrawer extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  const CompanyDetailsScreen(),
+                              builder: (context) => const CompanyDetailsScreen(
+                                isStandalone: true,
+                              ),
                             ),
                           );
                         },
@@ -143,62 +144,24 @@ class MainDrawer extends StatelessWidget {
                           ),
                         ],
                       ),
+                      _buildSectionLabel('PREFERENCES'),
                       _buildDrawerItem(
                         context,
-                        Icons.group_outlined,
-                        'Team Management',
+                        Icons.lock_outline_rounded,
+                        'Change Password',
                         () {
                           Navigator.pop(context);
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  const TeamManagementScreen(),
+                                  const RecruiterChangePasswordScreen(),
                             ),
                           );
                         },
                         isDarkMode,
                       ),
-                      _buildDrawerItem(
-                        context,
-                        Icons.settings_outlined,
-                        'Settings',
-                        () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SettingsScreen(),
-                            ),
-                          );
-                        },
-                        isDarkMode,
-                      ),
-
-                      const Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 8,
-                        ),
-                        child: Divider(height: 1, thickness: 0.5),
-                      ),
-
-                      _buildSectionLabel('SUPPORT'),
-                      _buildDrawerItem(
-                        context,
-                        Icons.help_outline_rounded,
-                        'Help & Support',
-                        () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const HelpSupportScreen(),
-                            ),
-                          );
-                        },
-                        isDarkMode,
-                      ),
+                      _ThemeToggleRow(initialIsDark: isDarkMode),
                     ]),
                   ),
                 ),
@@ -235,7 +198,7 @@ class MainDrawer extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 24,
+        top: MediaQuery.of(context).padding.top + 8,
         bottom: 24,
         left: 20,
         right: 20,
@@ -493,6 +456,141 @@ class MainDrawer extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ThemeToggleRow extends StatefulWidget {
+  final bool initialIsDark;
+  const _ThemeToggleRow({required this.initialIsDark});
+
+  @override
+  State<_ThemeToggleRow> createState() => _ThemeToggleRowState();
+}
+
+class _ThemeToggleRowState extends State<_ThemeToggleRow> {
+  late bool _isDark;
+
+  @override
+  void initState() {
+    super.initState();
+    _isDark = widget.initialIsDark;
+  }
+
+  @override
+  void didUpdateWidget(covariant _ThemeToggleRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialIsDark != widget.initialIsDark) {
+      _isDark = widget.initialIsDark;
+    }
+  }
+
+  void _handleToggle() {
+    setState(() {
+      _isDark = !_isDark;
+    });
+    // Delay the heavy global theme rebuild so the local animation is smooth
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (mounted) {
+        Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: _handleToggle,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.contrast_rounded,
+                  color: Colors.blueGrey[400],
+                  size: 20,
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  'Theme',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.getText(
+                      widget.initialIsDark,
+                    ).withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 72,
+              height: 36,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: _isDark
+                    ? const Color(0xFF1E293B)
+                    : const Color(0xFFE2E8F0),
+              ),
+              child: Stack(
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 6.0),
+                      child: _isDark
+                          ? const Text('🌞', style: TextStyle(fontSize: 19))
+                          : const SizedBox.shrink(),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 6.0),
+                      child: !_isDark
+                          ? const Text('🌙', style: TextStyle(fontSize: 19))
+                          : const SizedBox.shrink(),
+                    ),
+                  ),
+                  AnimatedAlign(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    alignment: _isDark
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _isDark
+                              ? const Color(0xFF334155)
+                              : Colors.white,
+                          boxShadow: [
+                            if (!_isDark)
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

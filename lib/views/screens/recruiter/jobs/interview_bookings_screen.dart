@@ -7,7 +7,7 @@ import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart'
 import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
-import 'package:hirematrix/controllers/recruiter_controller/language_controller.dart';
+
 
 class InterviewBookingsScreen extends StatefulWidget {
   const InterviewBookingsScreen({super.key});
@@ -82,7 +82,6 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final lang = Provider.of<LanguageController>(context);
     Responsive().init(context);
 
     return Scaffold(
@@ -95,7 +94,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          lang.translate('interview_bookings'),
+          'Interview Bookings',
           style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
@@ -114,7 +113,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
               _buildFilterBar(isDark),
               Expanded(
                 child: _bookings.isEmpty 
-                  ? _buildEmptyState(isDark, lang)
+                  ? _buildEmptyState(isDark)
                   : ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       itemCount: _bookings.length,
@@ -426,7 +425,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
     );
   }
 
-  Widget _buildEmptyState(bool isDark, LanguageController lang) {
+  Widget _buildEmptyState(bool isDark) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

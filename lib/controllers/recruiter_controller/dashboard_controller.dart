@@ -23,8 +23,10 @@ class DashboardController extends ChangeNotifier {
   bool get isLoading => _isLoading;
   int get notificationCount => _notificationCount;
 
-  Future<void> fetchDashboard(String recruiterId,
-      {AuthController? auth}) async {
+  Future<void> fetchDashboard(
+    String recruiterId, {
+    AuthController? auth,
+  }) async {
     _isLoading = true;
     notifyListeners();
 
@@ -77,12 +79,14 @@ class DashboardController extends ChangeNotifier {
 
       // Deep cast specific sub-maps to avoid type errors in UI
       if (_dashboardData['stats'] != null) {
-        _dashboardData['stats'] =
-            Map<String, dynamic>.from(_dashboardData['stats'] as Map);
+        _dashboardData['stats'] = Map<String, dynamic>.from(
+          _dashboardData['stats'] as Map,
+        );
       }
       if (_dashboardData['pipeline_stats'] != null) {
-        _dashboardData['pipeline_stats'] =
-            Map<String, dynamic>.from(_dashboardData['pipeline_stats'] as Map);
+        _dashboardData['pipeline_stats'] = Map<String, dynamic>.from(
+          _dashboardData['pipeline_stats'] as Map,
+        );
       }
 
       // Check for invalid session (e.g. database reset)
@@ -94,7 +98,8 @@ class DashboardController extends ChangeNotifier {
       // Refresh recruiter info if returned in dashboard response (for verified status)
       if (auth != null && _dashboardData['recruiter'] != null) {
         final freshRecruiter = Recruiter.fromJson(
-            _dashboardData['recruiter'] as Map<String, dynamic>);
+          _dashboardData['recruiter'] as Map<String, dynamic>,
+        );
         auth.updateRecruiterInfo(freshRecruiter);
       }
 
@@ -150,9 +155,16 @@ class DashboardController extends ChangeNotifier {
           final sk = app['status_key'].toString().toLowerCase().trim();
           if (sk.isNotEmpty) return sk;
         }
-        final status = (app['status'] ?? '').toString().toLowerCase().trim().replaceAll(' ', '_').replaceAll('-', '_');
+        final status = (app['status'] ?? '')
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replaceAll(' ', '_')
+            .replaceAll('-', '_');
         if (status.isEmpty) return 'applied';
-        if (status == 'interview' || status == 'interview_scheduled' || status == 'interview_slot_booked') {
+        if (status == 'interview' ||
+            status == 'interview_scheduled' ||
+            status == 'interview_slot_booked') {
           return 'interview_slot_booked';
         }
         if (status == 'offer' || status == 'offered' || status == 'selected') {
@@ -189,15 +201,25 @@ class DashboardController extends ChangeNotifier {
 
       double safeRate(int numerator, int denominator) {
         if (denominator <= 0) return 0.0;
-        return double.parse(((numerator / denominator) * 100).toStringAsFixed(1));
+        return double.parse(
+          ((numerator / denominator) * 100).toStringAsFixed(1),
+        );
       }
 
       // If denominator is 0 for stages, rate should be null (matching PHP backend)
       _conversionMetrics = {
-        'application_to_screening': total > 0 ? safeRate(screenedCount, total) : null,
-        'screening_to_shortlist': screenedCount > 0 ? safeRate(shortlistedCount, screenedCount) : null,
-        'shortlist_to_hr_interview': shortlistedCount > 0 ? safeRate(hrScheduledCount, shortlistedCount) : null,
-        'hr_interview_to_selection': hrCompletedCount > 0 ? safeRate(selectedCount, hrCompletedCount) : null,
+        'application_to_screening': total > 0
+            ? safeRate(screenedCount, total)
+            : null,
+        'screening_to_shortlist': screenedCount > 0
+            ? safeRate(shortlistedCount, screenedCount)
+            : null,
+        'shortlist_to_hr_interview': shortlistedCount > 0
+            ? safeRate(hrScheduledCount, shortlistedCount)
+            : null,
+        'hr_interview_to_selection': hrCompletedCount > 0
+            ? safeRate(selectedCount, hrCompletedCount)
+            : null,
         'overall_conversion': safeRate(selectedCount, total),
       };
 
@@ -206,7 +228,8 @@ class DashboardController extends ChangeNotifier {
       final stats = _dashboardData['stats'] as Map<String, dynamic>;
 
       // Align Conversion Rate quick stat with overall_conversion (website behavior)
-      stats['conversion_rate'] = "${_conversionMetrics['overall_conversion'] ?? 0.0}%";
+      stats['conversion_rate'] =
+          "${_conversionMetrics['overall_conversion'] ?? 0.0}%";
 
       // Active Roles → jobs.job_status='Active'
       stats['open_jobs'] ??= jobs.where((j) {
@@ -219,15 +242,18 @@ class DashboardController extends ChangeNotifier {
           (pipelineStats['Applied'] ?? 0) + (pipelineStats['Screening'] ?? 0);
 
       // Drop Rate → rejected/decisioned ratio
-      int totalDecisioned = (pipelineStats['Interview'] ?? 0) +
+      int totalDecisioned =
+          (pipelineStats['Interview'] ?? 0) +
           (pipelineStats['Hired'] ?? 0) +
           (pipelineStats['Rejected'] ?? 0);
       int rejectedCount = pipelineStats['Rejected'] ?? 0;
-      double dropRate =
-          totalDecisioned > 0 ? (rejectedCount / totalDecisioned) * 100 : 0.0;
+      double dropRate = totalDecisioned > 0
+          ? (rejectedCount / totalDecisioned) * 100
+          : 0.0;
       stats['drop_rate'] = "${dropRate.toStringAsFixed(1)}%";
-      stats['drop_status'] =
-          dropRate > 25 ? 'High Risk' : (dropRate > 15 ? 'Alert' : 'Low Risk');
+      stats['drop_status'] = dropRate > 25
+          ? 'High Risk'
+          : (dropRate > 15 ? 'Alert' : 'Low Risk');
 
       // Hiring Velocity → derive from apps + interviews + hires
       int hiredCount = (pipelineStats['Hired'] ?? 0);
@@ -252,17 +278,22 @@ class DashboardController extends ChangeNotifier {
       // 5. Recent Hiring Insights (Dynamic Calculation)
       if (jobs.isNotEmpty) {
         var sortedJobs = List.from(jobs)
-          ..sort((a, b) =>
-              (int.tryParse(b['applications_count']?.toString() ?? '0') ?? 0)
-                  .compareTo(int.tryParse(
-                          a['applications_count']?.toString() ?? '0') ??
-                      0));
+          ..sort(
+            (
+              a,
+              b,
+            ) => (int.tryParse(b['applications_count']?.toString() ?? '0') ?? 0)
+                .compareTo(
+                  int.tryParse(a['applications_count']?.toString() ?? '0') ?? 0,
+                ),
+          );
         stats['top_role'] = sortedJobs.first['job_title'];
         stats['top_role_apps'] = sortedJobs.first['applications_count'];
       }
 
       debugPrint(
-          "Recent Insights: Most active role is '${stats['top_role']}' with ${stats['top_role_apps']} applications.");
+        "Recent Insights: Most active role is '${stats['top_role']}' with ${stats['top_role_apps']} applications.",
+      );
 
       debugPrint("--- DASHBOARD BACKEND SYNC SUCCESS ---");
     } catch (e, st) {
@@ -276,12 +307,15 @@ class DashboardController extends ChangeNotifier {
   }
 
   Future<void> markAsRead(String notificationId, String recruiterId) async {
-    final response =
-        await _apiService.markNotificationRead(notificationId, recruiterId);
+    final response = await _apiService.markNotificationRead(
+      notificationId,
+      recruiterId,
+    );
     if (response['success'] == true) {
       // Optimistic update
-      final index = _notifications
-          .indexWhere((n) => n['id'].toString() == notificationId);
+      final index = _notifications.indexWhere(
+        (n) => n['id'].toString() == notificationId,
+      );
       if (index != -1) {
         _notifications[index]['is_read'] = true;
         _notificationCount = _notifications
@@ -300,6 +334,26 @@ class DashboardController extends ChangeNotifier {
       }
       _notificationCount = 0;
       notifyListeners();
+    }
+  }
+
+  Future<void> deleteNotification(String notificationId, String recruiterId) async {
+    try {
+      final response = await _apiService.deleteNotification(
+        notificationId,
+        recruiterId,
+      );
+      if (response['success'] == true) {
+        _notifications.removeWhere(
+          (n) => n['id'].toString() == notificationId,
+        );
+        _notificationCount = _notifications
+            .where((n) => n['is_read'] == 0 || n['is_read'] == false)
+            .length;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("Error deleting notification: $e");
     }
   }
 

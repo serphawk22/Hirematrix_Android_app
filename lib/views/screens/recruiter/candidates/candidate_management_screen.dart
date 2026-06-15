@@ -41,6 +41,8 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
       ''; // '' (All), 'yes' (With Resume), 'no' (Without Resume)
   TabController? _tabController;
 
+  String? _lastFetchedRecruiterId;
+
   @override
   void initState() {
     super.initState();
@@ -48,9 +50,19 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
       _selectedJobId = widget.jobId!;
     }
     _updateTabController();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
-    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final auth = Provider.of<AuthController>(context);
+    if (auth.currentRecruiter != null &&
+        auth.currentRecruiter!.id != _lastFetchedRecruiterId) {
+      _lastFetchedRecruiterId = auth.currentRecruiter!.id;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadData();
+      });
+    }
   }
 
   void _updateTabController() {

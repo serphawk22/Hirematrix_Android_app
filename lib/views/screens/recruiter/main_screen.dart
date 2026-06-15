@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hirematrix/views/screens/recruiter/drawer/company_details_screen.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
@@ -9,11 +10,11 @@ import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart
 import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/applications_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
-import 'package:hirematrix/controllers/recruiter_controller/language_controller.dart';
+
 import 'dashboard/dashboard_screen.dart';
 import 'candidates/candidate_management_screen.dart';
-import 'profile/profile_screen.dart';
-import 'jobs/manage_jobs_screen.dart'; 
+
+import 'jobs/manage_jobs_screen.dart';
 import 'jobs/post_job_screen.dart';
 import 'notifications/notifications_screen.dart';
 
@@ -42,7 +43,7 @@ class _MainScreenState extends State<MainScreen> {
       DashboardScreen(onSwitchTab: switchTab),
       const ManageJobsScreen(),
       const CandidateManagementScreen(),
-      const ProfileScreen(),
+      const CompanyDetailsScreen(isStandalone: true),
     ];
   }
 
@@ -55,14 +56,20 @@ class _MainScreenState extends State<MainScreen> {
     final recruiterId = auth.currentRecruiter?.id;
     if (recruiterId != null) {
       if (index == 0) {
-        Provider.of<DashboardController>(context, listen: false)
-            .fetchDashboard(recruiterId, auth: auth);
+        Provider.of<DashboardController>(
+          context,
+          listen: false,
+        ).fetchDashboard(recruiterId, auth: auth);
       } else if (index == 1) {
-        Provider.of<JobsController>(context, listen: false)
-            .fetchJobs(recruiterId);
+        Provider.of<JobsController>(
+          context,
+          listen: false,
+        ).fetchJobs(recruiterId);
       } else if (index == 2) {
-        Provider.of<ApplicationsController>(context, listen: false)
-            .fetchApplications(recruiterId);
+        Provider.of<ApplicationsController>(
+          context,
+          listen: false,
+        ).fetchApplications(recruiterId);
       }
     }
   }
@@ -83,10 +90,16 @@ class _MainScreenState extends State<MainScreen> {
 
     switch (_currentIndex) {
       case 1: // Jobs
-        Provider.of<JobsController>(context, listen: false).fetchJobs(recruiterId, query: query);
+        Provider.of<JobsController>(
+          context,
+          listen: false,
+        ).fetchJobs(recruiterId, query: query);
         break;
       case 2: // Talent
-        Provider.of<ApplicationsController>(context, listen: false).fetchApplications(recruiterId, query: query);
+        Provider.of<ApplicationsController>(
+          context,
+          listen: false,
+        ).fetchApplications(recruiterId, query: query);
         break;
     }
   }
@@ -104,21 +117,19 @@ class _MainScreenState extends State<MainScreen> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final primary = AppColors.getPrimary(isDarkMode);
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final lang = Provider.of<LanguageController>(context);
 
     return Scaffold(
       appBar: _buildDynamicAppBar(isDarkMode, themeProvider),
       drawer: const MainDrawer(),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: isDarkMode ? AppColors.bgCardDark : Colors.white,
           border: Border(
             top: BorderSide(
-              color: isDarkMode ? Colors.white.withValues(alpha: 0.05) : Colors.grey[200]!,
+              color: isDarkMode
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.grey[200]!,
               width: 1,
             ),
           ),
@@ -139,7 +150,9 @@ class _MainScreenState extends State<MainScreen> {
               onTap: switchTab,
               backgroundColor: Colors.transparent,
               selectedItemColor: primary,
-              unselectedItemColor: isDarkMode ? Colors.white.withValues(alpha: 0.4) : Colors.grey[400],
+              unselectedItemColor: isDarkMode
+                  ? Colors.white.withValues(alpha: 0.4)
+                  : Colors.grey[400],
               selectedLabelStyle: GoogleFonts.inter(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
@@ -152,10 +165,30 @@ class _MainScreenState extends State<MainScreen> {
               type: BottomNavigationBarType.fixed,
               elevation: 0,
               items: [
-                _buildNavItem(Icons.home_outlined, Icons.home_rounded, lang.translate('home'), primary),
-                _buildNavItem(Icons.business_center_outlined, Icons.business_center_rounded, lang.translate('jobs'), primary),
-                _buildNavItem(Icons.people_outline_rounded, Icons.people_rounded, lang.translate('talent'), primary),
-                _buildNavItem(Icons.person_outline_rounded, Icons.person_rounded, lang.translate('account'), primary),
+                _buildNavItem(
+                  Icons.home_outlined,
+                  Icons.home_rounded,
+                  'Home',
+                  primary,
+                ),
+                _buildNavItem(
+                  Icons.business_center_outlined,
+                  Icons.business_center_rounded,
+                  'Jobs',
+                  primary,
+                ),
+                _buildNavItem(
+                  Icons.people_outline_rounded,
+                  Icons.people_rounded,
+                  'Talent',
+                  primary,
+                ),
+                _buildNavItem(
+                  Icons.person_outline_rounded,
+                  Icons.person_rounded,
+                  'Profile',
+                  primary,
+                ),
               ],
             ),
           ),
@@ -164,7 +197,12 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  BottomNavigationBarItem _buildNavItem(IconData icon, IconData activeIcon, String label, Color primary) {
+  BottomNavigationBarItem _buildNavItem(
+    IconData icon,
+    IconData activeIcon,
+    String label,
+    Color primary,
+  ) {
     return BottomNavigationBarItem(
       icon: Icon(icon, size: 22),
       activeIcon: Container(
@@ -179,7 +217,10 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  PreferredSizeWidget _buildDynamicAppBar(bool isDark, ThemeProvider themeProvider) {
+  PreferredSizeWidget? _buildDynamicAppBar(
+    bool isDark,
+    ThemeProvider themeProvider,
+  ) {
     if (_isSearching) {
       return AppBar(
         backgroundColor: isDark ? AppColors.bgDark : Colors.white,
@@ -193,7 +234,9 @@ class _MainScreenState extends State<MainScreen> {
           height: 40,
           margin: const EdgeInsets.only(right: 16),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[100],
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.grey[100],
             borderRadius: BorderRadius.circular(10),
           ),
           child: TextField(
@@ -203,7 +246,11 @@ class _MainScreenState extends State<MainScreen> {
             decoration: InputDecoration(
               hintText: 'Search workspace...',
               hintStyle: GoogleFonts.inter(fontSize: 13, color: Colors.grey),
-              prefixIcon: const Icon(Icons.search_rounded, size: 18, color: Colors.grey),
+              prefixIcon: const Icon(
+                Icons.search_rounded,
+                size: 18,
+                color: Colors.grey,
+              ),
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
@@ -221,7 +268,10 @@ class _MainScreenState extends State<MainScreen> {
       case 1: // Jobs
         return _buildPageHeader(isDark, 'Jobs', [
           _buildHeaderActionButton(context, isDark, '+ Post Role', () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const PostJobScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PostJobScreen()),
+            );
           }),
           const SizedBox(width: 16),
         ]);
@@ -233,22 +283,29 @@ class _MainScreenState extends State<MainScreen> {
               final auth = Provider.of<AuthController>(context, listen: false);
               final recruiterId = auth.currentRecruiter?.id;
               if (recruiterId != null) {
-                Provider.of<ApplicationsController>(context, listen: false).fetchApplications(recruiterId);
+                Provider.of<ApplicationsController>(
+                  context,
+                  listen: false,
+                ).fetchApplications(recruiterId);
               }
             },
           ),
-          IconButton(icon: const Icon(Icons.tune_rounded, size: 20), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.tune_rounded, size: 20),
+            onPressed: () {},
+          ),
         ]);
       case 3: // Account
-        return _buildPageHeader(isDark, 'Recruiter Profile', [
-          IconButton(icon: const Icon(Icons.edit_outlined), onPressed: () {}),
-        ]);
+        return null;
       default:
         return _buildHomeHeader(isDark, themeProvider);
     }
   }
 
-  PreferredSizeWidget _buildHomeHeader(bool isDark, ThemeProvider themeProvider) {
+  PreferredSizeWidget _buildHomeHeader(
+    bool isDark,
+    ThemeProvider themeProvider,
+  ) {
     return AppBar(
       backgroundColor: isDark ? AppColors.bgDark : Colors.white,
       elevation: 0,
@@ -261,27 +318,16 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
       titleSpacing: 0,
-      title: const HireMatrixLogo(
-        height: 32,
-      ),
-      actions: [
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          icon: Icon(isDark ? Icons.light_mode_rounded : Icons.dark_mode_outlined, size: 18),
-          onPressed: () => themeProvider.toggleTheme(),
-        ),
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          icon: const Icon(Icons.search_rounded, size: 20),
-          onPressed: () => setState(() => _isSearching = true),
-        ),
-        _buildNotificationIcon(),
-        const SizedBox(width: 8),
-      ],
+      title: const HireMatrixLogo(height: 32),
+      actions: [_buildNotificationIcon(), const SizedBox(width: 8)],
     );
   }
 
-  PreferredSizeWidget _buildPageHeader(bool isDark, String title, List<Widget> actions) {
+  PreferredSizeWidget _buildPageHeader(
+    bool isDark,
+    String title,
+    List<Widget> actions,
+  ) {
     return AppBar(
       backgroundColor: isDark ? AppColors.bgDark : Colors.white,
       elevation: 0,
@@ -303,7 +349,12 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildHeaderActionButton(BuildContext context, bool isDark, String label, VoidCallback onTap) {
+  Widget _buildHeaderActionButton(
+    BuildContext context,
+    bool isDark,
+    String label,
+    VoidCallback onTap,
+  ) {
     return Center(
       child: InkWell(
         onTap: onTap,
@@ -313,7 +364,9 @@ class _MainScreenState extends State<MainScreen> {
           decoration: BoxDecoration(
             color: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(100),
-            border: Border.all(color: AppColors.getPrimary(isDark).withValues(alpha: 0.2)),
+            border: Border.all(
+              color: AppColors.getPrimary(isDark).withValues(alpha: 0.2),
+            ),
           ),
           child: Text(
             label,
@@ -340,7 +393,12 @@ class _MainScreenState extends State<MainScreen> {
               visualDensity: VisualDensity.compact,
               icon: const Icon(Icons.notifications_none_rounded, size: 20),
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationsScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationsScreen(),
+                  ),
+                );
               },
             ),
             if (count > 0)
