@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import '../utils/api_constants.dart';
 
 class ApiException implements Exception {
@@ -20,69 +20,8 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  String? _cachedBaseUrl;
-  Future<String>? _baseUrlFuture;
-
-  /// Retrieves the base URL, testing connectivity to dev endpoints if not cached.
   Future<String> getBaseUrl() {
-    if (_cachedBaseUrl != null) {
-      return Future.value(_cachedBaseUrl);
-    }
-    if (_baseUrlFuture != null) {
-      return _baseUrlFuture!;
-    }
-    
-    _baseUrlFuture = _determineBaseUrl();
-    return _baseUrlFuture!;
-  }
-
-  Future<String> _determineBaseUrl() async {
-    // 1. Try to read from SharedPreferences first
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedBaseUrl = prefs.getString('cached_api_base_url');
-      if (savedBaseUrl != null) {
-        final uri = Uri.parse(savedBaseUrl);
-        // Test if the saved base URL still works (fast probe)
-        if (await _testConnection(uri.host)) {
-          _cachedBaseUrl = savedBaseUrl;
-          _baseUrlFuture = null;
-          return _cachedBaseUrl!;
-        }
-      }
-    } catch (e) {
-      debugPrint("Error reading cached base URL: $e");
-    }
-
-    // List of possible IPs to try (Priority: Emulator > PC LAN)
-    final List<String> ips = [
-      ApiConstants.emulatorIp, // 10.0.2.2
-      ApiConstants.pcIp, // 10.25.155.26
-    ];
-
-    for (String ip in ips) {
-      debugPrint("Testing connection to $ip...");
-      if (await _testConnection(ip)) {
-        _cachedBaseUrl = "http://$ip/${ApiConstants.apiBaseFolder}";
-        debugPrint("Successfully connected via: $_cachedBaseUrl");
-        // Save to SharedPreferences
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('cached_api_base_url', _cachedBaseUrl!);
-        } catch (e) {
-          debugPrint("Failed to save base URL cache: $e");
-        }
-        _baseUrlFuture = null;
-        return _cachedBaseUrl!;
-      }
-    }
-
-    // Default fallback to PC IP if all tests fail (Better for physical devices)
-    _cachedBaseUrl =
-        "http://${ApiConstants.pcIp}/${ApiConstants.apiBaseFolder}";
-    debugPrint("All tests failed, using fallback PC IP: $_cachedBaseUrl");
-    _baseUrlFuture = null;
-    return _cachedBaseUrl!;
+    return Future.value(ApiConstants.baseUrl);
   }
 
   /// Returns absolute URL for assets/images
@@ -114,21 +53,7 @@ class ApiService {
     return '$publicUrl$resolvedPath';
   }
 
-  /// Internal health check for the API server.
-  Future<bool> _testConnection(String ip) async {
-    try {
-      debugPrint("Probing http://$ip...");
-      // Just hit the public folder. If Apache responds, it's alive.
-      final response = await http
-          .get(Uri.parse("http://$ip/ai-job-portal/public/index.php"))
-          .timeout(const Duration(seconds: 4));
 
-      return response.statusCode < 500;
-    } catch (e) {
-      debugPrint("Probe to $ip failed: $e");
-      return false;
-    }
-  }
 
   // --- Auth Methods ---
 

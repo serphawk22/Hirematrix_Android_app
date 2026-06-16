@@ -1216,11 +1216,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
             itemBuilder: (context, index) {
               final company = companies[index];
               final name = company['name'] ?? 'Company';
-              final logo = company['logo'] ?? '';
+              final dbLogo = company['logo']?.toString().trim() ?? '';
+              final website = company['website']?.toString().trim() ?? '';
               final industry = company['industry'] ?? '';
               final jobCount =
                   int.tryParse(company['job_count']?.toString() ?? '0') ?? 0;
               final initial = name.isNotEmpty ? name[0].toUpperCase() : 'C';
+
+              String googleLogoUrl = '';
+              if (website.isNotEmpty) {
+                try {
+                  var uri = Uri.parse(website.startsWith('http') ? website : 'https://$website');
+                  var host = uri.host.replaceAll('www.', '');
+                  if (host.isNotEmpty) {
+                    googleLogoUrl = 'https://www.google.com/s2/favicons?domain=$host&sz=96';
+                  }
+                } catch (_) {}
+              }
+
+              final logoUrl = dbLogo.isNotEmpty 
+                  ? ApiConstants.resolveImageUrl(dbLogo) 
+                  : googleLogoUrl;
 
               return InkWell(
                 onTap: () {
@@ -1268,11 +1284,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           color: isDark ? Colors.grey[800] : Colors.grey[100],
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: logo.isNotEmpty
+                        child: logoUrl.isNotEmpty
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
                                 child: Image.network(
-                                  ApiConstants.resolveImageUrl(logo),
+                                  logoUrl,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
                                       Center(

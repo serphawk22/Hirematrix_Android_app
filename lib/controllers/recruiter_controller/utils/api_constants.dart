@@ -1,8 +1,10 @@
 class ApiConstants {
-  static const String emulatorIp = "10.0.2.2";
-  static const String pcIp =
-      "10.25.155.26"; // Your actual PC IP for physical devices
-  static const String apiBaseFolder = "ai-job-portal/public/api/mobile";
+  // Local network testing setup (Uncomment to use local backend)
+  static const String baseUrl =
+      "http://10.25.155.26/ai-job-portal/public/api/mobile";
+
+  // Live Backend URL (Comment this out if using local backend)
+  //static const String baseUrl = "https://hirematrix.serphawk.in/api/mobile";
 
   // Mobile Endpoints
   static const String login = "login";

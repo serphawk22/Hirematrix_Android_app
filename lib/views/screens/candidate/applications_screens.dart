@@ -977,36 +977,7 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
           ),
           const SizedBox(height: 12),
         ],
-        if (canShowCoaching) ...[
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => _launchWebUrl(
-                'candidate/applications/$applicationId/mock-interview',
-              ),
-              icon: Icon(
-                Icons.forum_outlined,
-                size: 18,
-                color: AppColors.getPrimary(isDark),
-              ),
-              label: Text(
-                'Continue Preparation',
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.getPrimary(isDark),
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: AppColors.getPrimary(isDark)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-        ],
+
         if (isWithdrawAllowed) ...[
           SizedBox(
             width: double.infinity,
