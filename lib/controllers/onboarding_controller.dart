@@ -32,6 +32,36 @@ class OnboardingController extends GetxController {
 
   int userId = 0;
 
+  bool isStepComplete(int index) {
+    if (index == 0) {
+      return nameController.text.isNotEmpty &&
+          phoneController.text.isNotEmpty &&
+          locationController.text.isNotEmpty &&
+          gender.value.isNotEmpty &&
+          dateOfBirthController.text.isNotEmpty &&
+          bioController.text.isNotEmpty;
+    } else if (index == 1) {
+      return skillsController.text.isNotEmpty;
+    } else if (index == 2) {
+      return educations.isNotEmpty;
+    } else if (index == 3) {
+      return isFresher.value || experiences.isNotEmpty;
+    }
+    return false;
+  }
+
+  int get progressPercent {
+    int completedCount = 0;
+    for (int i = 0; i < 4; i++) {
+      if (isStepComplete(i)) completedCount++;
+    }
+    // PHP calculates progress out of 5 total steps: personal, skills, education, experience, review.
+    // If we're at the review step (currentStep.value >= 4), the 4 data steps are checked.
+    // The final 5th step is "review", which is marked complete only after they click "Finish and Go to Dashboard".
+    // For visual parity during onboarding, max is 4/5 * 100 = 80%.
+    return ((completedCount / 5) * 100).toInt();
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -268,7 +298,7 @@ class OnboardingController extends GetxController {
         } else {
           Get.snackbar(
             'Error',
-            resData['message'] ?? 'Failed to parse resume',
+            _getErrorMessage(resData, 'Failed to parse resume'),
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red,
             colorText: Colors.white,
@@ -380,6 +410,15 @@ class OnboardingController extends GetxController {
     }
   }
 
+  String _getErrorMessage(Map<String, dynamic> res, String defaultMsg) {
+    if (res['messages'] is Map && (res['messages'] as Map).isNotEmpty) {
+      return (res['messages'] as Map).values.first.toString();
+    }
+    if (res['message'] != null) return res['message'].toString();
+    if (res['error'] != null && res['error'] is String) return res['error'].toString();
+    return defaultMsg;
+  }
+
   // API Calls
   Future<bool> savePersonalDetails() async {
     isLoading.value = true;
@@ -408,7 +447,7 @@ class OnboardingController extends GetxController {
       } else {
         Get.snackbar(
           'Error',
-          res['message'] ?? 'Failed to save personal details',
+          _getErrorMessage(res, 'Failed to save personal details'),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
@@ -450,7 +489,7 @@ class OnboardingController extends GetxController {
       } else {
         Get.snackbar(
           'Error',
-          res['message'] ?? 'Failed to save skills',
+          _getErrorMessage(res, 'Failed to save skills'),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
@@ -505,7 +544,7 @@ class OnboardingController extends GetxController {
       } else {
         Get.snackbar(
           'Error',
-          res['message'] ?? 'Failed to save education',
+          _getErrorMessage(res, 'Failed to save education'),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
@@ -567,7 +606,7 @@ class OnboardingController extends GetxController {
       } else {
         Get.snackbar(
           'Error',
-          res['message'] ?? 'Failed to save experience',
+          _getErrorMessage(res, 'Failed to save experience'),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
@@ -605,7 +644,7 @@ class OnboardingController extends GetxController {
       } else {
         Get.snackbar(
           'Error',
-          res['message'] ?? 'Failed to complete onboarding',
+          _getErrorMessage(res, 'Failed to complete onboarding'),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,

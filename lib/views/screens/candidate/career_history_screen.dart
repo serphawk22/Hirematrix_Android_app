@@ -32,7 +32,9 @@ class _CareerHistoryScreenState extends State<CareerHistoryScreen> {
       final mainBg = AppColors.getBackground(isDark);
       final cardColor = isDark ? AppColors.getCard(isDark) : Colors.white;
       final textColor = isDark ? Colors.white : const Color(0xFF111827);
-      final subtitleColor = isDark ? Colors.grey[400]! : const Color(0xFF475569);
+      final subtitleColor = isDark
+          ? Colors.grey[400]!
+          : const Color(0xFF475569);
       final borderColor = isDark ? Colors.grey[800]! : Colors.grey[200]!;
 
       return Scaffold(
@@ -56,7 +58,9 @@ class _CareerHistoryScreenState extends State<CareerHistoryScreen> {
         body: controller.isLoading.value
             ? Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.getPrimary(isDark)),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.getPrimary(isDark),
+                  ),
                 ),
               )
             : SafeArea(
@@ -70,7 +74,13 @@ class _CareerHistoryScreenState extends State<CareerHistoryScreen> {
                       children: [
                         _buildHeader(isDark, textColor, subtitleColor),
                         const SizedBox(height: 20),
-                        _buildHistoryList(isDark, cardColor, textColor, subtitleColor, borderColor),
+                        _buildHistoryList(
+                          isDark,
+                          cardColor,
+                          textColor,
+                          subtitleColor,
+                          borderColor,
+                        ),
                       ],
                     ),
                   ),
@@ -170,7 +180,10 @@ class _CareerHistoryScreenState extends State<CareerHistoryScreen> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: isActive
                           ? Colors.green.withOpacity(0.1)
@@ -206,7 +219,11 @@ class _CareerHistoryScreenState extends State<CareerHistoryScreen> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.arrow_downward, size: 14, color: AppColors.getPrimary(isDark)),
+                            Icon(
+                              Icons.arrow_downward,
+                              size: 14,
+                              color: AppColors.getPrimary(isDark),
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               path['target_role'] ?? '',
@@ -238,7 +255,8 @@ class _CareerHistoryScreenState extends State<CareerHistoryScreen> {
                               TextButton(
                                 onPressed: () async {
                                   Get.back();
-                                  final success = await controller.reactivateTransition(path['id']);
+                                  final success = await controller
+                                      .reactivateTransition(path['id']);
                                   if (success) {
                                     Get.back(); // return to main transition screen
                                   }
@@ -255,7 +273,10 @@ class _CareerHistoryScreenState extends State<CareerHistoryScreen> {
                         backgroundColor: AppColors.getPrimary(isDark),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

@@ -7,7 +7,8 @@ import 'package:hirematrix/views/screens/candidate/dashboard_screen.dart';
 import 'package:hirematrix/views/screens/login_screen.dart';
 import 'package:hirematrix/views/screens/candidate/candidate_register_screen.dart'
     show RegisterScreen;
-import 'package:hirematrix/views/screens/recruiter/recruiter_register_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/auth/recruiter_register_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/auth/recruiter_verification_screen.dart';
 import 'package:hirematrix/views/screens/candidate/onboarding_screen.dart';
 import 'package:hirematrix/views/screens/candidate/smart_jobs_screen.dart';
 import 'package:hirematrix/views/screens/candidate/job_search_strategy_screen.dart';
@@ -22,20 +23,22 @@ import 'package:hirematrix/views/screens/candidate/notification_screen.dart';
 import 'package:hirematrix/views/screens/candidate/messages_screen.dart';
 
 // Recruiter Screen and Controller Imports
-import 'package:hirematrix/views/screens/recruiter/main_screen.dart' as rec_main;
-import 'package:hirematrix/views/screens/recruiter/auth/login_screen.dart' as rec_auth;
+import 'package:hirematrix/views/screens/recruiter/main_screen.dart'
+    as rec_main;
 import 'package:provider/provider.dart';
-import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart' as rec_auth_ctrl;
-import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dart' as rec_model;
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart'
+    as rec_auth_ctrl;
+import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dart'
+    as rec_model;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-
 
 class AppRoutes {
   static const String landing = '/';
   static const String login = '/login';
   static const String register = '/register';
   static const String recruiterRegister = '/recruiter/register';
+  static const String recruiterVerify = '/recruiter/verify';
   static const String jobs = '/jobs';
   static const String careerTransition = '/career-transition';
   static const String features = '/features';
@@ -52,7 +55,7 @@ class AppRoutes {
   static const String messages = '/candidate/messages';
   static const String recruiterDashboard = '/recruiter/dashboard';
   static const String recruiterLogin = '/recruiter/login';
-  
+
   static List<GetPage> pages = [
     GetPage(
       name: landing,
@@ -72,6 +75,11 @@ class AppRoutes {
     GetPage(
       name: recruiterRegister,
       page: () => const RecruiterRegisterScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: recruiterVerify,
+      page: () => const RecruiterVerificationScreen(),
       transition: Transition.fadeIn,
     ),
     GetPage(
@@ -151,7 +159,7 @@ class AppRoutes {
     ),
     GetPage(
       name: recruiterLogin,
-      page: () => const RecruiterProviderWrapper(child: rec_auth.LoginScreen()),
+      page: () => const LoginScreen(),
       transition: Transition.fadeIn,
     ),
   ];
@@ -163,7 +171,10 @@ class RecruiterProviderWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final providerAuth = Provider.of<rec_auth_ctrl.AuthController>(context, listen: false);
+    final providerAuth = Provider.of<rec_auth_ctrl.AuthController>(
+      context,
+      listen: false,
+    );
     if (providerAuth.currentRecruiter == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         try {
@@ -172,11 +183,18 @@ class RecruiterProviderWrapper extends StatelessWidget {
           final savedId = prefs.getString('recruiterId');
           final cachedData = prefs.getString('recruiterData');
           if (isLoggedIn && savedId != null && cachedData != null) {
-            final recruiter = rec_model.Recruiter.fromJson(jsonDecode(cachedData));
+            final recruiter = rec_model.Recruiter.fromJson(
+              jsonDecode(cachedData),
+            );
             providerAuth.updateRecruiterInfo(recruiter);
+          } else {
+            // Also clear the global session so main.dart doesn't keep routing here on startup
+            prefs.remove('currentUser');
+            Get.offAllNamed(AppRoutes.landing);
           }
         } catch (e) {
           debugPrint("Wrapper: Error restoring recruiter session: $e");
+          Get.offAllNamed(AppRoutes.landing);
         }
       });
     }

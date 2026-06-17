@@ -104,11 +104,7 @@ class GetStartedCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Icon(
-                      Icons.arrow_forward,
-                      size: 16,
-                      color: Colors.white,
-                    ),
+                    Icon(Icons.arrow_forward, size: 16, color: Colors.white),
                   ],
                 ),
               ),

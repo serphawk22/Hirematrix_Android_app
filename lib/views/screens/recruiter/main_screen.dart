@@ -332,9 +332,11 @@ class _MainScreenState extends State<MainScreen> {
       backgroundColor: isDark ? AppColors.bgDark : Colors.white,
       elevation: 0,
       centerTitle: false,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-        onPressed: () => switchTab(0), // Go back to Home
+      leading: Builder(
+        builder: (context) => IconButton(
+          icon: const Icon(Icons.menu_rounded, size: 22),
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
       ),
       titleSpacing: 0,
       title: Text(

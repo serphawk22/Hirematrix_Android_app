@@ -12,7 +12,8 @@ class AnalyticsDetailsScreen extends StatefulWidget {
   State<AnalyticsDetailsScreen> createState() => _AnalyticsDetailsScreenState();
 }
 
-class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with SingleTickerProviderStateMixin {
+class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final List<String> _tabs = ['Overview', 'Funnel', 'Hiring', 'Reports'];
 
@@ -35,7 +36,10 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
     return Scaffold(
       backgroundColor: isDark ? AppColors.bgDark : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text('Insights', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800)),
+        title: Text(
+          'Insights',
+          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
@@ -44,7 +48,13 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Container(
-            decoration: BoxDecoration(border: Border(bottom: BorderSide(color: isDark ? Colors.white10 : Colors.grey[100]!))),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark ? Colors.white10 : Colors.grey[100]!,
+                ),
+              ),
+            ),
             child: TabBar(
               controller: _tabController,
               isScrollable: true,
@@ -52,7 +62,10 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
               indicatorColor: AppColors.getPrimary(isDark),
               labelColor: AppColors.getPrimary(isDark),
               unselectedLabelColor: Colors.grey,
-              labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700),
+              labelStyle: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
               tabs: _tabs.map((t) => Tab(text: t)).toList(),
             ),
           ),
@@ -73,8 +86,14 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
   Widget _buildOverviewTab(bool isDark) {
     return Consumer<DashboardController>(
       builder: (context, dashboard, child) {
-        final stats = (dashboard.dashboardData['stats'] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-        final trends = (stats['application_trends'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+        final stats =
+            (dashboard.dashboardData['stats'] as Map?)
+                ?.cast<String, dynamic>() ??
+            <String, dynamic>{};
+        final trends =
+            (stats['application_trends'] as List?)
+                ?.cast<Map<String, dynamic>>() ??
+            [];
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -107,16 +126,46 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
         children: [
           _buildSectionTitle('Recruiter Productivity', isDark),
           const SizedBox(height: 12),
-          _buildProductivityCard(isDark, 'Time to Hire', '12 Days', 0.7, Colors.blue),
+          _buildProductivityCard(
+            isDark,
+            'Time to Hire',
+            '12 Days',
+            0.7,
+            Colors.blue,
+          ),
           const SizedBox(height: 10),
-          _buildProductivityCard(isDark, 'Interview Rate', '4.2/day', 0.85, Colors.orange),
+          _buildProductivityCard(
+            isDark,
+            'Interview Rate',
+            '4.2/day',
+            0.85,
+            Colors.orange,
+          ),
           const SizedBox(height: 10),
-          _buildProductivityCard(isDark, 'Offer Success', '92%', 0.92, Colors.green),
+          _buildProductivityCard(
+            isDark,
+            'Offer Success',
+            '92%',
+            0.92,
+            Colors.green,
+          ),
           const SizedBox(height: 24),
           _buildSectionTitle('Active Jobs Performance', isDark),
           const SizedBox(height: 12),
-          _buildJobPerfItem(isDark, 'Senior UI Designer', '48 Apps', '12 Intv', Colors.blue),
-          _buildJobPerfItem(isDark, 'Backend Developer', '124 Apps', '8 Intv', Colors.orange),
+          _buildJobPerfItem(
+            isDark,
+            'Senior UI Designer',
+            '48 Apps',
+            '12 Intv',
+            Colors.blue,
+          ),
+          _buildJobPerfItem(
+            isDark,
+            'Backend Developer',
+            '124 Apps',
+            '8 Intv',
+            Colors.orange,
+          ),
         ],
       ),
     );
@@ -127,10 +176,20 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.description_outlined, size: 64, color: AppColors.getPrimary(isDark).withValues(alpha: 0.2)),
+          Icon(
+            Icons.description_outlined,
+            size: 64,
+            color: AppColors.getPrimary(isDark).withValues(alpha: 0.2),
+          ),
           const SizedBox(height: 16),
-          Text('Monthly Hiring Report', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
-          Text('Generated on March 1st, 2024', style: GoogleFonts.inter(fontSize: 13, color: Colors.grey)),
+          Text(
+            'Monthly Hiring Report',
+            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+          Text(
+            'Generated on March 1st, 2024',
+            style: GoogleFonts.inter(fontSize: 13, color: Colors.grey),
+          ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () {},
@@ -144,7 +203,14 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
   }
 
   Widget _buildSectionTitle(String title, bool isDark) {
-    return Text(title, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: isDark ? Colors.white : AppColors.textLight));
+    return Text(
+      title,
+      style: GoogleFonts.inter(
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: isDark ? Colors.white : AppColors.textLight,
+      ),
+    );
   }
 
   Widget _buildPerformanceGrid(bool isDark, Map<String, dynamic> stats) {
@@ -156,22 +222,59 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
       mainAxisSpacing: 10,
       childAspectRatio: 1.85, // Compact horizontal rectangle
       children: [
-        _buildMiniDetailCard('Time to Hire', stats['time_to_hire'] ?? 'N/A', 'Optimal', Icons.timer_outlined, Colors.blue, isDark),
-        _buildMiniDetailCard('Offer Accept', stats['conversion_rate'] ?? '0%', 'Healthy', Icons.check_circle_outline, Colors.green, isDark),
-        _buildMiniDetailCard('Need Review', (stats['need_review'] ?? 0).toString(), 'Pending', Icons.pending_actions_rounded, Colors.orange, isDark),
-        _buildMiniDetailCard('Active Roles', (stats['open_jobs'] ?? 0).toString(), 'High', Icons.business_center_rounded, Colors.purple, isDark),
+        _buildMiniDetailCard(
+          'Time to Hire',
+          stats['time_to_hire'] ?? 'N/A',
+          'Optimal',
+          Icons.timer_outlined,
+          Colors.blue,
+          isDark,
+        ),
+        _buildMiniDetailCard(
+          'Offer Accept',
+          stats['conversion_rate'] ?? '0%',
+          'Healthy',
+          Icons.check_circle_outline,
+          Colors.green,
+          isDark,
+        ),
+        _buildMiniDetailCard(
+          'Need Review',
+          (stats['need_review'] ?? 0).toString(),
+          'Pending',
+          Icons.pending_actions_rounded,
+          Colors.orange,
+          isDark,
+        ),
+        _buildMiniDetailCard(
+          'Active Roles',
+          (stats['open_jobs'] ?? 0).toString(),
+          'High',
+          Icons.business_center_rounded,
+          Colors.purple,
+          isDark,
+        ),
       ],
     );
   }
 
-  Widget _buildMiniDetailCard(String label, String val, String status, IconData icon, Color color, bool isDark) {
+  Widget _buildMiniDetailCard(
+    String label,
+    String val,
+    String status,
+    IconData icon,
+    Color color,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: isDark ? AppColors.getCard(isDark) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[200]!.withValues(alpha: 0.5),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.grey[200]!.withValues(alpha: 0.5),
           width: 1,
         ),
         boxShadow: [
@@ -186,7 +289,8 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
       child: Row(
         children: [
           Container(
-            width: 34, height: 34,
+            width: 34,
+            height: 34,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
@@ -252,8 +356,11 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
   Widget _buildFunnelTab(bool isDark) {
     return Consumer<DashboardController>(
       builder: (context, dashboard, child) {
-        final pipeline = (dashboard.dashboardData['pipeline_stats'] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-        
+        final pipeline =
+            (dashboard.dashboardData['pipeline_stats'] as Map?)
+                ?.cast<String, dynamic>() ??
+            <String, dynamic>{};
+
         int applied = pipeline['Applied'] ?? 0;
         int screening = pipeline['Screening'] ?? 0;
         int interview = pipeline['Interview'] ?? 0;
@@ -266,7 +373,13 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
             children: [
               _buildSectionTitle('Recruitment Funnel', isDark),
               const SizedBox(height: 12),
-              _buildConversionCard(isDark, applied, screening, interview, offer),
+              _buildConversionCard(
+                isDark,
+                applied,
+                screening,
+                interview,
+                offer,
+              ),
               const SizedBox(height: 24),
               _buildSectionTitle('Stage Drop-offs', isDark),
               const SizedBox(height: 12),
@@ -278,7 +391,13 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
     );
   }
 
-  Widget _buildConversionCard(bool isDark, int applied, int screening, int interview, int offer) {
+  Widget _buildConversionCard(
+    bool isDark,
+    int applied,
+    int screening,
+    int interview,
+    int offer,
+  ) {
     double sRate = applied > 0 ? (screening / applied) : 0.0;
     double iRate = screening > 0 ? (interview / screening) : 0.0;
     double oRate = interview > 0 ? (offer / interview) : 0.0;
@@ -292,11 +411,26 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
       ),
       child: Column(
         children: [
-          _buildProgressRow('Applied → Screening', sRate, '${(sRate * 100).toInt()}%', Colors.blue),
+          _buildProgressRow(
+            'Applied → Screening',
+            sRate,
+            '${(sRate * 100).toInt()}%',
+            Colors.blue,
+          ),
           const SizedBox(height: 12),
-          _buildProgressRow('Screening → Interview', iRate, '${(iRate * 100).toInt()}%', Colors.orange),
+          _buildProgressRow(
+            'Screening → Interview',
+            iRate,
+            '${(iRate * 100).toInt()}%',
+            Colors.orange,
+          ),
           const SizedBox(height: 12),
-          _buildProgressRow('Interview → Offer', oRate, '${(oRate * 100).toInt()}%', Colors.green),
+          _buildProgressRow(
+            'Interview → Offer',
+            oRate,
+            '${(oRate * 100).toInt()}%',
+            Colors.green,
+          ),
         ],
       ),
     );
@@ -309,14 +443,32 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
-            Text(pct, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: color)),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              pct,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(value: val, minHeight: 4, backgroundColor: color.withValues(alpha: 0.1), valueColor: AlwaysStoppedAnimation<Color>(color)),
+          child: LinearProgressIndicator(
+            value: val,
+            minHeight: 4,
+            backgroundColor: color.withValues(alpha: 0.1),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+          ),
         ),
       ],
     );
@@ -329,32 +481,66 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
       {'stage': 'Offer', 'reason': 'Competing Offers', 'pct': '8%'},
     ];
     return Column(
-      children: items.map((i) => Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.getCard(isDark) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: [
-            CircleAvatar(radius: 4, backgroundColor: Colors.redAccent.withValues(alpha: 0.5)),
-            const SizedBox(width: 12),
-            Expanded(child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(i['stage']!, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
-                Text(i['reason']!, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey)),
-              ],
-            )),
-            Text(i['pct']!, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.redAccent)),
-          ],
-        ),
-      )).toList(),
+      children: items
+          .map(
+            (i) => Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.getCard(isDark) : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 4,
+                    backgroundColor: Colors.redAccent.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          i['stage']!,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          i['reason']!,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    i['pct']!,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 
-  Widget _buildProductivityCard(bool isDark, String label, String val, double progress, Color color) {
+  Widget _buildProductivityCard(
+    bool isDark,
+    String label,
+    String val,
+    double progress,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -364,21 +550,51 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
       ),
       child: Row(
         children: [
-          Expanded(child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey[600])),
-              const SizedBox(height: 2),
-              Text(val, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800)),
-            ],
-          )),
-          SizedBox(width: 40, height: 40, child: CircularProgressIndicator(value: progress, strokeWidth: 4, backgroundColor: color.withValues(alpha: 0.1), valueColor: AlwaysStoppedAnimation<Color>(color))),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  val,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: CircularProgressIndicator(
+              value: progress,
+              strokeWidth: 4,
+              backgroundColor: color.withValues(alpha: 0.1),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildJobPerfItem(bool isDark, String title, String app, String intv, Color color) {
+  Widget _buildJobPerfItem(
+    bool isDark,
+    String title,
+    String app,
+    String intv,
+    Color color,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -388,12 +604,41 @@ class _AnalyticsDetailsScreenState extends State<AnalyticsDetailsScreen> with Si
       ),
       child: Row(
         children: [
-          Container(width: 4, height: 24, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
+          Container(
+            width: 4,
+            height: 24,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: Text(title, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700))),
-          Text(app, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.grey)),
+          Expanded(
+            child: Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Text(
+            app,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey,
+            ),
+          ),
           const SizedBox(width: 12),
-          Text(intv, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+          Text(
+            intv,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
         ],
       ),
     );
@@ -411,7 +656,12 @@ class _HiringLineChart extends StatelessWidget {
       spots = [const FlSpot(0, 0), const FlSpot(6, 0)];
     } else {
       for (int i = 0; i < trends.length; i++) {
-        spots.add(FlSpot(i.toDouble(), double.tryParse(trends[i]['count'].toString()) ?? 0.0));
+        spots.add(
+          FlSpot(
+            i.toDouble(),
+            double.tryParse(trends[i]['count'].toString()) ?? 0.0,
+          ),
+        );
       }
     }
 
@@ -428,7 +678,10 @@ class _HiringLineChart extends StatelessWidget {
             barWidth: 3,
             isStrokeCapRound: true,
             dotData: const FlDotData(show: false),
-            belowBarData: BarAreaData(show: true, color: Colors.blue.withValues(alpha: 0.1)),
+            belowBarData: BarAreaData(
+              show: true,
+              color: Colors.blue.withValues(alpha: 0.1),
+            ),
           ),
         ],
       ),
@@ -446,10 +699,50 @@ class _SourcePieChart extends StatelessWidget {
         sectionsSpace: 4,
         centerSpaceRadius: 40,
         sections: [
-          PieChartSectionData(color: Colors.blue, value: 40, title: 'LinkedIn', radius: 40, titleStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
-          PieChartSectionData(color: Colors.green, value: 30, title: 'Referral', radius: 40, titleStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
-          PieChartSectionData(color: Colors.orange, value: 20, title: 'Indeed', radius: 40, titleStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
-          PieChartSectionData(color: Colors.grey, value: 10, title: 'Others', radius: 40, titleStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white)),
+          PieChartSectionData(
+            color: Colors.blue,
+            value: 40,
+            title: 'LinkedIn',
+            radius: 40,
+            titleStyle: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          PieChartSectionData(
+            color: Colors.green,
+            value: 30,
+            title: 'Referral',
+            radius: 40,
+            titleStyle: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          PieChartSectionData(
+            color: Colors.orange,
+            value: 20,
+            title: 'Indeed',
+            radius: 40,
+            titleStyle: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          PieChartSectionData(
+            color: Colors.grey,
+            value: 10,
+            title: 'Others',
+            radius: 40,
+            titleStyle: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
     );

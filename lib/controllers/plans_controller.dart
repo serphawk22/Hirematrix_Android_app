@@ -98,14 +98,15 @@ class PlansController extends GetxController {
               'contact': authController.currentUser['phone']?.toString() ?? '',
               'email': authController.currentUser['email']?.toString() ?? '',
             },
-            'theme': {
-              'color': '#3B82F6',
-            }
+            'theme': {'color': '#3B82F6'},
           };
 
           _razorpay.open(options);
         } else {
-          Get.snackbar('Error', data['message'] ?? 'Failed to create payment order.');
+          Get.snackbar(
+            'Error',
+            data['message'] ?? 'Failed to create payment order.',
+          );
         }
       } else {
         Get.snackbar('Error', 'Server error. Please try again.');
@@ -145,7 +146,10 @@ class PlansController extends GetxController {
             await dashCtrl.fetchDashboardData();
           } catch (_) {}
         } else {
-          Get.snackbar('Verification Failed', data['message'] ?? 'Payment verification failed.');
+          Get.snackbar(
+            'Verification Failed',
+            data['message'] ?? 'Payment verification failed.',
+          );
         }
       } else {
         Get.snackbar('Error', 'Verification failed on server.');

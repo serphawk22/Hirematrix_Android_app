@@ -409,11 +409,14 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                 onPressed: () => parentScaffold.openDrawer(),
               )
             : (Navigator.canPop(context)
-                ? IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-                    onPressed: () => Navigator.pop(context),
-                  )
-                : null),
+                  ? IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 20,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    )
+                  : null),
         title: Text(
           'Company Profile',
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),

@@ -23,9 +23,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _refresh() {
-    final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
     if (recruiterId != null) {
-      Provider.of<DashboardController>(context, listen: false).refresh(recruiterId);
+      Provider.of<DashboardController>(
+        context,
+        listen: false,
+      ).refresh(recruiterId);
     }
   }
 
@@ -34,9 +40,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final mainBg = isDark ? AppColors.bgDark : const Color(0xFFF8FAFC);
     final textColor = isDark ? Colors.white : const Color(0xFF111827);
-    final subtitleColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+    final subtitleColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF475569);
     final cardColor = isDark ? AppColors.getCard(isDark) : Colors.white;
-    final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
 
     return Scaffold(
       backgroundColor: mainBg,
@@ -59,10 +70,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           Consumer<DashboardController>(
             builder: (context, dashboard, child) {
               final unreadCount = dashboard.notifications.where((n) {
-                final isRead = n['is_read'] == 1 || n['is_read'] == '1' || n['is_read'] == true;
+                final isRead =
+                    n['is_read'] == 1 ||
+                    n['is_read'] == '1' ||
+                    n['is_read'] == true;
                 return !isRead;
               }).length;
-              
+
               if (unreadCount > 0 && recruiterId != null) {
                 return TextButton.icon(
                   onPressed: () => dashboard.markAllAsRead(recruiterId),
@@ -94,10 +108,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             // Header banner
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.getCard(isDark) : Colors.white,
                 border: Border(
@@ -407,7 +418,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 ElevatedButton.icon(
                                   onPressed: () {
                                     if (!isRead && recruiterId != null) {
-                                      Provider.of<DashboardController>(context, listen: false).markAsRead(idStr, recruiterId);
+                                      Provider.of<DashboardController>(
+                                        context,
+                                        listen: false,
+                                      ).markAsRead(idStr, recruiterId);
                                     }
                                     _handleNotificationAction(
                                       actionLink,
@@ -449,7 +463,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 TextButton.icon(
                                   onPressed: () {
                                     if (recruiterId != null) {
-                                      Provider.of<DashboardController>(context, listen: false).markAsRead(idStr, recruiterId);
+                                      Provider.of<DashboardController>(
+                                        context,
+                                        listen: false,
+                                      ).markAsRead(idStr, recruiterId);
                                     }
                                   },
                                   style: TextButton.styleFrom(
@@ -477,7 +494,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           ),
                           // Delete button on the far right
                           IconButton(
-                            onPressed: () => _confirmDelete(idStr, context, recruiterId),
+                            onPressed: () =>
+                                _confirmDelete(idStr, context, recruiterId),
                             icon: Icon(
                               Icons.delete_outline,
                               color: isDark
@@ -502,13 +520,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  void _confirmDelete(String notificationId, BuildContext context, String? recruiterId) {
+  void _confirmDelete(
+    String notificationId,
+    BuildContext context,
+    String? recruiterId,
+  ) {
     if (recruiterId == null) return;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Notification'),
-        content: const Text('Are you sure you want to delete this notification?'),
+        content: const Text(
+          'Are you sure you want to delete this notification?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -521,8 +545,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
             onPressed: () {
               Navigator.pop(ctx);
-              Provider.of<DashboardController>(context, listen: false)
-                  .deleteNotification(notificationId, recruiterId);
+              Provider.of<DashboardController>(
+                context,
+                listen: false,
+              ).deleteNotification(notificationId, recruiterId);
             },
             child: const Text('Delete'),
           ),
@@ -538,19 +564,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     dynamic notifData,
   }) {
     if (actionLink == null || actionLink.isEmpty) return;
-    
+
     final uri = Uri.tryParse(actionLink);
     if (uri == null) return;
     final path = uri.path;
 
-    if (path.contains('/recruiter/candidates') || path.contains('/recruiter/applications')) {
+    if (path.contains('/recruiter/candidates') ||
+        path.contains('/recruiter/applications')) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const CandidateManagementScreen(isStandalone: true),
+          builder: (context) =>
+              const CandidateManagementScreen(isStandalone: true),
         ),
       );
-    } else if (path.contains('/recruiter/interviews') || path.contains('/recruiter/bookings')) {
+    } else if (path.contains('/recruiter/interviews') ||
+        path.contains('/recruiter/bookings')) {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -563,7 +592,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const CandidateManagementScreen(isStandalone: true),
+          builder: (context) =>
+              const CandidateManagementScreen(isStandalone: true),
         ),
       );
     } else {

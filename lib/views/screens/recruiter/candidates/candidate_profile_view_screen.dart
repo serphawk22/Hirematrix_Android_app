@@ -23,7 +23,8 @@ class CandidateProfileViewScreen extends StatefulWidget {
   });
 
   @override
-  State<CandidateProfileViewScreen> createState() => _CandidateProfileViewScreenState();
+  State<CandidateProfileViewScreen> createState() =>
+      _CandidateProfileViewScreenState();
 }
 
 class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
@@ -41,7 +42,8 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
 
   // Invite controller
   String? _selectedJobId;
-  final TextEditingController _inviteMessageController = TextEditingController();
+  final TextEditingController _inviteMessageController =
+      TextEditingController();
   bool _isSendingInvite = false;
 
   // Message controller
@@ -74,9 +76,10 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
     });
 
     try {
-      final recruiterId = Provider.of<AuthController>(context, listen: false)
-          .currentRecruiter
-          ?.id;
+      final recruiterId = Provider.of<AuthController>(
+        context,
+        listen: false,
+      ).currentRecruiter?.id;
       if (recruiterId == null) {
         setState(() {
           _error = "Session expired. Please log in again.";
@@ -96,7 +99,7 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
         setState(() {
           _data = res;
           _isLoading = false;
-          _showContact = res['application_id'] != null || res['job_id'] != null; 
+          _showContact = res['application_id'] != null || res['job_id'] != null;
           // Set tags and notes if present
           final note = res['recruiter_note'];
           if (note != null) {
@@ -106,7 +109,8 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
         });
       } else {
         setState(() {
-          _error = res['message']?.toString() ?? "Failed to load candidate details.";
+          _error =
+              res['message']?.toString() ?? "Failed to load candidate details.";
           _isLoading = false;
         });
       }
@@ -119,9 +123,10 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
   }
 
   Future<void> _revealContact() async {
-    final recruiterId = Provider.of<AuthController>(context, listen: false)
-        .currentRecruiter
-        ?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
     if (recruiterId == null) return;
 
     try {
@@ -142,21 +147,23 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to unlock contact: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to unlock contact: $e')));
     }
   }
 
   Future<void> _downloadResume() async {
-    final recruiterId = Provider.of<AuthController>(context, listen: false)
-        .currentRecruiter
-        ?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
     if (recruiterId == null) return;
 
     try {
       final baseUrl = await ApiService().getBaseUrl();
-      final url = "$baseUrl/candidates/${widget.candidateId}/resume"
+      final url =
+          "$baseUrl/candidates/${widget.candidateId}/resume"
           "?recruiter_id=$recruiterId"
           "&application_id=${widget.applicationId ?? ''}"
           "&job_id=${widget.jobId ?? ''}";
@@ -173,16 +180,17 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error downloading resume: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error downloading resume: $e')));
     }
   }
 
   Future<void> _saveNotes() async {
-    final recruiterId = Provider.of<AuthController>(context, listen: false)
-        .currentRecruiter
-        ?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
     if (recruiterId == null) return;
 
     setState(() {
@@ -207,9 +215,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       setState(() {
         _isSavingNotes = false;
@@ -225,9 +233,10 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
       return;
     }
 
-    final recruiterId = Provider.of<AuthController>(context, listen: false)
-        .currentRecruiter
-        ?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
     if (recruiterId == null) return;
 
     setState(() {
@@ -244,19 +253,23 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
 
       if (res['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invitation sent to candidate successfully.')),
+          const SnackBar(
+            content: Text('Invitation sent to candidate successfully.'),
+          ),
         );
         _inviteMessageController.clear();
         _loadProfileData(); // reload invitations list
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(res['message'] ?? 'Failed to send invitation.')),
+          SnackBar(
+            content: Text(res['message'] ?? 'Failed to send invitation.'),
+          ),
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       setState(() {
         _isSendingInvite = false;
@@ -268,9 +281,10 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
     final body = _messageController.text.trim();
     if (body.isEmpty) return;
 
-    final recruiterId = Provider.of<AuthController>(context, listen: false)
-        .currentRecruiter
-        ?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
     if (recruiterId == null) return;
 
     setState(() {
@@ -305,9 +319,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       setState(() {
         _isSendingMessage = false;
@@ -329,7 +343,10 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
+          labelStyle: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
           unselectedLabelStyle: GoogleFonts.inter(fontSize: 13),
           labelColor: AppColors.getPrimary(isDark),
           indicatorColor: AppColors.getPrimary(isDark),
@@ -343,21 +360,21 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
           IconButton(
             icon: const Icon(Icons.refresh, size: 20),
             onPressed: _loadProfileData,
-          )
+          ),
         ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
           : _error != null
-              ? _buildErrorScreen(isDark)
-              : TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildProfileTab(isDark),
-                    _buildNotesInviteTab(isDark),
-                    _buildMessagesTab(isDark),
-                  ],
-                ),
+          ? _buildErrorScreen(isDark)
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _buildProfileTab(isDark),
+                _buildNotesInviteTab(isDark),
+                _buildMessagesTab(isDark),
+              ],
+            ),
     );
   }
 
@@ -372,7 +389,10 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
             const SizedBox(height: 16),
             Text(
               'Failed to Load Profile',
-              style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold),
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -385,10 +405,12 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
               onPressed: _loadProfileData,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.getPrimary(isDark),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               child: const Text('Retry'),
-            )
+            ),
           ],
         ),
       ),
@@ -422,7 +444,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: isDark ? Colors.white10 : Colors.grey[200]!),
+              side: BorderSide(
+                color: isDark ? Colors.white10 : Colors.grey[200]!,
+              ),
             ),
             color: isDark ? AppColors.getCard(isDark) : Colors.white,
             child: Padding(
@@ -440,9 +464,13 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                       else
                         CircleAvatar(
                           radius: 36,
-                          backgroundColor: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
+                          backgroundColor: AppColors.getPrimary(
+                            isDark,
+                          ).withValues(alpha: 0.1),
                           child: Text(
-                            widget.candidateName.isNotEmpty ? widget.candidateName[0].toUpperCase() : 'C',
+                            widget.candidateName.isNotEmpty
+                                ? widget.candidateName[0].toUpperCase()
+                                : 'C',
                             style: GoogleFonts.inter(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -457,30 +485,50 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                           children: [
                             Text(
                               widget.candidateName,
-                              style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800),
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                            if (candidate['location'] != null && candidate['location'].toString().isNotEmpty) ...[
+                            if (candidate['location'] != null &&
+                                candidate['location']
+                                    .toString()
+                                    .isNotEmpty) ...[
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
+                                  const Icon(
+                                    Icons.location_on_outlined,
+                                    size: 14,
+                                    color: Colors.grey,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     candidate['location'],
-                                    style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                 ],
                               ),
                             ],
                             const SizedBox(height: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
-                                color: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
+                                color: AppColors.getPrimary(
+                                  isDark,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                (candidate['is_fresher_candidate'] == 1 || candidate['is_fresher_candidate'] == '1')
+                                (candidate['is_fresher_candidate'] == 1 ||
+                                        candidate['is_fresher_candidate'] ==
+                                            '1')
                                     ? 'Fresher'
                                     : 'Experienced',
                                 style: GoogleFonts.inter(
@@ -506,7 +554,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                             label: const Text('View Contact'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.getPrimary(isDark),
-                              side: BorderSide(color: AppColors.getPrimary(isDark)),
+                              side: BorderSide(
+                                color: AppColors.getPrimary(isDark),
+                              ),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                           ),
@@ -516,7 +566,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.white.withValues(alpha: 0.03) : const Color(0xFFF1F5F9),
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.03)
+                                  : const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Column(
@@ -524,25 +576,42 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(Icons.email_outlined, size: 14, color: Colors.grey),
+                                    const Icon(
+                                      Icons.email_outlined,
+                                      size: 14,
+                                      color: Colors.grey,
+                                    ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         candidate['email'] ?? 'No email',
-                                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                if (candidate['phone'] != null && candidate['phone'].toString().isNotEmpty) ...[
+                                if (candidate['phone'] != null &&
+                                    candidate['phone']
+                                        .toString()
+                                        .isNotEmpty) ...[
                                   const SizedBox(height: 6),
                                   Row(
                                     children: [
-                                      const Icon(Icons.phone_outlined, size: 14, color: Colors.grey),
+                                      const Icon(
+                                        Icons.phone_outlined,
+                                        size: 14,
+                                        color: Colors.grey,
+                                      ),
                                       const SizedBox(width: 8),
                                       Text(
                                         candidate['phone'],
-                                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -563,7 +632,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                           ),
                         ),
@@ -583,7 +654,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: isDark ? Colors.white10 : Colors.grey[200]!),
+                side: BorderSide(
+                  color: isDark ? Colors.white10 : Colors.grey[200]!,
+                ),
               ),
               color: isDark ? AppColors.getCard(isDark) : Colors.white,
               child: Padding(
@@ -608,7 +681,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: isDark ? Colors.white10 : Colors.grey[200]!),
+                side: BorderSide(
+                  color: isDark ? Colors.white10 : Colors.grey[200]!,
+                ),
               ),
               color: isDark ? AppColors.getCard(isDark) : Colors.white,
               child: Padding(
@@ -621,7 +696,11 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                         padding: const EdgeInsets.only(bottom: 12.0),
                         child: Text(
                           'Target Role: $targetRole',
-                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     if (videoUrl.isNotEmpty) ...[
@@ -629,7 +708,10 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                         onTap: () async {
                           final uri = Uri.parse(videoUrl);
                           if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                            await launchUrl(
+                              uri,
+                              mode: LaunchMode.externalApplication,
+                            );
                           }
                         },
                         child: Container(
@@ -639,7 +721,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                             color: Colors.black87,
                             borderRadius: BorderRadius.circular(8),
                             image: const DecorationImage(
-                              image: AssetImage('assets/images/video_placeholder.png'),
+                              image: AssetImage(
+                                'assets/images/video_placeholder.png',
+                              ),
                               fit: BoxFit.cover,
                               opacity: 0.3,
                             ),
@@ -648,7 +732,11 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                             child: CircleAvatar(
                               radius: 28,
                               backgroundColor: Colors.white,
-                              child: Icon(Icons.play_arrow_rounded, size: 36, color: Colors.black87),
+                              child: Icon(
+                                Icons.play_arrow_rounded,
+                                size: 36,
+                                color: Colors.black87,
+                              ),
                             ),
                           ),
                         ),
@@ -661,7 +749,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           height: 1.4,
-                          color: isDark ? Colors.grey[300] : Colors.blueGrey[800],
+                          color: isDark
+                              ? Colors.grey[300]
+                              : Colors.blueGrey[800],
                         ),
                       ),
                   ],
@@ -684,7 +774,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: isDark ? Colors.white10 : Colors.grey[200]!),
+              side: BorderSide(
+                color: isDark ? Colors.white10 : Colors.grey[200]!,
+              ),
             ),
             color: isDark ? AppColors.getCard(isDark) : Colors.white,
             child: Padding(
@@ -692,12 +784,25 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
               child: Row(
                 children: [
                   Expanded(
-                    child: _buildGridItem('Experience', _data?['experience_display'] ?? '-', isDark),
+                    child: _buildGridItem(
+                      'Experience',
+                      _data?['experience_display'] ?? '-',
+                      isDark,
+                    ),
                   ),
-                  Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.grey[200]),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: isDark ? Colors.white10 : Colors.grey[200],
+                  ),
                   Expanded(
-                    child: _buildGridItem('Joined Portal',
-                        candidate['created_at'] != null ? candidate['created_at'].toString().substring(0, 10) : '-', isDark),
+                    child: _buildGridItem(
+                      'Joined Portal',
+                      candidate['created_at'] != null
+                          ? candidate['created_at'].toString().substring(0, 10)
+                          : '-',
+                      isDark,
+                    ),
                   ),
                 ],
               ),
@@ -721,10 +826,15 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                       color: AppColors.getPrimary(isDark),
                     ),
                   ),
-                  backgroundColor: AppColors.getPrimary(isDark).withValues(alpha: 0.08),
+                  backgroundColor: AppColors.getPrimary(
+                    isDark,
+                  ).withValues(alpha: 0.08),
                   elevation: 0,
                   side: BorderSide.none,
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 0,
+                  ),
                 );
               }).toList(),
             ),
@@ -735,11 +845,14 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
           if (workExperiences.isNotEmpty) ...[
             _buildSectionHeader('Work Experience'),
             ...workExperiences.map((exp) {
-              final isCurrent = exp['is_current'] == 1 || exp['is_current'] == '1';
+              final isCurrent =
+                  exp['is_current'] == 1 || exp['is_current'] == '1';
               return _buildTimelineCard(
                 title: exp['job_title'] ?? 'Role',
-                subtitle: "${exp['company_name'] ?? 'Company'} • ${exp['employment_type'] ?? ''}",
-                meta: "${exp['start_date'] ?? ''} - ${isCurrent ? 'Present' : (exp['end_date'] ?? '')}",
+                subtitle:
+                    "${exp['company_name'] ?? 'Company'} • ${exp['employment_type'] ?? ''}",
+                meta:
+                    "${exp['start_date'] ?? ''} - ${isCurrent ? 'Present' : (exp['end_date'] ?? '')}",
                 description: exp['description']?.toString(),
                 isDark: isDark,
               );
@@ -757,12 +870,21 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                 meta: proj['tech_stack'] ?? '',
                 description: proj['project_summary']?.toString(),
                 isDark: isDark,
-                actionText: proj['project_url'] != null && proj['project_url'].toString().isNotEmpty ? 'View Project' : null,
-                onActionTap: proj['project_url'] != null && proj['project_url'].toString().isNotEmpty
+                actionText:
+                    proj['project_url'] != null &&
+                        proj['project_url'].toString().isNotEmpty
+                    ? 'View Project'
+                    : null,
+                onActionTap:
+                    proj['project_url'] != null &&
+                        proj['project_url'].toString().isNotEmpty
                     ? () async {
                         final uri = Uri.parse(proj['project_url']);
                         if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          await launchUrl(
+                            uri,
+                            mode: LaunchMode.externalApplication,
+                          );
                         }
                       }
                     : null,
@@ -778,8 +900,12 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
               return _buildTimelineCard(
                 title: edu['degree'] ?? 'Degree',
                 subtitle: edu['institution'] ?? 'Institution',
-                meta: "${edu['field_of_study'] ?? ''} • ${edu['start_year'] ?? ''} - ${edu['end_year'] ?? ''}",
-                description: edu['grade'] != null && edu['grade'].toString().isNotEmpty ? "Grade: ${edu['grade']}" : null,
+                meta:
+                    "${edu['field_of_study'] ?? ''} • ${edu['start_year'] ?? ''} - ${edu['end_year'] ?? ''}",
+                description:
+                    edu['grade'] != null && edu['grade'].toString().isNotEmpty
+                    ? "Grade: ${edu['grade']}"
+                    : null,
                 isDark: isDark,
               );
             }),
@@ -794,18 +920,27 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                 title: cert['certification_name'] ?? 'Certificate',
                 subtitle: cert['issuing_organization'] ?? '',
                 meta: "Issued: ${cert['issue_date'] ?? ''}",
-                description: cert['credential_id'] != null && cert['credential_id'].toString().isNotEmpty
+                description:
+                    cert['credential_id'] != null &&
+                        cert['credential_id'].toString().isNotEmpty
                     ? "Credential ID: ${cert['credential_id']}"
                     : null,
                 isDark: isDark,
-                actionText: cert['credential_url'] != null && cert['credential_url'].toString().isNotEmpty
+                actionText:
+                    cert['credential_url'] != null &&
+                        cert['credential_url'].toString().isNotEmpty
                     ? 'View Credential'
                     : null,
-                onActionTap: cert['credential_url'] != null && cert['credential_url'].toString().isNotEmpty
+                onActionTap:
+                    cert['credential_url'] != null &&
+                        cert['credential_url'].toString().isNotEmpty
                     ? () async {
                         final uri = Uri.parse(cert['credential_url']);
                         if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          await launchUrl(
+                            uri,
+                            mode: LaunchMode.externalApplication,
+                          );
                         }
                       }
                     : null,
@@ -815,18 +950,24 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
           ],
 
           // GitHub Stats Card
-          if (github.isNotEmpty && github['github_username'] != null && github['github_username'].toString().isNotEmpty) ...[
+          if (github.isNotEmpty &&
+              github['github_username'] != null &&
+              github['github_username'].toString().isNotEmpty) ...[
             _buildSectionHeader('GitHub Profile'),
             Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: isDark ? Colors.white10 : Colors.grey[200]!),
+                side: BorderSide(
+                  color: isDark ? Colors.white10 : Colors.grey[200]!,
+                ),
               ),
               color: isDark ? AppColors.getCard(isDark) : Colors.white,
               child: InkWell(
                 onTap: () async {
-                  final uri = Uri.parse("https://github.com/${github['github_username']}");
+                  final uri = Uri.parse(
+                    "https://github.com/${github['github_username']}",
+                  );
                   if (await canLaunchUrl(uri)) {
                     await launchUrl(uri, mode: LaunchMode.externalApplication);
                   }
@@ -848,16 +989,29 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                               color: AppColors.getPrimary(isDark),
                             ),
                           ),
-                          const Icon(Icons.open_in_new_rounded, size: 16, color: Colors.grey),
+                          const Icon(
+                            Icons.open_in_new_rounded,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildStatColumn('Repositories', github['repo_count']?.toString() ?? '0'),
-                          _buildStatColumn('Commits', github['commit_count']?.toString() ?? '0'),
-                          _buildStatColumn('GitHub Score', "${github['github_score']?.toString() ?? '0'}/10"),
+                          _buildStatColumn(
+                            'Repositories',
+                            github['repo_count']?.toString() ?? '0',
+                          ),
+                          _buildStatColumn(
+                            'Commits',
+                            github['commit_count']?.toString() ?? '0',
+                          ),
+                          _buildStatColumn(
+                            'GitHub Score',
+                            "${github['github_score']?.toString() ?? '0'}/10",
+                          ),
                         ],
                       ),
                     ],
@@ -877,25 +1031,39 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.getCard(isDark) : Colors.white,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+                  border: Border.all(
+                    color: isDark ? Colors.white10 : Colors.grey[200]!,
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       interest['job_title'] ?? 'Role Interest',
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       "Type: ${interest['job_type'] ?? 'N/A'} • Expected Salary: ${interest['expected_salary'] ?? 'N/A'}",
-                      style: GoogleFonts.inter(fontSize: 11.5, color: Colors.grey),
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        color: Colors.grey,
+                      ),
                     ),
-                    if (interest['preferred_locations'] != null && interest['preferred_locations'].toString().isNotEmpty) ...[
+                    if (interest['preferred_locations'] != null &&
+                        interest['preferred_locations']
+                            .toString()
+                            .isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
                         "Preferred Locations: ${interest['preferred_locations']}",
-                        style: GoogleFonts.inter(fontSize: 11, color: Colors.grey),
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ],
@@ -928,10 +1096,7 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(fontSize: 11, color: Colors.grey),
-        ),
+        Text(label, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey)),
         const SizedBox(height: 4),
         Text(
           value,
@@ -969,7 +1134,10 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Text(
@@ -987,7 +1155,11 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
             const SizedBox(height: 8),
             Text(
               description,
-              style: GoogleFonts.inter(fontSize: 12, height: 1.4, color: isDark ? Colors.grey[300] : Colors.blueGrey[800]),
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                height: 1.4,
+                color: isDark ? Colors.grey[300] : Colors.blueGrey[800],
+              ),
             ),
           ],
           if (actionText != null && onActionTap != null) ...[
@@ -1005,11 +1177,15 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Icon(Icons.arrow_forward_rounded, size: 12, color: AppColors.getPrimary(isDark)),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 12,
+                    color: AppColors.getPrimary(isDark),
+                  ),
                 ],
               ),
             ),
-          ]
+          ],
         ],
       ),
     );
@@ -1023,10 +1199,7 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: GoogleFonts.inter(fontSize: 11, color: Colors.grey),
-        ),
+        Text(label, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey)),
       ],
     );
   }
@@ -1034,8 +1207,10 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
   Widget _buildNotesInviteTab(bool isDark) {
     final recruiterJobs = _data?['recruiter_jobs'] as List? ?? [];
     final rawInvitations = _data?['job_invitations'];
-    final Map<dynamic, dynamic> jobInvitations = (rawInvitations is Map) ? rawInvitations : {};
-    
+    final Map<dynamic, dynamic> jobInvitations = (rawInvitations is Map)
+        ? rawInvitations
+        : {};
+
     // Extract saved tags for the display badges
     final recruiterNoteData = _data?['recruiter_note'] as Map?;
     final savedTagsRaw = recruiterNoteData?['tags']?.toString() ?? '';
@@ -1061,7 +1236,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: isDark ? Colors.white10 : Colors.grey[200]!),
+              side: BorderSide(
+                color: isDark ? Colors.white10 : Colors.grey[200]!,
+              ),
             ),
             color: isDark ? AppColors.getCard(isDark) : Colors.white,
             child: Padding(
@@ -1071,31 +1248,57 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                 children: [
                   Text(
                     'Choose open job role',
-                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.02) : const Color(0xFFF8FAFC),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.02)
+                          : const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+                      border: Border.all(
+                        color: isDark ? Colors.white10 : Colors.grey[200]!,
+                      ),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         isExpanded: true,
                         value: _selectedJobId,
-                        hint: Text('Select an open job', style: GoogleFonts.inter(fontSize: 13, color: Colors.grey)),
-                        dropdownColor: isDark ? AppColors.bgSoftDark : Colors.white,
-                        style: GoogleFonts.inter(fontSize: 13, color: isDark ? Colors.white : Colors.black87),
-                        items: recruiterJobs.map<DropdownMenuItem<String>>((job) {
+                        hint: Text(
+                          'Select an open job',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        dropdownColor: isDark
+                            ? AppColors.bgSoftDark
+                            : Colors.white,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                        items: recruiterJobs.map<DropdownMenuItem<String>>((
+                          job,
+                        ) {
                           final jobIdStr = job['id']?.toString() ?? '';
                           final invite = jobInvitations[jobIdStr];
-                          final suffix = invite != null ? " [${invite['status'].toString().toUpperCase()}]" : "";
+                          final suffix = invite != null
+                              ? " [${invite['status'].toString().toUpperCase()}]"
+                              : "";
                           return DropdownMenuItem<String>(
                             value: jobIdStr.isEmpty ? null : jobIdStr,
-                            child: Text("${job['title']}$suffix", overflow: TextOverflow.ellipsis),
+                            child: Text(
+                              "${job['title']}$suffix",
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           );
                         }).toList(),
                         onChanged: (val) {
@@ -1109,10 +1312,19 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                   const SizedBox(height: 16),
                   Text(
                     'Optional note (Max 500 chars)',
-                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  _buildTextInput(_inviteMessageController, 'Add a short personal note about why this role could fit them.', isDark, maxLines: 3),
+                  _buildTextInput(
+                    _inviteMessageController,
+                    'Add a short personal note about why this role could fit them.',
+                    isDark,
+                    maxLines: 3,
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _isSendingInvite ? null : _sendInvitation,
@@ -1120,10 +1332,19 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                       backgroundColor: AppColors.getPrimary(isDark),
                       foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 44),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     child: _isSendingInvite
-                        ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
                         : const Text('Send Invitation'),
                   ),
                 ],
@@ -1138,7 +1359,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: isDark ? Colors.white10 : Colors.grey[200]!),
+              side: BorderSide(
+                color: isDark ? Colors.white10 : Colors.grey[200]!,
+              ),
             ),
             color: isDark ? AppColors.getCard(isDark) : Colors.white,
             child: Padding(
@@ -1152,10 +1375,19 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                       runSpacing: 8,
                       children: existingTags.map((tag) {
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey[100],
-                            border: Border.all(color: isDark ? Colors.white24 : Colors.grey[300]!),
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.grey[100],
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white24
+                                  : Colors.grey[300]!,
+                            ),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -1173,17 +1405,34 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                   ],
                   Text(
                     'Tags (comma separated)',
-                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  _buildTextInput(_tagsController, 'e.g. Strong communication, Backend, Immediate joiner', isDark),
+                  _buildTextInput(
+                    _tagsController,
+                    'e.g. Strong communication, Backend, Immediate joiner',
+                    isDark,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Private Notes',
-                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  _buildTextInput(_notesController, 'Add private notes for this candidate...', isDark, maxLines: 4),
+                  _buildTextInput(
+                    _notesController,
+                    'Add private notes for this candidate...',
+                    isDark,
+                    maxLines: 4,
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _isSavingNotes ? null : _saveNotes,
@@ -1191,10 +1440,19 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                       backgroundColor: AppColors.getPrimary(isDark),
                       foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 44),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     child: _isSavingNotes
-                        ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
                         : const Text('Save Notes'),
                   ),
                 ],
@@ -1206,10 +1464,17 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
     );
   }
 
-  Widget _buildTextInput(TextEditingController controller, String hint, bool isDark, {int maxLines = 1}) {
+  Widget _buildTextInput(
+    TextEditingController controller,
+    String hint,
+    bool isDark, {
+    int maxLines = 1,
+  }) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.02) : const Color(0xFFF8FAFC),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.02)
+            : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
       ),
@@ -1221,7 +1486,10 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
           hintText: hint,
           hintStyle: GoogleFonts.inter(fontSize: 13, color: Colors.grey),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 10,
+          ),
         ),
       ),
     );
@@ -1238,16 +1506,27 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.chat_bubble_outline_rounded, size: 40, color: Colors.grey[400]),
+                      Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 40,
+                        color: Colors.grey[400],
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         'No conversation yet',
-                        style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey),
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Send a direct message below to start a thread.',
-                        style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -1259,40 +1538,62 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                   itemBuilder: (context, index) {
                     final msg = messages[index];
                     final isRecruiter = msg['sender_role'] == 'recruiter';
-                    final time = msg['created_at'] != null ? DateFormat('MMM dd, hh:mm a').format(DateTime.parse(msg['created_at'])) : '';
+                    final time = msg['created_at'] != null
+                        ? DateFormat(
+                            'MMM dd, hh:mm a',
+                          ).format(DateTime.parse(msg['created_at']))
+                        : '';
 
                     return Column(
-                      crossAxisAlignment: isRecruiter ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                      crossAxisAlignment: isRecruiter
+                          ? CrossAxisAlignment.end
+                          : CrossAxisAlignment.start,
                       children: [
                         Row(
-                          mainAxisAlignment: isRecruiter ? MainAxisAlignment.end : MainAxisAlignment.start,
+                          mainAxisAlignment: isRecruiter
+                              ? MainAxisAlignment.end
+                              : MainAxisAlignment.start,
                           children: [
                             Text(
                               isRecruiter ? 'You' : widget.candidateName,
-                              style: GoogleFonts.inter(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold),
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(width: 6),
                             Text(
                               time,
-                              style: GoogleFonts.inter(fontSize: 9, color: Colors.grey),
+                              style: GoogleFonts.inter(
+                                fontSize: 9,
+                                color: Colors.grey,
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
                             color: isRecruiter
                                 ? AppColors.getPrimary(isDark)
-                                : (isDark ? AppColors.getCard(isDark) : const Color(0xFFE2E8F0)),
+                                : (isDark
+                                      ? AppColors.getCard(isDark)
+                                      : const Color(0xFFE2E8F0)),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             msg['message'] ?? '',
                             style: GoogleFonts.inter(
                               fontSize: 12.5,
-                              color: isRecruiter ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                              color: isRecruiter
+                                  ? Colors.white
+                                  : (isDark ? Colors.white : Colors.black87),
                             ),
                           ),
                         ),
@@ -1305,7 +1606,11 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           decoration: BoxDecoration(
             color: isDark ? AppColors.bgSoftDark : Colors.white,
-            border: Border(top: BorderSide(color: isDark ? Colors.white10 : Colors.grey[200]!)),
+            border: Border(
+              top: BorderSide(
+                color: isDark ? Colors.white10 : Colors.grey[200]!,
+              ),
+            ),
           ),
           child: Row(
             children: [
@@ -1315,7 +1620,10 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                   style: GoogleFonts.inter(fontSize: 13),
                   decoration: InputDecoration(
                     hintText: 'Write a message to candidate...',
-                    hintStyle: GoogleFonts.inter(fontSize: 13, color: Colors.grey),
+                    hintStyle: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: Colors.grey,
+                    ),
                     border: InputBorder.none,
                   ),
                 ),

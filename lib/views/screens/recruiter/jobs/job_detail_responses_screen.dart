@@ -10,6 +10,7 @@ import 'package:hirematrix/controllers/recruiter_controller/models/job.dart';
 import '../candidates/candidate_profile_view_screen.dart';
 import 'add_slot_screen.dart';
 import 'edit_slot_screen.dart';
+
 class JobDetailResponsesScreen extends StatefulWidget {
   final Job job;
 
@@ -232,9 +233,7 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
           ),
           content: Text(
             'Are you sure you want to delete this interview slot?',
-            style: GoogleFonts.inter(
-              color: AppColors.getTextMuted(isDark),
-            ),
+            style: GoogleFonts.inter(color: AppColors.getTextMuted(isDark)),
           ),
           actions: [
             TextButton(
@@ -292,7 +291,9 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(res['message']?.toString() ?? 'Failed to delete slot'),
+              content: Text(
+                res['message']?.toString() ?? 'Failed to delete slot',
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -302,10 +303,7 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
       Navigator.pop(context);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
       }
     }
@@ -839,7 +837,7 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
       children: [
         Text(
           value,
-          style: GoogleFonts.outfit(
+          style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: isDark ? Colors.white : const Color(0xFF0F172A),
@@ -1995,7 +1993,7 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
               children: [
                 Text(
                   '$value',
-                  style: GoogleFonts.outfit(
+                  style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: isDark ? Colors.white : Colors.black,
@@ -2039,92 +2037,8 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
           children: [
             _buildInterviewStatsRow(stats, isDark),
             const SizedBox(height: 20),
-
-            // Section 1: Booked Interviews
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.event_available_rounded,
-                    size: 20,
-                    color: Colors.blue,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Booked Interviews for This Job',
-                    style: GoogleFonts.outfit(
-                      fontSize: 15.5,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
             _buildBookedInterviewsList(isDark),
             const SizedBox(height: 28),
-
-            // Section 2: Slot Capacity
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_view_day_rounded,
-                        size: 20,
-                        color: Colors.purple,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Slot Capacity',
-                        style: GoogleFonts.outfit(
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.bold,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF0F172A),
-                        ),
-                      ),
-                    ],
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddSlotScreen(job: widget.job),
-                        ),
-                      );
-                      if (result == true) {
-                        _loadInterviews();
-                      }
-                    },
-                    icon: const Icon(Icons.add, size: 16),
-                    label: Text(
-                      'Create Slots',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
             _buildSlotCapacityList(isDark),
           ],
         ),
@@ -2133,651 +2047,593 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
   }
 
   Widget _buildBookedInterviewsList(bool isDark) {
-    if (_interviews.isEmpty) {
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.getCard(isDark) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? Colors.white10 : Colors.grey[200]!,
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.calendar_today_outlined,
-                size: 32,
-                color: Colors.grey[400],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'No interview bookings yet',
-                style: GoogleFonts.inter(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white70 : Colors.black87,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.getCard(isDark) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark ? Colors.white10 : Colors.grey[200]!,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Booked candidate slots for this job will appear here.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 11.5, color: Colors.grey),
+            ),
+            child: Text(
+              'Booked Interviews',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.getPrimary(isDark),
               ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _interviews.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final booking = _interviews[index];
-        final id = booking['id']?.toString() ?? '';
-        final name = booking['candidate_name'] ?? 'Candidate';
-        final email = booking['candidate_email'] ?? '';
-        final status = booking['booking_status'] ?? 'booked';
-
-        final slotDate = booking['slot_date'] ?? '';
-        final slotTime = booking['slot_time'] ?? '';
-        final slotDatetimeStr = booking['slot_datetime'] ?? '';
-
-        DateTime? dt;
-        if (slotDatetimeStr.isNotEmpty) {
-          dt = DateTime.tryParse(slotDatetimeStr);
-        } else if (slotDate.isNotEmpty) {
-          dt = DateTime.tryParse("$slotDate $slotTime");
-        }
-
-        final formattedDate = dt != null
-            ? DateFormat('MMM dd, yyyy').format(dt)
-            : slotDate;
-        final formattedTime = dt != null
-            ? DateFormat('hh:mm a').format(dt)
-            : slotTime;
-
-        final bookingStatus = status.toString().toLowerCase();
-        final isPast = dt != null && dt.isBefore(DateTime.now());
-        final isUpcoming = dt != null && dt.isAfter(DateTime.now());
-
-        final hasReview =
-            booking['review_id'] != null ||
-            booking['review_attendance_status'] != null;
-        final reviewDecision = booking['review_decision'] ?? '';
-
-        return Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? AppColors.getCard(isDark)
-                : (isPast ? Colors.grey[50] : Colors.white),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? Colors.white10 : Colors.grey[200]!,
-              width: 1,
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(14),
+          if (_interviews.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                name,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      size: 32,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No interview bookings yet',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white70 : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                headingRowColor: WidgetStateProperty.all(
+                  isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : const Color(0xFFF8FAFC),
+                ),
+                dataRowMinHeight: 60,
+                dataRowMaxHeight: 80,
+                columns: [
+                  DataColumn(
+                    label: Text(
+                      'ID',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Candidate',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Slot',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Status',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Booked On',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Actions',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+                rows: _interviews.map<DataRow>((booking) {
+                  final id = booking['id']?.toString() ?? '';
+                  final name = booking['candidate_name'] ?? 'Candidate';
+                  final email = booking['candidate_email'] ?? '';
+                  final status =
+                      booking['booking_status'] ??
+                      booking['interview_type'] ??
+                      'booked';
+
+                  final slotDate = booking['slot_date'] ?? '';
+                  final slotTime = booking['slot_time'] ?? '';
+                  final slotDatetimeStr =
+                      booking['slot_datetime'] ??
+                      booking['interview_date'] ??
+                      '';
+
+                  DateTime? dt;
+                  if (slotDatetimeStr.isNotEmpty) {
+                    dt = DateTime.tryParse(slotDatetimeStr);
+                  } else if (slotDate.isNotEmpty) {
+                    dt = DateTime.tryParse("$slotDate $slotTime");
+                  }
+
+                  final formattedDate = dt != null
+                      ? DateFormat('MMM dd, yyyy').format(dt)
+                      : (slotDate.isNotEmpty ? slotDate : '-');
+                  final formattedTime = dt != null
+                      ? DateFormat('hh:mm a').format(dt)
+                      : (slotTime.isNotEmpty ? slotTime : '-');
+
+                  final bookingStatus = status.toString().toLowerCase();
+
+                  // Default to upcoming if dt is null to be safe and show buttons, or check status
+                  final isPast = dt != null
+                      ? dt.isBefore(DateTime.now())
+                      : ['completed', 'no_show'].contains(bookingStatus);
+                  final isUpcoming = dt != null
+                      ? dt.isAfter(DateTime.now())
+                      : !isPast;
+
+                  final hasReview =
+                      booking['review_id'] != null ||
+                      booking['review_attendance_status'] != null;
+
+                  final bookedAtStr =
+                      booking['booked_at'] ?? booking['created_at'] ?? '';
+                  DateTime? bookedDt;
+                  if (bookedAtStr.isNotEmpty) {
+                    bookedDt = DateTime.tryParse(bookedAtStr);
+                  }
+                  final formattedBookedAt = bookedDt != null
+                      ? DateFormat('MMM dd, yyyy').format(bookedDt)
+                      : '-';
+
+                  final bool showReschedule =
+                      isUpcoming &&
+                      [
+                        'booked',
+                        'confirmed',
+                        'rescheduled',
+                      ].contains(bookingStatus);
+                  final bool showReview =
+                      isPast ||
+                      [
+                        'completed',
+                        'no_show',
+                        'rescheduled',
+                      ].contains(bookingStatus);
+                  final bool hasAction = showReschedule || showReview;
+
+                  return DataRow(
+                    color: WidgetStateProperty.all(
+                      isPast && !isDark ? Colors.grey[50] : null,
+                    ),
+                    cells: [
+                      DataCell(Text(id, style: GoogleFonts.inter())),
+                      DataCell(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
                               ),
-                              if (email.isNotEmpty) ...[
-                                const SizedBox(height: 2),
-                                Text(
-                                  email,
+                            ),
+                            Text(
+                              email,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      DataCell(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              formattedDate,
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              formattedTime,
+                              style: GoogleFonts.inter(
+                                color: AppColors.getPrimary(isDark),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      DataCell(
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildInterviewStatusPill(status, isDark),
+                            if (hasReview)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  'Reviewed',
                                   style: GoogleFonts.inter(
-                                    fontSize: 11.5,
-                                    color: Colors.grey,
+                                    fontSize: 11,
+                                    color: Colors.green,
                                   ),
                                 ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildInterviewStatusPill(status, isDark),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    const Divider(height: 1),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_rounded,
-                          size: 13,
-                          color: AppColors.getPrimary(isDark),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          formattedDate,
-                          style: GoogleFonts.inter(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Icon(
-                          Icons.access_time_rounded,
-                          size: 13,
-                          color: AppColors.getPrimary(isDark),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          formattedTime,
-                          style: GoogleFonts.inter(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.blue,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (hasReview ||
-                        (int.tryParse(
-                                  booking['reschedule_count']?.toString() ??
-                                      '0',
-                                ) ??
-                                0) >
-                            0) ...[
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          if (hasReview) ...[
-                            const Icon(
-                              Icons.check_circle_rounded,
-                              size: 13,
-                              color: Colors.green,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Reviewed',
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                color: Colors.green,
-                                fontWeight: FontWeight.w600,
                               ),
-                            ),
-                            if (reviewDecision.isNotEmpty) ...[
-                              const SizedBox(width: 6),
-                              Text(
-                                '(${reviewDecision.toString().replaceAll('_', ' ').toUpperCase()})',
-                                style: GoogleFonts.inter(
-                                  fontSize: 10.5,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w500,
+                          ],
+                        ),
+                      ),
+                      DataCell(
+                        Text(
+                          formattedBookedAt,
+                          style: GoogleFonts.inter(fontSize: 12),
+                        ),
+                      ),
+                      DataCell(
+                        Row(
+                          children: [
+                            if (showReschedule) ...[
+                              ElevatedButton.icon(
+                                onPressed: () => _openWebUrl(
+                                  "recruiter/slots/reschedule/$id",
+                                ),
+                                icon: const Icon(Icons.sync, size: 14),
+                                label: const Text('Reschedule'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  elevation: 0,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                            if (showReview) ...[
+                              OutlinedButton.icon(
+                                onPressed: () =>
+                                    _openWebUrl("recruiter/slots/review/$id"),
+                                icon: const Icon(Icons.rate_review, size: 14),
+                                label: Text(
+                                  hasReview
+                                      ? 'Edit Review'
+                                      : 'Review Interview',
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.getPrimary(isDark),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  side: BorderSide(
+                                    color: AppColors.getPrimary(isDark),
+                                  ),
                                 ),
                               ),
                             ],
-                          ],
-                          if (hasReview &&
-                              (int.tryParse(
-                                        booking['reschedule_count']
-                                                ?.toString() ??
-                                            '0',
-                                      ) ??
-                                      0) >
-                                  0)
-                            const SizedBox(width: 12),
-                          if ((int.tryParse(
-                                    booking['reschedule_count']?.toString() ??
-                                        '0',
-                                  ) ??
-                                  0) >
-                              0) ...[
-                            Icon(
-                              Icons.sync_problem_rounded,
-                              size: 13,
-                              color: Colors.orange[600],
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Rescheduled: ${booking['reschedule_count']}x',
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                color: Colors.orange[700],
-                                fontWeight: FontWeight.w600,
+                            if (!hasAction) ...[
+                              Text(
+                                '-',
+                                style: GoogleFonts.inter(color: Colors.grey),
                               ),
-                            ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ],
-                  ],
-                ),
+                  );
+                }).toList(),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.02)
-                      : const Color(0xFFF8FAFC),
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(12),
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 6,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (isUpcoming &&
-                        [
-                          'booked',
-                          'confirmed',
-                          'rescheduled',
-                        ].contains(bookingStatus)) ...[
-                      TextButton.icon(
-                        onPressed: () =>
-                            _openWebUrl("recruiter/slots/reschedule/$id"),
-                        icon: const Icon(
-                          Icons.sync_rounded,
-                          size: 13,
-                          color: Colors.orange,
-                        ),
-                        label: Text(
-                          'Reschedule',
-                          style: GoogleFonts.inter(
-                            fontSize: 11.5,
-                            color: Colors.orange,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          minimumSize: Size.zero,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    if (isPast ||
-                        [
-                          'completed',
-                          'no_show',
-                          'rescheduled',
-                        ].contains(bookingStatus)) ...[
-                      TextButton.icon(
-                        onPressed: () =>
-                            _openWebUrl("recruiter/slots/review/$id"),
-                        icon: Icon(
-                          Icons.rate_review_rounded,
-                          size: 13,
-                          color: AppColors.getPrimary(isDark),
-                        ),
-                        label: Text(
-                          hasReview ? 'Edit Review' : 'Review Interview',
-                          style: GoogleFonts.inter(
-                            fontSize: 11.5,
-                            color: AppColors.getPrimary(isDark),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          minimumSize: Size.zero,
-                        ),
-                      ),
-                    ] else ...[
-                      if (!isUpcoming)
-                        Text(
-                          '-',
-                          style: GoogleFonts.inter(
-                            fontSize: 11.5,
-                            color: Colors.grey,
-                          ),
-                        ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+            ),
+        ],
+      ),
     );
   }
 
   Widget _buildSlotCapacityList(bool isDark) {
-    if (_slots.isEmpty) {
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.getCard(isDark) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? Colors.white10 : Colors.grey[200]!,
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.calendar_view_day_outlined,
-                size: 32,
-                color: Colors.grey[400],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'No slots found for this job',
-                style: GoogleFonts.inter(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Create interview slots so candidates can self-book their slots.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 11.5, color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _slots.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final slot = _slots[index];
-        final id = slot['id']?.toString() ?? '';
-        final slotDate = slot['slot_date'] ?? '';
-        final slotTime = slot['slot_time'] ?? '';
-        final slotDatetimeStr = slot['slot_datetime'] ?? '';
-
-        DateTime? dt;
-        if (slotDatetimeStr.isNotEmpty) {
-          dt = DateTime.tryParse(slotDatetimeStr);
-        } else if (slotDate.isNotEmpty) {
-          dt = DateTime.tryParse("$slotDate $slotTime");
-        }
-
-        final formattedDate = dt != null
-            ? DateFormat('MMM dd, yyyy').format(dt)
-            : slotDate;
-        final formattedTime = dt != null
-            ? DateFormat('hh:mm a').format(dt)
-            : slotTime;
-
-        final capacity = slot['capacity'] ?? 1;
-        final bookedCount = slot['booked_count'] ?? 0;
-        final createdBy = slot['created_by_name'] ?? 'System';
-
-        final isPastSlot = dt != null && dt.isBefore(DateTime.now());
-        final isFull = bookedCount >= capacity;
-
-        return Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? AppColors.getCard(isDark)
-                : (isPastSlot ? Colors.grey[50] : Colors.white),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white10
-                  : (isFull ? Colors.orange[200]! : Colors.grey[200]!),
-              width: 1,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.getCard(isDark) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Slot ID: ',
-                              style: GoogleFonts.inter(
-                                fontSize: 11.5,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            Text(
-                              '#$id',
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        _buildSlotStatusPill(isPastSlot, isFull, isDark),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_rounded,
-                          size: 13,
-                          color: AppColors.getPrimary(isDark),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          formattedDate,
-                          style: GoogleFonts.inter(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Icon(
-                          Icons.access_time_rounded,
-                          size: 13,
-                          color: AppColors.getPrimary(isDark),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          formattedTime,
-                          style: GoogleFonts.inter(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.blue,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.people_alt_rounded,
-                              size: 13,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Booked: ',
-                              style: GoogleFonts.inter(
-                                fontSize: 11.5,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '$bookedCount / $capacity',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue[700],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          'By: $createdBy',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark ? Colors.white10 : Colors.grey[200]!,
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.02)
-                      : const Color(0xFFF8FAFC),
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Slot Capacity',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.getPrimary(isDark),
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 6,
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddSlotScreen(job: widget.job),
+                      ),
+                    );
+                    if (result == true) {
+                      _loadInterviews();
+                    }
+                  },
+                  icon: const Icon(Icons.add, size: 14),
+                  label: const Text('Create New Slots'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.getPrimary(isDark),
+                    side: BorderSide(color: AppColors.getPrimary(isDark)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+              ],
+            ),
+          ),
+          if (_slots.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (bookedCount == 0) ...[
-                      TextButton.icon(
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => EditSlotScreen(job: widget.job, slot: slot),
-                            ),
-                          );
-                          if (result == true) {
-                            _loadInterviews();
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.edit_rounded,
-                          size: 13,
-                          color: Colors.blue,
-                        ),
-                        label: Text(
-                          'Edit',
-                          style: GoogleFonts.inter(
-                            fontSize: 11.5,
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          minimumSize: Size.zero,
-                        ),
+                    Icon(
+                      Icons.calendar_view_day_outlined,
+                      size: 32,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No slots found for this job',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white70 : Colors.black87,
                       ),
-                      const SizedBox(width: 8),
-                      TextButton.icon(
-                        onPressed: () => _deleteSlot(id),
-                        icon: const Icon(
-                          Icons.delete_outline_rounded,
-                          size: 13,
-                          color: Colors.red,
-                        ),
-                        label: Text(
-                          'Delete',
-                          style: GoogleFonts.inter(
-                            fontSize: 11.5,
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          minimumSize: Size.zero,
-                        ),
-                      ),
-                    ] else ...[
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.lock_clock_rounded,
-                            size: 12,
-                            color: Colors.grey[500],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Has Bookings',
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              color: Colors.grey[500],
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ),
                   ],
                 ),
               ),
-            ],
-          ),
-        );
-      },
+            )
+          else
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                headingRowColor: WidgetStateProperty.all(
+                  isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : const Color(0xFFF8FAFC),
+                ),
+                columns: [
+                  DataColumn(
+                    label: Text(
+                      'ID',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Date',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Time',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Capacity',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Booked',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Status',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Created By',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Actions',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+                rows: _slots.map<DataRow>((slot) {
+                  final id = slot['id']?.toString() ?? '';
+                  final slotDate = slot['slot_date'] ?? '';
+                  final slotTime = slot['slot_time'] ?? '';
+                  final slotDatetimeStr = slot['slot_datetime'] ?? '';
+
+                  DateTime? dt;
+                  if (slotDatetimeStr.isNotEmpty) {
+                    dt = DateTime.tryParse(slotDatetimeStr);
+                  } else if (slotDate.isNotEmpty) {
+                    dt = DateTime.tryParse("$slotDate $slotTime");
+                  }
+
+                  final formattedDate = dt != null
+                      ? DateFormat('MMM dd, yyyy').format(dt)
+                      : slotDate;
+                  final formattedTime = dt != null
+                      ? DateFormat('hh:mm a').format(dt)
+                      : slotTime;
+
+                  final capacity = slot['capacity'] ?? 1;
+                  final bookedCount = slot['booked_count'] ?? 0;
+                  final createdBy = slot['created_by_name'] ?? 'System';
+
+                  final isPastSlot = dt != null && dt.isBefore(DateTime.now());
+                  final isFull = bookedCount >= capacity;
+
+                  return DataRow(
+                    color: WidgetStateProperty.all(
+                      isPastSlot
+                          ? (isDark ? Colors.white10 : Colors.grey[50])
+                          : (isFull && !isDark ? Colors.orange[50] : null),
+                    ),
+                    cells: [
+                      DataCell(Text(id, style: GoogleFonts.inter())),
+                      DataCell(Text(formattedDate, style: GoogleFonts.inter())),
+                      DataCell(
+                        Text(
+                          formattedTime,
+                          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      DataCell(
+                        Text(capacity.toString(), style: GoogleFonts.inter()),
+                      ),
+                      DataCell(
+                        Text(
+                          bookedCount.toString(),
+                          style: GoogleFonts.inter(),
+                        ),
+                      ),
+                      DataCell(
+                        _buildSlotStatusPill(isPastSlot, isFull, isDark),
+                      ),
+                      DataCell(Text(createdBy, style: GoogleFonts.inter())),
+                      DataCell(
+                        Row(
+                          children: [
+                            if (bookedCount == 0) ...[
+                              OutlinedButton.icon(
+                                onPressed: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => EditSlotScreen(
+                                        slot: slot,
+                                        job: widget.job,
+                                      ),
+                                    ),
+                                  );
+                                  if (result == true) {
+                                    _loadInterviews();
+                                  }
+                                },
+                                icon: const Icon(Icons.edit, size: 14),
+                                label: const Text('Edit'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.getPrimary(isDark),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  side: BorderSide(
+                                    color: AppColors.getPrimary(isDark),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              OutlinedButton.icon(
+                                onPressed: () => _deleteSlot(id),
+                                icon: const Icon(Icons.delete, size: 14),
+                                label: const Text('Delete'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.red,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  side: const BorderSide(color: Colors.red),
+                                ),
+                              ),
+                            ] else ...[
+                              Text(
+                                'Has bookings',
+                                style: GoogleFonts.inter(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -2888,44 +2744,72 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
           final email = item['candidate_email'] ?? item['email'] ?? '';
           final jobTitle = item['job_title'] ?? widget.job.jobTitle;
 
-          final overall = double.tryParse(item['overall_rating']?.toString() ?? '0') ?? 0;
-          final technical = double.tryParse(item['technical_score']?.toString() ?? '0') ?? 0;
-          final communication = double.tryParse(item['communication_score']?.toString() ?? '0') ?? 0;
-          final atsScore = double.tryParse(item['ats_score']?.toString() ?? '0') ?? 0;
-          final skillMatch = int.tryParse(item['skill_match']?.toString() ?? '0') ?? 0;
+          final overall =
+              double.tryParse(item['overall_rating']?.toString() ?? '0') ?? 0;
+          final technical =
+              double.tryParse(item['technical_score']?.toString() ?? '0') ?? 0;
+          final communication =
+              double.tryParse(item['communication_score']?.toString() ?? '0') ??
+              0;
+          final atsScore =
+              double.tryParse(item['ats_score']?.toString() ?? '0') ?? 0;
+          final skillMatch =
+              int.tryParse(item['skill_match']?.toString() ?? '0') ?? 0;
 
           final candidateId = item['candidate_id']?.toString() ?? '';
-          final appId = item['id']?.toString() ?? item['application_id']?.toString() ?? '';
+          final appId =
+              item['id']?.toString() ??
+              item['application_id']?.toString() ??
+              '';
           final statusKey = item['status']?.toString() ?? 'applied';
 
           // Extract arrays
           List<String> candSkills = [];
           if (item['candidate_skills'] is List) {
-            candSkills = (item['candidate_skills'] as List).map((e) => e.toString()).toList();
+            candSkills = (item['candidate_skills'] as List)
+                .map((e) => e.toString())
+                .toList();
           }
           List<String> reqSkills = [];
           if (item['required_skills'] is List) {
-            reqSkills = (item['required_skills'] as List).map((e) => e.toString()).toList();
+            reqSkills = (item['required_skills'] as List)
+                .map((e) => e.toString())
+                .toList();
           }
           List<String> github = [];
           if (item['github_stack'] is List) {
-            github = (item['github_stack'] as List).map((e) => e.toString()).toList();
+            github = (item['github_stack'] as List)
+                .map((e) => e.toString())
+                .toList();
           }
 
-          final candSkillsLower = candSkills.map((s) => s.toLowerCase()).toList();
-          final matchedCount = reqSkills.where((s) => candSkillsLower.contains(s.toLowerCase())).length;
+          final candSkillsLower = candSkills
+              .map((s) => s.toLowerCase())
+              .toList();
+          final matchedCount = reqSkills
+              .where((s) => candSkillsLower.contains(s.toLowerCase()))
+              .length;
 
           final cardBg = isDark ? AppColors.getCard(isDark) : Colors.white;
           final borderColor = rank <= 3
-              ? (rank == 1 ? Colors.amber.withValues(alpha: 0.6) : (rank == 2 ? Colors.blueGrey.withValues(alpha: 0.6) : Colors.brown.withValues(alpha: 0.6)))
+              ? (rank == 1
+                    ? Colors.amber.withValues(alpha: 0.6)
+                    : (rank == 2
+                          ? Colors.blueGrey.withValues(alpha: 0.6)
+                          : Colors.brown.withValues(alpha: 0.6)))
               : (isDark ? Colors.white10 : const Color(0xFFD9ECE5));
-          final subtext = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+          final subtext = isDark
+              ? const Color(0xFF94A3B8)
+              : const Color(0xFF64748B);
 
           return Container(
             decoration: BoxDecoration(
               color: cardBg,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: borderColor, width: rank <= 3 ? 1.5 : 1),
+              border: Border.all(
+                color: borderColor,
+                width: rank <= 3 ? 1.5 : 1,
+              ),
               boxShadow: [
                 if (!isDark)
                   BoxShadow(
@@ -2952,20 +2836,33 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                           children: [
                             Text(
                               name,
-                              style: GoogleFonts.inter(fontSize: 14.5, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF16212B)),
+                              style: GoogleFonts.inter(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.bold,
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF16212B),
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               email,
-                              style: GoogleFonts.inter(fontSize: 11.5, color: subtext),
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5,
+                                color: subtext,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               jobTitle,
-                              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.getPrimary(isDark)),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.getPrimary(isDark),
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -2981,27 +2878,42 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                 // 2. Skills Match (Required Skills)
                 if (reqSkills.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF1B2A2F) : const Color(0xFFEDF8F5),
+                                color: isDark
+                                    ? const Color(0xFF1B2A2F)
+                                    : const Color(0xFFEDF8F5),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 '$skillMatch% Match',
-                                style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.getPrimary(isDark)),
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.getPrimary(isDark),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 6),
                             Text(
                               '($matchedCount/${reqSkills.length})',
-                              style: GoogleFonts.inter(fontSize: 10, color: subtext),
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: subtext,
+                              ),
                             ),
                           ],
                         ),
@@ -3010,24 +2922,40 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                           spacing: 4,
                           runSpacing: 4,
                           children: reqSkills.map((skill) {
-                            final hasSkill = candSkillsLower.contains(skill.toLowerCase());
+                            final hasSkill = candSkillsLower.contains(
+                              skill.toLowerCase(),
+                            );
                             return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF162327) : const Color(0xFFF8FAFC),
+                                color: isDark
+                                    ? const Color(0xFF162327)
+                                    : const Color(0xFFF8FAFC),
                                 borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: isDark ? const Color(0xFF23343A) : const Color(0xFFE2E8F0)),
+                                border: Border.all(
+                                  color: isDark
+                                      ? const Color(0xFF23343A)
+                                      : const Color(0xFFE2E8F0),
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
                                     skill,
-                                    style: GoogleFonts.inter(fontSize: 9.5, color: subtext),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 9.5,
+                                      color: subtext,
+                                    ),
                                   ),
                                   const SizedBox(width: 4),
                                   Icon(
-                                    hasSkill ? Icons.check_circle : Icons.cancel,
+                                    hasSkill
+                                        ? Icons.check_circle
+                                        : Icons.cancel,
                                     size: 10,
                                     color: hasSkill ? Colors.green : Colors.red,
                                   ),
@@ -3043,7 +2971,10 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                 // 3. GitHub Stack
                 if (github.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -3053,28 +2984,53 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                           child: Wrap(
                             spacing: 4,
                             runSpacing: 4,
-                            children: github.take(6).map((lang) {
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF1B2A2F) : const Color(0xFFEDF8F5),
-                                  borderRadius: BorderRadius.circular(4),
+                            children:
+                                github.take(6).map((lang) {
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF1B2A2F)
+                                          : const Color(0xFFEDF8F5),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      lang,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 9.5,
+                                        color: AppColors.getPrimary(isDark),
+                                      ),
+                                    ),
+                                  );
+                                }).toList()..addAll(
+                                  github.length > 6
+                                      ? [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: isDark
+                                                  ? Colors.white10
+                                                  : const Color(0xFFF1F5F9),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              '+${github.length - 6}',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 9.5,
+                                                color: subtext,
+                                              ),
+                                            ),
+                                          ),
+                                        ]
+                                      : [],
                                 ),
-                                child: Text(
-                                  lang,
-                                  style: GoogleFonts.inter(fontSize: 9.5, color: AppColors.getPrimary(isDark)),
-                                ),
-                              );
-                            }).toList()..addAll(github.length > 6 ? [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: isDark ? Colors.white10 : const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text('+${github.length - 6}', style: GoogleFonts.inter(fontSize: 9.5, color: subtext)),
-                              )
-                            ] : []),
                           ),
                         ),
                       ],
@@ -3083,31 +3039,68 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
 
                 // 4. Scores Row (Technical, Communication, Overall)
                 Container(
-                  color: isDark ? Colors.white.withValues(alpha: 0.03) : const Color(0xFFF8FAFC),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.03)
+                      : const Color(0xFFF8FAFC),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   margin: const EdgeInsets.only(top: 8),
                   child: Row(
                     children: [
-                      Expanded(child: _buildLeaderboardScoreMetric('Technical', technical, isDark)),
-                      Expanded(child: _buildLeaderboardScoreMetric('Communication', communication, isDark)),
+                      Expanded(
+                        child: _buildLeaderboardScoreMetric(
+                          'Technical',
+                          technical,
+                          isDark,
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildLeaderboardScoreMetric(
+                          'Communication',
+                          communication,
+                          isDark,
+                        ),
+                      ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('Overall', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: subtext)),
+                          Text(
+                            'Overall',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: subtext,
+                            ),
+                          ),
                           const SizedBox(height: 3),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: AppColors.getPrimary(isDark).withValues(alpha: 0.15),
+                              color: AppColors.getPrimary(
+                                isDark,
+                              ).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.star, size: 12, color: AppColors.getPrimary(isDark)),
+                                Icon(
+                                  Icons.star,
+                                  size: 12,
+                                  color: AppColors.getPrimary(isDark),
+                                ),
                                 const SizedBox(width: 2),
                                 Text(
                                   overall.toStringAsFixed(1),
-                                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.getPrimary(isDark)),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.getPrimary(isDark),
+                                  ),
                                 ),
                               ],
                             ),
@@ -3122,21 +3115,46 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
 
                 // Bottom Row: Status Pill + Actions
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   child: Row(
                     children: [
                       _buildStagePill(statusKey, isDark),
                       const Spacer(),
                       OutlinedButton.icon(
-                        onPressed: () => _downloadResume(candidateId, appId.isNotEmpty ? appId : null),
-                        icon: Icon(Icons.description_outlined, size: 13, color: AppColors.getPrimary(isDark)),
-                        label: Text('Resume', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.getPrimary(isDark))),
+                        onPressed: () => _downloadResume(
+                          candidateId,
+                          appId.isNotEmpty ? appId : null,
+                        ),
+                        icon: Icon(
+                          Icons.description_outlined,
+                          size: 13,
+                          color: AppColors.getPrimary(isDark),
+                        ),
+                        label: Text(
+                          'Resume',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.getPrimary(isDark),
+                          ),
+                        ),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          side: BorderSide(color: AppColors.getPrimary(isDark), width: 1.2),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          side: BorderSide(
+                            color: AppColors.getPrimary(isDark),
+                            width: 1.2,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -3154,15 +3172,31 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                             ),
                           ).then((_) => _loadLeaderboard());
                         },
-                        icon: const Icon(Icons.person_outline, size: 13, color: Colors.white),
-                        label: Text('View', style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white)),
+                        icon: const Icon(
+                          Icons.person_outline,
+                          size: 13,
+                          color: Colors.white,
+                        ),
+                        label: Text(
+                          'View',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.getPrimary(isDark),
                           elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                         ),
                       ),
                     ],
@@ -3208,20 +3242,24 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
 
   Widget _buildLeaderboardAtsCell(double score, bool isDark) {
     Color scoreTextColor = const Color(0xFF991B1B);
-    Color scoreBarColor  = Colors.red;
+    Color scoreBarColor = Colors.red;
     if (score >= 75) {
       scoreTextColor = const Color(0xFF065F46);
-      scoreBarColor  = const Color(0xFF1FB7B5);
+      scoreBarColor = const Color(0xFF1FB7B5);
     } else if (score >= 50) {
       scoreTextColor = const Color(0xFF92400E);
-      scoreBarColor  = Colors.orange;
+      scoreBarColor = Colors.orange;
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
           '${score.round()}%',
-          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: scoreTextColor),
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: scoreTextColor,
+          ),
         ),
         const SizedBox(height: 3),
         ClipRRect(
@@ -3231,35 +3269,54 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
             height: 4,
             child: LinearProgressIndicator(
               value: score.clamp(0, 100) / 100,
-              backgroundColor: isDark ? const Color(0xFF23343A) : const Color(0xFFD9ECE5),
+              backgroundColor: isDark
+                  ? const Color(0xFF23343A)
+                  : const Color(0xFFD9ECE5),
               valueColor: AlwaysStoppedAnimation<Color>(scoreBarColor),
             ),
           ),
         ),
         const SizedBox(height: 2),
-        Text('ATS Match', style: GoogleFonts.inter(fontSize: 9, color: isDark ? const Color(0xFF4A5C63) : Colors.grey)),
+        Text(
+          'ATS Match',
+          style: GoogleFonts.inter(
+            fontSize: 9,
+            color: isDark ? const Color(0xFF4A5C63) : Colors.grey,
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildLeaderboardScoreMetric(String label, double score, bool isDark) {
     Color scoreTextColor = const Color(0xFF991B1B);
-    Color scoreBarColor  = Colors.red;
+    Color scoreBarColor = Colors.red;
     if (score >= 80) {
       scoreTextColor = const Color(0xFF065F46);
-      scoreBarColor  = const Color(0xFF1FB7B5);
+      scoreBarColor = const Color(0xFF1FB7B5);
     } else if (score >= 60) {
       scoreTextColor = const Color(0xFF92400E);
-      scoreBarColor  = Colors.orange;
+      scoreBarColor = Colors.orange;
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          ),
+        ),
         const SizedBox(height: 3),
         Text(
           score.toStringAsFixed(1),
-          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: scoreTextColor),
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: scoreTextColor,
+          ),
         ),
         const SizedBox(height: 3),
         ClipRRect(
@@ -3269,7 +3326,9 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
             height: 4,
             child: LinearProgressIndicator(
               value: score.clamp(0, 100) / 100,
-              backgroundColor: isDark ? const Color(0xFF23343A) : const Color(0xFFD9ECE5),
+              backgroundColor: isDark
+                  ? const Color(0xFF23343A)
+                  : const Color(0xFFD9ECE5),
               valueColor: AlwaysStoppedAnimation<Color>(scoreBarColor),
             ),
           ),

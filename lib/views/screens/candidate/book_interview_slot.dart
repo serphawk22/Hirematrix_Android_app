@@ -8,13 +8,11 @@ import 'package:hirematrix/controllers/book_interview_slot_controller.dart';
 class BookInterviewSlotScreen extends StatefulWidget {
   final dynamic applicationId;
 
-  const BookInterviewSlotScreen({
-    super.key,
-    required this.applicationId,
-  });
+  const BookInterviewSlotScreen({super.key, required this.applicationId});
 
   @override
-  State<BookInterviewSlotScreen> createState() => _BookInterviewSlotScreenState();
+  State<BookInterviewSlotScreen> createState() =>
+      _BookInterviewSlotScreenState();
 }
 
 class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
@@ -31,7 +29,7 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
   Future<void> _confirmBooking() async {
     final slotId = _controller.selectedSlotId.value;
     if (slotId == null) return;
-    
+
     final success = await _controller.confirmBooking(
       applicationId: widget.applicationId,
       slotId: slotId,
@@ -51,10 +49,28 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
   String _formatDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
-      final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      final days = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
+      ];
       final months = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
       ];
       return '${days[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}, ${date.year}';
     } catch (_) {
@@ -65,7 +81,9 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
   String _formatTime(String dateTimeStr) {
     try {
       final parsed = DateTime.parse(dateTimeStr);
-      final hour = parsed.hour > 12 ? parsed.hour - 12 : (parsed.hour == 0 ? 12 : parsed.hour);
+      final hour = parsed.hour > 12
+          ? parsed.hour - 12
+          : (parsed.hour == 0 ? 12 : parsed.hour);
       final minute = parsed.minute.toString().padLeft(2, '0');
       final period = parsed.hour >= 12 ? 'PM' : 'AM';
       return '$hour:$minute $period';
@@ -81,7 +99,9 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
     final mainBg = AppColors.getBackground(isDark);
     final cardColor = AppColors.getCard(isDark);
     final textColor = isDark ? Colors.white : const Color(0xFF111827);
-    final subtitleColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+    final subtitleColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF475569);
     return Scaffold(
       backgroundColor: mainBg,
       appBar: AppBar(
@@ -109,7 +129,8 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
             );
           }
 
-          final jobTitle = _controller.application.value?['job_title'] ?? 'Position';
+          final jobTitle =
+              _controller.application.value?['job_title'] ?? 'Position';
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -180,8 +201,14 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
                   _buildInfoState(cardColor, textColor, subtitleColor, isDark),
                 ]
                 // Eligibility or Slot load Error status
-                else if (_controller.bookingStatus.value == 'error' || _controller.availableSlots.isEmpty) ...[
-                  _buildNoSlotsState(cardColor, textColor, subtitleColor, isDark),
+                else if (_controller.bookingStatus.value == 'error' ||
+                    _controller.availableSlots.isEmpty) ...[
+                  _buildNoSlotsState(
+                    cardColor,
+                    textColor,
+                    subtitleColor,
+                    isDark,
+                  ),
                 ]
                 // Regular Scheduling view
                 else ...[
@@ -222,7 +249,9 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
                                 'You have been shortlisted for $jobTitle. Please select an available interview slot below.',
                                 style: GoogleFonts.inter(
                                   fontSize: 12.5,
-                                  color: isDark ? const Color(0xFFA7F3D0) : const Color(0xFF065F46),
+                                  color: isDark
+                                      ? const Color(0xFFA7F3D0)
+                                      : const Color(0xFF065F46),
                                   height: 1.4,
                                 ),
                               ),
@@ -253,16 +282,23 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
                         children: [
                           // Date Header
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.grey[900] : const Color(0xFFF9FAFB),
+                              color: isDark
+                                  ? Colors.grey[900]
+                                  : const Color(0xFFF9FAFB),
                               borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(15),
                                 topRight: Radius.circular(15),
                               ),
                               border: Border(
                                 bottom: BorderSide(
-                                  color: isDark ? Colors.grey[850]! : Colors.grey[200]!,
+                                  color: isDark
+                                      ? Colors.grey[850]!
+                                      : Colors.grey[200]!,
                                 ),
                               ),
                             ),
@@ -294,20 +330,34 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
                             child: GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
-                                childAspectRatio: 2.3,
-                              ),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 10,
+                                    mainAxisSpacing: 10,
+                                    childAspectRatio: 2.3,
+                                  ),
                               itemCount: daySlots.length,
                               itemBuilder: (context, idx) {
                                 final slot = daySlots[idx];
-                                final int slotId = int.tryParse(slot['id']?.toString() ?? '') ?? 0;
-                                final capacity = int.tryParse(slot['capacity']?.toString() ?? '') ?? 0;
-                                final booked = int.tryParse(slot['booked_count']?.toString() ?? '') ?? 0;
+                                final int slotId =
+                                    int.tryParse(
+                                      slot['id']?.toString() ?? '',
+                                    ) ??
+                                    0;
+                                final capacity =
+                                    int.tryParse(
+                                      slot['capacity']?.toString() ?? '',
+                                    ) ??
+                                    0;
+                                final booked =
+                                    int.tryParse(
+                                      slot['booked_count']?.toString() ?? '',
+                                    ) ??
+                                    0;
                                 final spotsLeft = capacity - booked;
-                                final isSelected = _controller.selectedSlotId.value == slotId;
+                                final isSelected =
+                                    _controller.selectedSlotId.value == slotId;
 
                                 return InkWell(
                                   onTap: () {
@@ -317,22 +367,31 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: isSelected
-                                          ? AppColors.getPrimary(isDark).withOpacity(0.08)
+                                          ? AppColors.getPrimary(
+                                              isDark,
+                                            ).withOpacity(0.08)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(
                                         color: isSelected
                                             ? AppColors.getPrimary(isDark)
-                                            : (isDark ? Colors.grey[800]! : Colors.grey[300]!),
+                                            : (isDark
+                                                  ? Colors.grey[800]!
+                                                  : Colors.grey[300]!),
                                         width: isSelected ? 1.8 : 1,
                                       ),
                                     ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8,
+                                    ),
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Icon(
                                               Icons.access_time_outlined,
@@ -343,11 +402,19 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
                                             ),
                                             const SizedBox(width: 4),
                                             Text(
-                                              _formatTime(slot['slot_datetime'] ?? ''),
+                                              _formatTime(
+                                                slot['slot_datetime'] ?? '',
+                                              ),
                                               style: GoogleFonts.inter(
-                                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w500,
                                                 fontSize: 12.5,
-                                                color: isSelected ? AppColors.getPrimary(isDark) : textColor,
+                                                color: isSelected
+                                                    ? AppColors.getPrimary(
+                                                        isDark,
+                                                      )
+                                                    : textColor,
                                               ),
                                             ),
                                           ],
@@ -358,7 +425,9 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
                                           style: GoogleFonts.inter(
                                             fontSize: 10,
                                             color: isSelected
-                                                ? AppColors.getPrimary(isDark).withOpacity(0.8)
+                                                ? AppColors.getPrimary(
+                                                    isDark,
+                                                  ).withOpacity(0.8)
                                                 : subtitleColor,
                                           ),
                                         ),
@@ -380,7 +449,9 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
                     margin: const EdgeInsets.only(bottom: 24),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                      color: isDark
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isDark ? Colors.grey[850]! : Colors.grey[200]!,
@@ -394,7 +465,9 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
                             Icon(
                               Icons.info_outline,
                               size: 16,
-                              color: isDark ? Colors.blueAccent[100]! : Colors.blue[700]!,
+                              color: isDark
+                                  ? Colors.blueAccent[100]!
+                                  : Colors.blue[700]!,
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -402,15 +475,26 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
                               style: GoogleFonts.inter(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
-                                color: isDark ? Colors.white : const Color(0xFF1E293B),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF1E293B),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        _buildBulletItem('You can reschedule your interview up to 2 times', subtitleColor),
-                        _buildBulletItem('Cancellation is not allowed', subtitleColor),
-                        _buildBulletItem('Rescheduling must be done at least 24 hours before the interview', subtitleColor),
+                        _buildBulletItem(
+                          'You can reschedule your interview up to 2 times',
+                          subtitleColor,
+                        ),
+                        _buildBulletItem(
+                          'Cancellation is not allowed',
+                          subtitleColor,
+                        ),
+                        _buildBulletItem(
+                          'Rescheduling must be done at least 24 hours before the interview',
+                          subtitleColor,
+                        ),
                       ],
                     ),
                   ),
@@ -420,11 +504,16 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: (_controller.selectedSlotId.value == null || _controller.isBooking.value || _isBooked)
+                      onPressed:
+                          (_controller.selectedSlotId.value == null ||
+                              _controller.isBooking.value ||
+                              _isBooked)
                           ? null
                           : _confirmBooking,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isBooked ? Colors.grey : AppColors.getPrimary(isDark),
+                        backgroundColor: _isBooked
+                            ? Colors.grey
+                            : AppColors.getPrimary(isDark),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -478,11 +567,7 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 13,
-            color: AppColors.getPrimary(isDark),
-          ),
+          Icon(icon, size: 13, color: AppColors.getPrimary(isDark)),
           const SizedBox(width: 4),
           Text(
             text,
@@ -505,11 +590,7 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
         children: [
           const Padding(
             padding: EdgeInsets.only(top: 6.0, right: 8.0),
-            child: Icon(
-              Icons.circle,
-              size: 5,
-              color: Colors.grey,
-            ),
+            child: Icon(Icons.circle, size: 5, color: Colors.grey),
           ),
           Expanded(
             child: Text(
@@ -526,7 +607,12 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
     );
   }
 
-  Widget _buildInfoState(Color cardColor, Color textColor, Color subtitleColor, bool isDark) {
+  Widget _buildInfoState(
+    Color cardColor,
+    Color textColor,
+    Color subtitleColor,
+    bool isDark,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -539,11 +625,7 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
       ),
       child: Column(
         children: [
-          const Icon(
-            Icons.info_outline,
-            color: Color(0xFF3B82F6),
-            size: 48,
-          ),
+          const Icon(Icons.info_outline, color: Color(0xFF3B82F6), size: 48),
           const SizedBox(height: 16),
           Text(
             'Already Booked',
@@ -578,7 +660,10 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
               ),
               child: Text(
                 'Go Back',
-                style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13.5),
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13.5,
+                ),
               ),
             ),
           ),
@@ -587,7 +672,12 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
     );
   }
 
-  Widget _buildNoSlotsState(Color cardColor, Color textColor, Color subtitleColor, bool isDark) {
+  Widget _buildNoSlotsState(
+    Color cardColor,
+    Color textColor,
+    Color subtitleColor,
+    bool isDark,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -641,7 +731,10 @@ class _BookInterviewSlotScreenState extends State<BookInterviewSlotScreen> {
               ),
               child: Text(
                 'Go Back',
-                style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13.5),
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13.5,
+                ),
               ),
             ),
           ),

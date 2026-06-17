@@ -50,7 +50,9 @@ class _LoginScreenState extends State<LoginScreen> {
       final isDark = themeController.isDarkMode;
 
       return Scaffold(
-        backgroundColor: isDark ? AppColors.getBackground(isDark) : Colors.white,
+        backgroundColor: isDark
+            ? AppColors.getBackground(isDark)
+            : Colors.white,
         body: SafeArea(
           child: SingleChildScrollView(
             child: ConstrainedBox(
@@ -147,89 +149,52 @@ class _LoginScreenState extends State<LoginScreen> {
                 opacity: value,
                 child: Container(
                   decoration: BoxDecoration(
-                    gradient: isDark
-                        ? LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xFF1A1A2E).withValues(alpha: 0.6),
-                              const Color(0xFF16213E).withValues(alpha: 0.6),
-                            ],
-                          )
-                        : LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white.withValues(alpha: 0.25),
-                              Colors.white.withValues(alpha: 0.15),
-                            ],
-                          ),
+                    color: isDark ? const Color(0xFF111111) : Colors.white,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color: isDark
-                          ? Colors.white.withValues(alpha: 0.1)
-                          : Colors.white.withValues(alpha: 0.3),
+                          ? const Color(0xFF23343A)
+                          : const Color(0xFFD9ECE5),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        blurRadius: 60,
-                        offset: const Offset(0, 20),
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
-                    child: Stack(
-                      children: [
-                        // Inner light effect
-                        Positioned(
-                          top: -50,
-                          left: -50,
-                          width: 200,
-                          height: 200,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: RadialGradient(
-                                colors: [
-                                  Colors.white.withValues(alpha: 0.3),
-                                  Colors.transparent,
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(28),
-                          child: Column(
-                            children: [
-                              // Google Sign In Button
-                              _buildGoogleButton(authController, isDark),
-                              const SizedBox(height: 20),
+                    child: Padding(
+                      padding: const EdgeInsets.all(28),
+                      child: Column(
+                        children: [
+                          // Google Sign In Button
+                          _buildGoogleButton(authController, isDark),
+                          const SizedBox(height: 20),
 
-                              // Divider
-                              _buildDivider(isDark),
-                              const SizedBox(height: 20),
+                          // Divider
+                          _buildDivider(isDark),
+                          const SizedBox(height: 20),
 
-                              // Email Field
-                              _buildEmailField(authController, isDark),
-                              const SizedBox(height: 16),
+                          // Email Field
+                          _buildEmailField(authController, isDark),
+                          const SizedBox(height: 16),
 
-                              // Password Field
-                              _buildPasswordField(authController, isDark),
-                              const SizedBox(height: 16),
+                          // Password Field
+                          _buildPasswordField(authController, isDark),
+                          const SizedBox(height: 16),
 
-                              // Remember me & Forgot password
-                              _buildMetaRow(authController, isDark),
-                              const SizedBox(height: 24),
+                          // Remember me & Forgot password
+                          _buildMetaRow(authController, isDark),
+                          const SizedBox(height: 24),
 
-                              // Sign In Button
-                              _buildSignInButton(authController, isDark),
-                            ],
-                          ),
-                        ),
-                      ],
+                          // Sign In Button
+                          _buildSignInButton(authController, isDark),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -280,11 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildGoogleIcon() {
-    return Image.asset(
-      'assets/google_logo.png',
-      width: 18,
-      height: 18,
-    );
+    return Image.asset('assets/google_logo.png', width: 18, height: 18);
   }
 
   Widget _buildDivider(bool isDark) {
@@ -397,7 +358,9 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: _isPasswordFocused

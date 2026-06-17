@@ -251,8 +251,14 @@ class _MyInterviewBookingsScreenState extends State<MyInterviewBookingsScreen> {
       runSpacing: 8,
       children: [
         _buildMetricChip('Total: ${_controller.bookingsList.length}', isDark),
-        _buildMetricChip('Upcoming: ${_controller.upcomingCount.value}', isDark),
-        _buildMetricChip('Completed: ${_controller.completedCount.value}', isDark),
+        _buildMetricChip(
+          'Upcoming: ${_controller.upcomingCount.value}',
+          isDark,
+        ),
+        _buildMetricChip(
+          'Completed: ${_controller.completedCount.value}',
+          isDark,
+        ),
       ],
     );
   }

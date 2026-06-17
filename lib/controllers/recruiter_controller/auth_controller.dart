@@ -297,6 +297,7 @@ class AuthController extends ChangeNotifier {
     await prefs.remove('isLoggedIn');
     await prefs.remove('recruiterId');
     await prefs.remove('recruiterData');
+    await prefs.remove('currentUser');
     await _storage.delete(key: 'session_token');
     if (currentId != null) {
       await _storage.delete(key: 'session_token_$currentId');

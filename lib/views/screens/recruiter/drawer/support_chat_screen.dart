@@ -22,10 +22,13 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   @override
   void initState() {
     super.initState();
-    _messages.add(const SupportMessage(
-      text: 'Hi! Welcome to Live Chat support. Send your question and I will reply as soon as possible.',
-      isUser: false,
-    ));
+    _messages.add(
+      const SupportMessage(
+        text:
+            'Hi! Welcome to Live Chat support. Send your question and I will reply as soon as possible.',
+        isUser: false,
+      ),
+    );
   }
 
   @override
@@ -61,7 +64,9 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       final success = response['success'] == true;
       final messageText = success
           ? response['message']?.toString() ?? 'No response received.'
-          : response['message']?.toString() ?? response['error']?.toString() ?? 'Unable to send message.';
+          : response['message']?.toString() ??
+                response['error']?.toString() ??
+                'Unable to send message.';
 
       setState(() {
         _sessionId = response['session_id']?.toString() ?? _sessionId;
@@ -69,10 +74,12 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       });
     } catch (e) {
       setState(() {
-        _messages.add(SupportMessage(
-          text: 'Unable to reach support right now. Please try again later.',
-          isUser: false,
-        ));
+        _messages.add(
+          SupportMessage(
+            text: 'Unable to reach support right now. Please try again later.',
+            isUser: false,
+          ),
+        );
       });
     } finally {
       setState(() {
@@ -101,7 +108,10 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.bgDark : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text('Live Chat', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800)),
+        title: Text(
+          'Live Chat',
+          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
@@ -126,9 +136,16 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2.2)),
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2.2),
+                  ),
                   const SizedBox(width: 12),
-                  Text('Sending...', style: GoogleFonts.inter(fontSize: 13, color: Colors.grey)),
+                  Text(
+                    'Sending...',
+                    style: GoogleFonts.inter(fontSize: 13, color: Colors.grey),
+                  ),
                 ],
               ),
             ),
@@ -154,10 +171,18 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                     style: GoogleFonts.inter(fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'Type your question here...',
-                      hintStyle: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 14),
+                      hintStyle: GoogleFonts.inter(
+                        color: Colors.grey.shade500,
+                        fontSize: 14,
+                      ),
                       filled: true,
-                      fillColor: isDark ? AppColors.bgDark : const Color(0xFFF2F4F7),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      fillColor: isDark
+                          ? AppColors.bgDark
+                          : const Color(0xFFF2F4F7),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -180,7 +205,11 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                     onTap: _isSending ? null : _sendMessage,
                     child: Padding(
                       padding: const EdgeInsets.all(12),
-                      child: Icon(Icons.send_rounded, size: 20, color: Colors.white),
+                      child: Icon(
+                        Icons.send_rounded,
+                        size: 20,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -194,9 +223,15 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
 
   Widget _buildChatBubble(SupportMessage message, bool isDark) {
     return Container(
-      margin: EdgeInsets.only(bottom: 10, left: message.isUser ? 60 : 0, right: message.isUser ? 0 : 60),
+      margin: EdgeInsets.only(
+        bottom: 10,
+        left: message.isUser ? 60 : 0,
+        right: message.isUser ? 0 : 60,
+      ),
       child: Column(
-        crossAxisAlignment: message.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: message.isUser
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -210,13 +245,17 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                 bottomLeft: Radius.circular(message.isUser ? 18 : 4),
                 bottomRight: Radius.circular(message.isUser ? 4 : 18),
               ),
-              border: Border.all(color: isDark ? Colors.white10 : Colors.grey.shade200),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.grey.shade200,
+              ),
             ),
             child: Text(
               message.text,
               style: GoogleFonts.inter(
                 fontSize: 14,
-                color: message.isUser ? Colors.white : AppColors.getText(isDark),
+                color: message.isUser
+                    ? Colors.white
+                    : AppColors.getText(isDark),
               ),
             ),
           ),

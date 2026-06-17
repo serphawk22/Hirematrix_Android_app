@@ -432,9 +432,14 @@ class AuthController extends GetxController {
 
   // Recruiter Registration Controllers
   final companyNameController = TextEditingController();
+  final recruiterType = 'direct_employer'.obs;
   final recruiterNameController = TextEditingController();
   final designationController = TextEditingController();
   final recruiterEmailController = TextEditingController();
+  final officialEmailController = TextEditingController();
+  final websiteController = TextEditingController();
+  final agencyRegistrationNumberController = TextEditingController();
+  final gstNumberController = TextEditingController();
   final recruiterPhoneController = TextEditingController();
   final recruiterPasswordController = TextEditingController();
   final recruiterConfirmPasswordController = TextEditingController();
@@ -444,6 +449,7 @@ class AuthController extends GetxController {
   final recruiterNameError = ''.obs;
   final designationError = ''.obs;
   final recruiterEmailError = ''.obs;
+  final officialEmailError = ''.obs;
   final recruiterPhoneError = ''.obs;
   final recruiterPasswordError = ''.obs;
   final recruiterConfirmPasswordError = ''.obs;
@@ -461,33 +467,13 @@ class AuthController extends GetxController {
     isRecruiterConfirmPasswordVisible.toggle();
   }
 
-  bool isValidCompanyEmail(String email) {
-    // Block free email providers
-    final freeProviders = [
-      'gmail.com',
-      'yahoo.com',
-      'hotmail.com',
-      'outlook.com',
-      'aol.com',
-      'icloud.com',
-      'mail.com',
-      'protonmail.com',
-      'zoho.com',
-      'yandex.com',
-      'gmx.com',
-      'tutanota.com',
-    ];
-
-    final emailDomain = email.split('@').last.toLowerCase();
-    return !freeProviders.contains(emailDomain);
-  }
-
   void validateRecruiterRegistration() {
     // Reset errors
     companyNameError.value = '';
     recruiterNameError.value = '';
     designationError.value = '';
     recruiterEmailError.value = '';
+    officialEmailError.value = '';
     recruiterPhoneError.value = '';
     recruiterPasswordError.value = '';
     recruiterConfirmPasswordError.value = '';
@@ -512,17 +498,20 @@ class AuthController extends GetxController {
       isValid = false;
     }
 
-    // Validate Email
+    // Validate Email (free emails allowed in mobile app)
     if (recruiterEmailController.text.trim().isEmpty) {
       recruiterEmailError.value = 'Email is required';
       isValid = false;
     } else if (!GetUtils.isEmail(recruiterEmailController.text.trim())) {
       recruiterEmailError.value = 'Please enter a valid email address';
       isValid = false;
-    } else if (!isValidCompanyEmail(recruiterEmailController.text.trim())) {
-      recruiterEmailError.value =
-          'Please use a company domain email (free providers are blocked)';
-      isValid = false;
+    }
+
+    if (officialEmailController.text.trim().isNotEmpty) {
+      if (!GetUtils.isEmail(officialEmailController.text.trim())) {
+        officialEmailError.value = 'Please enter a valid official email address';
+        isValid = false;
+      }
     }
 
     // Validate Phone
@@ -558,32 +547,184 @@ class AuthController extends GetxController {
   Future<void> registerRecruiter() async {
     isLoading.value = true;
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/recruiter/register'),
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode({
+          'company_name': companyNameController.text.trim(),
+          'recruiter_type': recruiterType.value,
+          'name': recruiterNameController.text.trim(),
+          'designation': designationController.text.trim(),
+          'email': recruiterEmailController.text.trim(),
+          'official_email': officialEmailController.text.trim(),
+          'website': websiteController.text.trim(),
+          'agency_registration_number': agencyRegistrationNumberController.text.trim(),
+          'gst_number': gstNumberController.text.trim(),
+          'phone': recruiterPhoneController.text.trim(),
+          'password': recruiterPasswordController.text,
+          'confirm_password': recruiterConfirmPasswordController.text,
+        }),
+      );
 
-    isLoading.value = false;
+      isLoading.value = false;
 
-    // Show success message
-    Get.snackbar(
-      'Success',
-      'Recruiter registration successful! Please login.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-    );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == 'success') {
+          final userId = data['data']?['user_id']?.toString() ?? '';
+          final email = recruiterEmailController.text.trim();
 
-    // Clear form
-    companyNameController.clear();
-    recruiterNameController.clear();
-    designationController.clear();
-    recruiterEmailController.clear();
-    recruiterPhoneController.clear();
-    recruiterPasswordController.clear();
-    recruiterConfirmPasswordController.clear();
+          // Clear form
+          companyNameController.clear();
+          recruiterType.value = 'direct_employer';
+          recruiterNameController.clear();
+          designationController.clear();
+          recruiterEmailController.clear();
+          officialEmailController.clear();
+          websiteController.clear();
+          agencyRegistrationNumberController.clear();
+          gstNumberController.clear();
+          recruiterPhoneController.clear();
+          recruiterPasswordController.clear();
+          recruiterConfirmPasswordController.clear();
 
-    // Navigate to login
-    Get.offAllNamed('/login');
+          // Navigate to verification screen
+          Get.offAllNamed(
+            '/recruiter/verify',
+            arguments: {'user_id': userId, 'email': email},
+          );
+        } else {
+          Get.snackbar(
+            'Error',
+            data['message'] ?? 'Registration failed',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        final data = jsonDecode(response.body);
+        Get.snackbar(
+          'Error',
+          data['messages']?.values?.first ?? data['message'] ?? 'Registration failed',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      isLoading.value = false;
+      Get.snackbar(
+        'Error',
+        'Could not connect to server',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  // Email OTP verification state for recruiter
+  final otpControllers = List.generate(6, (_) => TextEditingController());
+  final isVerifying = false.obs;
+  final isResending = false.obs;
+
+  Future<void> verifyRecruiterEmailOtp(String userId, String otp) async {
+    if (otp.length != 6) {
+      Get.snackbar(
+        'Error',
+        'Please enter the complete 6-digit code',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    isVerifying.value = true;
+
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/recruiter/verify-email'),
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode({'user_id': userId, 'token': otp}),
+      );
+
+      isVerifying.value = false;
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        Get.snackbar(
+          'Email Verified!',
+          'Your recruiter account is now active. Please login.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+        );
+        Get.offAllNamed('/login');
+      } else {
+        Get.snackbar(
+          'Error',
+          data['message'] ?? 'Invalid or expired verification code',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      isVerifying.value = false;
+      Get.snackbar(
+        'Error',
+        'Could not connect to server',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  Future<void> resendRecruiterVerificationEmail(String userId) async {
+    isResending.value = true;
+
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/recruiter/resend-verification'),
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode({'user_id': userId}),
+      );
+
+      isResending.value = false;
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == 'success') {
+        Get.snackbar(
+          'Email Sent',
+          'A new verification code has been sent to your email.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        Get.snackbar(
+          'Error',
+          data['message'] ?? 'Failed to resend verification email',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      isResending.value = false;
+      Get.snackbar(
+        'Error',
+        'Could not connect to server',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
   }
 
   Future<void> sendForgotPasswordEmail() async {

@@ -8,12 +8,12 @@ import 'package:hirematrix/controllers/recruiter_controller/services/api_service
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
 
-
 class InterviewBookingsScreen extends StatefulWidget {
   const InterviewBookingsScreen({super.key});
 
   @override
-  State<InterviewBookingsScreen> createState() => _InterviewBookingsScreenState();
+  State<InterviewBookingsScreen> createState() =>
+      _InterviewBookingsScreenState();
 }
 
 class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
@@ -24,7 +24,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
     'total': '0',
     'upcoming': '0',
     'completed': '0',
-    'rescheduled': '0'
+    'rescheduled': '0',
   };
 
   String? _selectedJobId;
@@ -38,24 +38,29 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
     if (recruiterId != null) {
       final response = await _apiService.fetchInterviewBookings(
-        recruiterId, 
-        jobId: _selectedJobId, 
-        status: _selectedStatus
+        recruiterId,
+        jobId: _selectedJobId,
+        status: _selectedStatus,
       );
       if (response['success'] == true) {
         final List<dynamic> bookingsList = response['bookings'] ?? [];
-        
+
         // Calculate metrics locally
         int total = bookingsList.length;
         int upcoming = 0;
         int completed = 0;
         int rescheduled = 0;
-        
+
         for (var booking in bookingsList) {
-          final bStatus = (booking['booking_status'] ?? '').toString().toLowerCase();
+          final bStatus = (booking['booking_status'] ?? '')
+              .toString()
+              .toLowerCase();
           if (bStatus == 'booked' || bStatus == 'confirmed') {
             upcoming++;
           } else if (bStatus == 'completed') {
@@ -64,7 +69,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
             rescheduled++;
           }
         }
-        
+
         setState(() {
           _bookings = bookingsList;
           _metrics = {
@@ -100,29 +105,38 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: _loadData, 
-            icon: Icon(Icons.refresh_rounded, size: 20, color: AppColors.getPrimary(isDark))
+            onPressed: _loadData,
+            icon: Icon(
+              Icons.refresh_rounded,
+              size: 20,
+              color: AppColors.getPrimary(isDark),
+            ),
           ),
         ],
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-        : Column(
-            children: [
-              _buildMetricsHeader(isDark),
-              _buildFilterBar(isDark),
-              Expanded(
-                child: _bookings.isEmpty 
-                  ? _buildEmptyState(isDark)
-                  : ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      itemCount: _bookings.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) => _buildBookingCard(_bookings[index], isDark),
-                    ),
-              ),
-            ],
-          ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+          : Column(
+              children: [
+                _buildMetricsHeader(isDark),
+                _buildFilterBar(isDark),
+                Expanded(
+                  child: _bookings.isEmpty
+                      ? _buildEmptyState(isDark)
+                      : ListView.separated(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          itemCount: _bookings.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (context, index) =>
+                              _buildBookingCard(_bookings[index], isDark),
+                        ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -135,16 +149,46 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         physics: const BouncingScrollPhysics(),
         children: [
-          _buildMetricCard('Total Bookings', _metrics['total'], Icons.book_online_rounded, Colors.blue, isDark),
-          _buildMetricCard('Upcoming', _metrics['upcoming'], Icons.schedule_rounded, Colors.green, isDark),
-          _buildMetricCard('Completed', _metrics['completed'], Icons.check_circle_outline_rounded, Colors.teal, isDark),
-          _buildMetricCard('Rescheduled', _metrics['rescheduled'], Icons.history_rounded, Colors.amber, isDark),
+          _buildMetricCard(
+            'Total Bookings',
+            _metrics['total'],
+            Icons.book_online_rounded,
+            Colors.blue,
+            isDark,
+          ),
+          _buildMetricCard(
+            'Upcoming',
+            _metrics['upcoming'],
+            Icons.schedule_rounded,
+            Colors.green,
+            isDark,
+          ),
+          _buildMetricCard(
+            'Completed',
+            _metrics['completed'],
+            Icons.check_circle_outline_rounded,
+            Colors.teal,
+            isDark,
+          ),
+          _buildMetricCard(
+            'Rescheduled',
+            _metrics['rescheduled'],
+            Icons.history_rounded,
+            Colors.amber,
+            isDark,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildMetricCard(String label, String val, IconData icon, Color color, bool isDark) {
+  Widget _buildMetricCard(
+    String label,
+    String val,
+    IconData icon,
+    Color color,
+    bool isDark,
+  ) {
     return Container(
       width: 136,
       margin: const EdgeInsets.only(right: 12),
@@ -153,7 +197,9 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
         color: isDark ? AppColors.getCard(isDark) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey[200]!,
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.grey[200]!,
           width: 1,
         ),
       ),
@@ -166,17 +212,13 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
             children: [
               Text(
                 val,
-                style: GoogleFonts.outfit(
+                style: GoogleFonts.inter(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: isDark ? Colors.white : const Color(0xFF0F172A),
                 ),
               ),
-              Icon(
-                icon,
-                size: 18,
-                color: color.withValues(alpha: 0.8),
-              ),
+              Icon(icon, size: 18, color: color.withValues(alpha: 0.8)),
             ],
           ),
           const SizedBox(height: 8),
@@ -208,17 +250,41 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
               decoration: BoxDecoration(
                 color: isDark ? AppColors.getCard(isDark) : Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+                border: Border.all(
+                  color: isDark ? Colors.white10 : Colors.grey[200]!,
+                ),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: _selectedJobId,
-                  hint: Text('Filter by Job', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+                  hint: Text(
+                    'Filter by Job',
+                    style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                  ),
                   isExpanded: true,
-                  icon: Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: AppColors.getPrimary(isDark)),
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 18,
+                    color: AppColors.getPrimary(isDark),
+                  ),
                   items: [
-                    DropdownMenuItem(value: null, child: Text('All Jobs', style: GoogleFonts.inter(fontSize: 12))),
-                    ...jobs.map((j) => DropdownMenuItem(value: j.jobId, child: Text(j.jobTitle, style: GoogleFonts.inter(fontSize: 12), overflow: TextOverflow.ellipsis)))
+                    DropdownMenuItem(
+                      value: null,
+                      child: Text(
+                        'All Jobs',
+                        style: GoogleFonts.inter(fontSize: 12),
+                      ),
+                    ),
+                    ...jobs.map(
+                      (j) => DropdownMenuItem(
+                        value: j.jobId,
+                        child: Text(
+                          j.jobTitle,
+                          style: GoogleFonts.inter(fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
                   ],
                   onChanged: (val) {
                     setState(() => _selectedJobId = val);
@@ -234,19 +300,55 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
             decoration: BoxDecoration(
               color: isDark ? AppColors.getCard(isDark) : Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.grey[200]!,
+              ),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedStatus,
-                hint: Text('Status', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
-                icon: Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: AppColors.getPrimary(isDark)),
+                hint: Text(
+                  'Status',
+                  style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                ),
+                icon: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 18,
+                  color: AppColors.getPrimary(isDark),
+                ),
                 items: [
-                  DropdownMenuItem(value: null, child: Text('All', style: GoogleFonts.inter(fontSize: 12))),
-                  DropdownMenuItem(value: 'booked', child: Text('Booked', style: GoogleFonts.inter(fontSize: 12))),
-                  DropdownMenuItem(value: 'confirmed', child: Text('Confirmed', style: GoogleFonts.inter(fontSize: 12))),
-                  DropdownMenuItem(value: 'rescheduled', child: Text('Rescheduled', style: GoogleFonts.inter(fontSize: 12))),
-                  DropdownMenuItem(value: 'completed', child: Text('Completed', style: GoogleFonts.inter(fontSize: 12))),
+                  DropdownMenuItem(
+                    value: null,
+                    child: Text('All', style: GoogleFonts.inter(fontSize: 12)),
+                  ),
+                  DropdownMenuItem(
+                    value: 'booked',
+                    child: Text(
+                      'Booked',
+                      style: GoogleFonts.inter(fontSize: 12),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'confirmed',
+                    child: Text(
+                      'Confirmed',
+                      style: GoogleFonts.inter(fontSize: 12),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'rescheduled',
+                    child: Text(
+                      'Rescheduled',
+                      style: GoogleFonts.inter(fontSize: 12),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'completed',
+                    child: Text(
+                      'Completed',
+                      style: GoogleFonts.inter(fontSize: 12),
+                    ),
+                  ),
                 ],
                 onChanged: (val) {
                   setState(() => _selectedStatus = val);
@@ -261,8 +363,12 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
   }
 
   Widget _buildBookingCard(Map<String, dynamic> booking, bool isDark) {
-    final status = (booking['booking_status'] ?? 'confirmed').toString().toUpperCase();
-    final review = (booking['review_status'] ?? 'pending').toString().toUpperCase();
+    final status = (booking['booking_status'] ?? 'confirmed')
+        .toString()
+        .toUpperCase();
+    final review = (booking['review_status'] ?? 'pending')
+        .toString()
+        .toUpperCase();
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -275,7 +381,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
             color: Colors.black.withOpacity(isDark ? 0.15 : 0.015),
             blurRadius: 8,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -287,8 +393,12 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                 radius: 18,
                 backgroundColor: AppColors.getPrimary(isDark).withOpacity(0.08),
                 child: Text(
-                  (booking['candidate_name'] ?? 'C')[0].toUpperCase(), 
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.getPrimary(isDark))
+                  (booking['candidate_name'] ?? 'C')[0].toUpperCase(),
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                    color: AppColors.getPrimary(isDark),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -297,13 +407,20 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      booking['candidate_name'] ?? 'Candidate', 
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)
+                      booking['candidate_name'] ?? 'Candidate',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      booking['job_title'] ?? 'Role', 
-                      style: GoogleFonts.inter(fontSize: 10.5, color: Colors.grey[500], fontWeight: FontWeight.w500)
+                      booking['job_title'] ?? 'Role',
+                      style: GoogleFonts.inter(
+                        fontSize: 10.5,
+                        color: Colors.grey[500],
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -315,16 +432,25 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.02) : const Color(0xFFF8FAFC),
+              color: isDark
+                  ? Colors.white.withOpacity(0.02)
+                  : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
-                Icon(Icons.calendar_today_rounded, size: 12, color: AppColors.getPrimary(isDark)),
+                Icon(
+                  Icons.calendar_today_rounded,
+                  size: 12,
+                  color: AppColors.getPrimary(isDark),
+                ),
                 const SizedBox(width: 8),
                 Text(
-                  "${booking['slot_date']}  •  ${booking['slot_time']}", 
-                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600)
+                  "${booking['slot_date']}  •  ${booking['slot_time']}",
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -332,14 +458,17 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
           const SizedBox(height: 12),
           Row(
             children: [
-              _buildLabelValue('BOOKED DATE', _formatBookedDate(booking['created_at'])),
+              _buildLabelValue(
+                'BOOKED DATE',
+                _formatBookedDate(booking['created_at']),
+              ),
               const SizedBox(width: 32),
               _buildLabelValue('REVIEW STATUS', review),
             ],
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12), 
-            child: Divider(height: 1, thickness: 0.5)
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, thickness: 0.5),
           ),
           Row(
             children: [
@@ -348,12 +477,20 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                   onPressed: () => _showReviewDialog(context, booking),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    side: BorderSide(color: isDark ? Colors.white24 : Colors.grey[300]!),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    side: BorderSide(
+                      color: isDark ? Colors.white24 : Colors.grey[300]!,
+                    ),
                   ),
                   child: Text(
-                    'Review', 
-                    style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.getPrimary(isDark))
+                    'Review',
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.getPrimary(isDark),
+                    ),
                   ),
                 ),
               ),
@@ -365,11 +502,17 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                     elevation: 0,
                     backgroundColor: AppColors.getPrimary(isDark),
                     padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   child: Text(
-                    'Reschedule', 
-                    style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w600, color: Colors.white)
+                    'Reschedule',
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -385,13 +528,18 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label, 
-          style: GoogleFonts.inter(fontSize: 7.5, fontWeight: FontWeight.w800, color: Colors.grey[500], letterSpacing: 0.5)
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 7.5,
+            fontWeight: FontWeight.w800,
+            color: Colors.grey[500],
+            letterSpacing: 0.5,
+          ),
         ),
         const SizedBox(height: 3),
         Text(
-          value, 
-          style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600)
+          value,
+          style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -415,12 +563,17 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1), 
-        borderRadius: BorderRadius.circular(6)
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        status, 
-        style: GoogleFonts.inter(fontSize: 8, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.5)
+        status,
+        style: GoogleFonts.inter(
+          fontSize: 8,
+          fontWeight: FontWeight.w800,
+          color: color,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
@@ -430,18 +583,29 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.event_busy_rounded, size: 40, color: Colors.grey.withOpacity(0.3)),
+          Icon(
+            Icons.event_busy_rounded,
+            size: 40,
+            color: Colors.grey.withOpacity(0.3),
+          ),
           const SizedBox(height: 12),
           Text(
-            'No bookings found.', 
-            style: GoogleFonts.inter(fontSize: 13, color: Colors.grey[500], fontWeight: FontWeight.w600)
+            'No bookings found.',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: Colors.grey[500],
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
     );
   }
 
-  void _showRescheduleSheet(BuildContext context, Map<String, dynamic> booking) {
+  void _showRescheduleSheet(
+    BuildContext context,
+    Map<String, dynamic> booking,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -467,10 +631,15 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
         builder: (context, setDialogState) {
           return AlertDialog(
             backgroundColor: isDark ? AppColors.getCard(isDark) : Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             title: Text(
-              'Interview Evaluation', 
-              style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800)
+              'Interview Evaluation',
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -478,12 +647,19 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
               children: [
                 Text(
                   'Candidate: ${booking['candidate_name']}',
-                  style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600)
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   'Submit Decision',
-                  style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey)
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.grey,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Row(
@@ -492,14 +668,17 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                       label: const Text('Shortlist'),
                       selected: decision == 'shortlisted',
                       onSelected: (selected) {
-                        if (selected) setDialogState(() => decision = 'shortlisted');
+                        if (selected)
+                          setDialogState(() => decision = 'shortlisted');
                       },
                       selectedColor: Colors.green.withOpacity(0.2),
                       checkmarkColor: Colors.green,
                       labelStyle: GoogleFonts.inter(
-                        fontSize: 11, 
-                        fontWeight: FontWeight.w600, 
-                        color: decision == 'shortlisted' ? Colors.green : Colors.grey
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: decision == 'shortlisted'
+                            ? Colors.green
+                            : Colors.grey,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -507,14 +686,17 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                       label: const Text('Reject'),
                       selected: decision == 'rejected',
                       onSelected: (selected) {
-                        if (selected) setDialogState(() => decision = 'rejected');
+                        if (selected)
+                          setDialogState(() => decision = 'rejected');
                       },
                       selectedColor: Colors.red.withOpacity(0.2),
                       checkmarkColor: Colors.red,
                       labelStyle: GoogleFonts.inter(
-                        fontSize: 11, 
-                        fontWeight: FontWeight.w600, 
-                        color: decision == 'rejected' ? Colors.red : Colors.grey
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: decision == 'rejected'
+                            ? Colors.red
+                            : Colors.grey,
                       ),
                     ),
                   ],
@@ -522,7 +704,11 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'Evaluation Notes',
-                  style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey)
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.grey,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 TextField(
@@ -533,9 +719,13 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                     hintText: 'Enter evaluation feedback...',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: isDark ? Colors.white12 : Colors.grey[300]!)
+                      borderSide: BorderSide(
+                        color: isDark ? Colors.white12 : Colors.grey[300]!,
+                      ),
                     ),
-                    fillColor: isDark ? Colors.white.withOpacity(0.02) : Colors.grey[50],
+                    fillColor: isDark
+                        ? Colors.white.withOpacity(0.02)
+                        : Colors.grey[50],
                     filled: true,
                   ),
                 ),
@@ -544,55 +734,98 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancel', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey))
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                ),
               ),
               ElevatedButton(
-                onPressed: isSaving ? null : () async {
-                  final appId = booking['application_id']?.toString();
-                  final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter?.id;
-                  
-                  if (appId == null || recruiterId == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Cannot evaluate: Missing App ID or Recruiter ID'), backgroundColor: AppColors.error)
-                    );
-                    return;
-                  }
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        final appId = booking['application_id']?.toString();
+                        final recruiterId = Provider.of<AuthController>(
+                          context,
+                          listen: false,
+                        ).currentRecruiter?.id;
 
-                  setDialogState(() => isSaving = true);
-                  
-                  // Update application status based on decision
-                  final response = await _apiService.updateApplicationStatus(
-                    appId, 
-                    decision, 
-                    recruiterId
-                  );
+                        if (appId == null || recruiterId == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Cannot evaluate: Missing App ID or Recruiter ID',
+                              ),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                          return;
+                        }
 
-                  if (context.mounted) {
-                    setDialogState(() => isSaving = false);
-                    Navigator.pop(ctx);
-                    if (response['success'] == true) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Candidate $decision successfully'), backgroundColor: AppColors.success)
-                      );
-                      _loadData();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(response['message'] ?? 'Failed to update status'), backgroundColor: AppColors.error)
-                      );
-                    }
-                  }
-                },
+                        setDialogState(() => isSaving = true);
+
+                        // Update application status based on decision
+                        final response = await _apiService
+                            .updateApplicationStatus(
+                              appId,
+                              decision,
+                              recruiterId,
+                            );
+
+                        if (context.mounted) {
+                          setDialogState(() => isSaving = false);
+                          Navigator.pop(ctx);
+                          if (response['success'] == true) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Candidate $decision successfully',
+                                ),
+                                backgroundColor: AppColors.success,
+                              ),
+                            );
+                            _loadData();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  response['message'] ??
+                                      'Failed to update status',
+                                ),
+                                backgroundColor: AppColors.error,
+                              ),
+                            );
+                          }
+                        }
+                      },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: decision == 'shortlisted' ? Colors.green : Colors.red,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  backgroundColor: decision == 'shortlisted'
+                      ? Colors.green
+                      : Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: isSaving
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text('Save Review', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Save Review',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ],
           );
-        }
+        },
       ),
     );
   }
@@ -601,7 +834,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
 class _RescheduleFormSheet extends StatefulWidget {
   final Map<String, dynamic> booking;
   final VoidCallback onSuccess;
-  
+
   const _RescheduleFormSheet({required this.booking, required this.onSuccess});
 
   @override
@@ -617,9 +850,14 @@ class _RescheduleFormSheetState extends State<_RescheduleFormSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 20, 16, MediaQuery.of(context).viewInsets.bottom + 24),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        20,
+        16,
+        MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
       decoration: BoxDecoration(
         color: isDark ? AppColors.bgSoftDark : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -632,19 +870,26 @@ class _RescheduleFormSheetState extends State<_RescheduleFormSheet> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Reschedule Booking', 
-                style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800)
+                'Reschedule Booking',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               IconButton(
-                onPressed: () => Navigator.pop(context), 
-                icon: const Icon(Icons.close_rounded, size: 20)
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close_rounded, size: 20),
               ),
             ],
           ),
           const SizedBox(height: 16),
           Text(
             'Select New Date',
-            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.grey)
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey,
+            ),
           ),
           const SizedBox(height: 6),
           InkWell(
@@ -660,19 +905,30 @@ class _RescheduleFormSheetState extends State<_RescheduleFormSheet> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.03) : Colors.grey[50],
+                color: isDark
+                    ? Colors.white.withOpacity(0.03)
+                    : Colors.grey[50],
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? Colors.white12 : Colors.grey[200]!),
+                border: Border.all(
+                  color: isDark ? Colors.white12 : Colors.grey[200]!,
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.getPrimary(isDark)),
+                  Icon(
+                    Icons.calendar_today_rounded,
+                    size: 16,
+                    color: AppColors.getPrimary(isDark),
+                  ),
                   const SizedBox(width: 12),
                   Text(
-                    _selectedDate == null 
-                      ? 'Choose Date' 
-                      : DateFormat('dd MMM, yyyy').format(_selectedDate!),
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)
+                    _selectedDate == null
+                        ? 'Choose Date'
+                        : DateFormat('dd MMM, yyyy').format(_selectedDate!),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -681,33 +937,48 @@ class _RescheduleFormSheetState extends State<_RescheduleFormSheet> {
           const SizedBox(height: 16),
           Text(
             'Select New Time',
-            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.grey)
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey,
+            ),
           ),
           const SizedBox(height: 6),
           InkWell(
             onTap: () async {
               final time = await showTimePicker(
-                context: context, 
-                initialTime: TimeOfDay.now()
+                context: context,
+                initialTime: TimeOfDay.now(),
               );
               if (time != null) setState(() => _selectedTime = time);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.03) : Colors.grey[50],
+                color: isDark
+                    ? Colors.white.withOpacity(0.03)
+                    : Colors.grey[50],
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? Colors.white12 : Colors.grey[200]!),
+                border: Border.all(
+                  color: isDark ? Colors.white12 : Colors.grey[200]!,
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.access_time_rounded, size: 16, color: AppColors.getPrimary(isDark)),
+                  Icon(
+                    Icons.access_time_rounded,
+                    size: 16,
+                    color: AppColors.getPrimary(isDark),
+                  ),
                   const SizedBox(width: 12),
                   Text(
-                    _selectedTime == null 
-                      ? 'Choose Time' 
-                      : _selectedTime!.format(context),
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)
+                    _selectedTime == null
+                        ? 'Choose Time'
+                        : _selectedTime!.format(context),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -720,11 +991,27 @@ class _RescheduleFormSheetState extends State<_RescheduleFormSheet> {
               minimumSize: const Size(double.infinity, 48),
               backgroundColor: AppColors.getPrimary(isDark),
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: _isSaving
-              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-              : Text('Confirm Reschedule', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(
+                    'Confirm Reschedule',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
           ),
         ],
       ),
@@ -734,16 +1021,25 @@ class _RescheduleFormSheetState extends State<_RescheduleFormSheet> {
   void _handleReschedule() async {
     if (_selectedDate == null || _selectedTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select both date and time'), backgroundColor: AppColors.error)
+        const SnackBar(
+          content: Text('Please select both date and time'),
+          backgroundColor: AppColors.error,
+        ),
       );
       return;
     }
 
     setState(() => _isSaving = true);
-    final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
     final finalDateTime = DateTime(
-      _selectedDate!.year, _selectedDate!.month, _selectedDate!.day,
-      _selectedTime!.hour, _selectedTime!.minute,
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+      _selectedTime!.hour,
+      _selectedTime!.minute,
     );
 
     final response = await _apiService.rescheduleInterview({
@@ -757,12 +1053,18 @@ class _RescheduleFormSheetState extends State<_RescheduleFormSheet> {
       if (response['success'] == true) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Interview rescheduled successfully'), backgroundColor: AppColors.success)
+          const SnackBar(
+            content: Text('Interview rescheduled successfully'),
+            backgroundColor: AppColors.success,
+          ),
         );
         widget.onSuccess();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(response['message'] ?? 'Failed to reschedule'), backgroundColor: AppColors.error)
+          SnackBar(
+            content: Text(response['message'] ?? 'Failed to reschedule'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     }

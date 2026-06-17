@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hirematrix/views/widgets/animated_gradient_background.dart';
 import 'package:hirematrix/controllers/auth_controller.dart';
 import 'package:hirematrix/controllers/theme_controller.dart';
 
@@ -18,27 +17,27 @@ class RegisterScreen extends StatelessWidget {
       final isDark = themeController.isDarkMode;
 
       return Scaffold(
-        body: AnimatedGradientBackground(
-          isDark: isDark,
-          child: SafeArea(
-            child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight:
-                      MediaQuery.of(context).size.height -
-                      MediaQuery.of(context).padding.top,
-                ),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
-                    _buildHeader(isDark),
-                    const SizedBox(height: 32),
-                    _buildRegisterCard(authController, isDark),
-                    const SizedBox(height: 24),
-                    _buildFooter(isDark),
-                    const SizedBox(height: 40),
-                  ],
-                ),
+        backgroundColor: isDark
+            ? AppColors.getBackground(isDark)
+            : Colors.white,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight:
+                    MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top,
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 40),
+                  _buildHeader(isDark),
+                  const SizedBox(height: 32),
+                  _buildRegisterCard(authController, isDark),
+                  const SizedBox(height: 24),
+                  _buildFooter(isDark),
+                  const SizedBox(height: 40),
+                ],
               ),
             ),
           ),
@@ -105,102 +104,60 @@ class RegisterScreen extends StatelessWidget {
                 opacity: value,
                 child: Container(
                   decoration: BoxDecoration(
-                    gradient: isDark
-                        ? LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xFF1A1A2E).withOpacity(0.6),
-                              const Color(0xFF16213E).withOpacity(0.6),
-                            ],
-                          )
-                        : LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white.withOpacity(0.25),
-                              Colors.white.withOpacity(0.15),
-                            ],
-                          ),
+                    color: isDark ? const Color(0xFF111111) : Colors.white,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color: isDark
-                          ? Colors.white.withOpacity(0.1)
-                          : Colors.white.withOpacity(0.3),
+                          ? const Color(0xFF23343A)
+                          : const Color(0xFFD9ECE5),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 60,
-                        offset: const Offset(0, 20),
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
-                    child: Stack(
-                      children: [
-                        // Inner light effect
-                        Positioned(
-                          top: -50,
-                          left: -50,
-                          width: 200,
-                          height: 200,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: RadialGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.3),
-                                  Colors.transparent,
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        children: [
+                          // Google Sign Up Button
+                          _buildGoogleButton(authController, isDark),
+                          const SizedBox(height: 24),
 
-                        // Card Content
-                        Padding(
-                          padding: const EdgeInsets.all(32),
-                          child: Column(
-                            children: [
-                              // Google Sign Up Button
-                              _buildGoogleButton(authController, isDark),
-                              const SizedBox(height: 24),
+                          // Divider
+                          _buildDivider(isDark),
+                          const SizedBox(height: 24),
 
-                              // Divider
-                              _buildDivider(isDark),
-                              const SizedBox(height: 24),
+                          // Full Name Field
+                          _buildFullNameField(authController, isDark),
+                          const SizedBox(height: 20),
 
-                              // Full Name Field
-                              _buildFullNameField(authController, isDark),
-                              const SizedBox(height: 20),
+                          // Email Field
+                          _buildEmailField(authController, isDark),
+                          const SizedBox(height: 20),
 
-                              // Email Field
-                              _buildEmailField(authController, isDark),
-                              const SizedBox(height: 20),
+                          // Phone Field
+                          _buildPhoneField(authController, isDark),
+                          const SizedBox(height: 20),
 
-                              // Phone Field
-                              _buildPhoneField(authController, isDark),
-                              const SizedBox(height: 20),
+                          // Password Field
+                          _buildPasswordField(authController, isDark),
+                          const SizedBox(height: 20),
 
-                              // Password Field
-                              _buildPasswordField(authController, isDark),
-                              const SizedBox(height: 20),
+                          // Confirm Password Field
+                          _buildConfirmPasswordField(authController, isDark),
+                          const SizedBox(height: 24),
 
-                              // Confirm Password Field
-                              _buildConfirmPasswordField(
-                                authController,
-                                isDark,
-                              ),
-                              const SizedBox(height: 24),
-
-                              // Sign Up Button
-                              _buildSignUpButton(authController, isDark),
-                            ],
-                          ),
-                        ),
-                      ],
+                          // Sign Up Button
+                          _buildSignUpButton(authController, isDark),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -250,16 +207,7 @@ class RegisterScreen extends StatelessWidget {
   }
 
   Widget _buildGoogleIcon() {
-    return SizedBox(
-      width: 20,
-      height: 20,
-      child: Image.network(
-        'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(Icons.g_mobiledata, size: 20);
-        },
-      ),
-    );
+    return Image.asset('assets/google_logo.png', width: 18, height: 18);
   }
 
   Widget _buildDivider(bool isDark) {

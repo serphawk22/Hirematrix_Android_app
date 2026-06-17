@@ -34,7 +34,9 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
       final mainBg = AppColors.getBackground(isDark);
       final cardColor = isDark ? AppColors.getCard(isDark) : Colors.white;
       final textColor = isDark ? Colors.white : const Color(0xFF111827);
-      final subtitleColor = isDark ? Colors.grey[400]! : const Color(0xFF475569);
+      final subtitleColor = isDark
+          ? Colors.grey[400]!
+          : const Color(0xFF475569);
       final borderColor = isDark ? Colors.grey[800]! : Colors.grey[200]!;
 
       return Scaffold(
@@ -58,7 +60,9 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
         body: controller.isLoading.value
             ? Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.getPrimary(isDark)),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.getPrimary(isDark),
+                  ),
                 ),
               )
             : SafeArea(
@@ -70,9 +74,21 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildModuleSummary(isDark, cardColor, textColor, subtitleColor, borderColor),
+                        _buildModuleSummary(
+                          isDark,
+                          cardColor,
+                          textColor,
+                          subtitleColor,
+                          borderColor,
+                        ),
                         const SizedBox(height: 20),
-                        _buildLessonsList(isDark, cardColor, textColor, subtitleColor, borderColor),
+                        _buildLessonsList(
+                          isDark,
+                          cardColor,
+                          textColor,
+                          subtitleColor,
+                          borderColor,
+                        ),
                       ],
                     ),
                   ),
@@ -251,7 +267,9 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
                   // Check if it starts with markdown headers
                   final trimmed = para.trim();
                   if (trimmed.startsWith('## ') || trimmed.startsWith('### ')) {
-                    final headerText = trimmed.replaceAll('## ', '').replaceAll('### ', '');
+                    final headerText = trimmed
+                        .replaceAll('## ', '')
+                        .replaceAll('### ', '');
                     return Padding(
                       padding: const EdgeInsets.only(top: 14.0, bottom: 8.0),
                       child: Text(
@@ -300,7 +318,11 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Row(
                       children: [
-                        Icon(Icons.link, size: 16, color: isUrl ? Colors.blue : subtitleColor),
+                        Icon(
+                          Icons.link,
+                          size: 16,
+                          color: isUrl ? Colors.blue : subtitleColor,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: isUrl
@@ -308,7 +330,10 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
                                   onTap: () async {
                                     final uri = Uri.parse(r);
                                     if (await canLaunchUrl(uri)) {
-                                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                      await launchUrl(
+                                        uri,
+                                        mode: LaunchMode.externalApplication,
+                                      );
                                     }
                                   },
                                   child: Text(
@@ -335,7 +360,10 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
               else
                 Text(
                   'No additional resources for this lesson.',
-                  style: GoogleFonts.inter(fontSize: 12.5, color: subtitleColor),
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    color: subtitleColor,
+                  ),
                 ),
 
               const SizedBox(height: 16),
@@ -361,9 +389,14 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
                       children: [
                         Container(
                           margin: const EdgeInsets.only(top: 2),
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFE2E8F0),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -393,7 +426,10 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
               else
                 Text(
                   'No exercises for this lesson.',
-                  style: GoogleFonts.inter(fontSize: 12.5, color: subtitleColor),
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    color: subtitleColor,
+                  ),
                 ),
             ],
           ),

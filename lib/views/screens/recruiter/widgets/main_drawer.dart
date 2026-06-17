@@ -8,7 +8,7 @@ import 'package:hirematrix/views/screens/recruiter/drawer/company_details_screen
 import 'package:hirematrix/views/screens/recruiter/candidates/candidate_management_screen.dart';
 
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
-import 'package:hirematrix/views/screens/recruiter/auth/login_screen.dart';
+import 'package:hirematrix/views/screens/login_screen.dart';
 import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dart';
 
 import 'package:hirematrix/views/screens/recruiter/dashboard/candidate_insights_screen.dart';
@@ -419,41 +419,6 @@ class MainDrawer extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.blueAccent.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.shield_rounded,
-                  size: 16,
-                  color: Colors.blueAccent,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Enterprise Security',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Text(
-                    'v1.0.8 Aligned',
-                    style: GoogleFonts.inter(fontSize: 10, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ],
           ),
         ],
       ),

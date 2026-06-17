@@ -25,26 +25,32 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
   TimeOfDay? _slotTime;
   int _capacity = 1;
   int _bookedCount = 0;
-  
+
   bool _isSaving = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _bookedCount = int.tryParse(widget.slot['booked_count']?.toString() ?? '0') ?? 0;
+    _bookedCount =
+        int.tryParse(widget.slot['booked_count']?.toString() ?? '0') ?? 0;
     _capacity = int.tryParse(widget.slot['capacity']?.toString() ?? '1') ?? 1;
 
     final rawDate = widget.slot['slot_date']?.toString() ?? '';
     final rawTime = widget.slot['slot_time']?.toString() ?? '';
 
     if (rawDate.isNotEmpty) {
-      try { _slotDate = DateTime.parse(rawDate); } catch (_) {}
+      try {
+        _slotDate = DateTime.parse(rawDate);
+      } catch (_) {}
     }
     if (rawTime.isNotEmpty) {
       final parts = rawTime.split(':');
       if (parts.length >= 2) {
-        _slotTime = TimeOfDay(hour: int.tryParse(parts[0]) ?? 0, minute: int.tryParse(parts[1]) ?? 0);
+        _slotTime = TimeOfDay(
+          hour: int.tryParse(parts[0]) ?? 0,
+          minute: int.tryParse(parts[1]) ?? 0,
+        );
       }
     }
   }
@@ -84,7 +90,10 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
       return;
     }
 
-    final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
     if (recruiterId == null) return;
 
     setState(() {
@@ -94,7 +103,13 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
 
     try {
       final now = DateTime.now();
-      final dt = DateTime(now.year, now.month, now.day, _slotTime!.hour, _slotTime!.minute);
+      final dt = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        _slotTime!.hour,
+        _slotTime!.minute,
+      );
       final formattedTime = DateFormat('HH:mm').format(dt);
 
       final payload = {
@@ -107,14 +122,18 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
 
       // Since updateInterviewSlot might not exist yet, we will mimic what add/delete does
       // We will assume the backend either has this route or it will need to be implemented.
-      final res = await _apiService.updateInterviewSlot(payload); // Ensure this method is in your API service
-      
+      final res = await _apiService.updateInterviewSlot(
+        payload,
+      ); // Ensure this method is in your API service
+
       setState(() => _isSaving = false);
 
       if (res['success'] == true) {
         if (mounted) Navigator.pop(context, true);
       } else {
-        setState(() => _error = res['message']?.toString() ?? 'Failed to update slot');
+        setState(
+          () => _error = res['message']?.toString() ?? 'Failed to update slot',
+        );
       }
     } catch (e) {
       setState(() {
@@ -128,7 +147,7 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isBooked = _bookedCount > 0;
-    
+
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDark),
       appBar: AppBar(
@@ -154,7 +173,10 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
             children: [
               Text(
                 'Update the timing and capacity of an interview slot while keeping bookings safe.',
-                style: GoogleFonts.inter(fontSize: 14, color: isDark ? Colors.grey[400] : Colors.blueGrey[600]),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: isDark ? Colors.grey[400] : Colors.blueGrey[600],
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -165,15 +187,27 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: Colors.orange.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
+                      const Icon(
+                        Icons.warning_amber_rounded,
+                        color: Colors.orange,
+                        size: 20,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text('Warning: This slot has $_bookedCount booking(s). Slots with bookings cannot be edited.', 
-                          style: GoogleFonts.inter(color: Colors.orange, fontSize: 13, fontWeight: FontWeight.w500)),
+                        child: Text(
+                          'Warning: This slot has $_bookedCount booking(s). Slots with bookings cannot be edited.',
+                          style: GoogleFonts.inter(
+                            color: Colors.orange,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -186,14 +220,27 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: Colors.red.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 20,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(_error!, style: GoogleFonts.inter(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w500)),
+                        child: Text(
+                          _error!,
+                          style: GoogleFonts.inter(
+                            color: Colors.red,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -204,17 +251,28 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.05),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.grey.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.grey[200]!,
+                    ),
                   ),
                   child: Text(
                     widget.job.jobTitle,
-                    style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.getText(isDark)),
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.getText(isDark),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text('Job position cannot be changed', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+                Text(
+                  'Job position cannot be changed',
+                  style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                ),
               ]),
 
               const SizedBox(height: 16),
@@ -223,20 +281,24 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
                   children: [
                     Expanded(
                       child: _buildPicker(
-                        'Date *', 
-                        _slotDate == null ? 'Select Date' : DateFormat('MMM dd, yyyy').format(_slotDate!), 
+                        'Date *',
+                        _slotDate == null
+                            ? 'Select Date'
+                            : DateFormat('MMM dd, yyyy').format(_slotDate!),
                         Icons.calendar_today,
-                        isDark, 
+                        isDark,
                         isBooked ? null : () => _selectDate(context),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildPicker(
-                        'Time *', 
-                        _slotTime == null ? 'Select Time' : _slotTime!.format(context), 
+                        'Time *',
+                        _slotTime == null
+                            ? 'Select Time'
+                            : _slotTime!.format(context),
                         Icons.access_time,
-                        isDark, 
+                        isDark,
                         isBooked ? null : () => _selectTime(context),
                       ),
                     ),
@@ -249,7 +311,13 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Capacity *', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+                    Text(
+                      'Capacity *',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     TextFormField(
                       initialValue: _capacity.toString(),
@@ -258,22 +326,37 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
                       style: GoogleFonts.inter(fontSize: 14),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.05),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        fillColor: isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.grey.withValues(alpha: 0.05),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                       ),
-                      onChanged: (val) => _capacity = int.tryParse(val) ?? _bookedCount,
+                      onChanged: (val) =>
+                          _capacity = int.tryParse(val) ?? _bookedCount,
                       validator: (val) {
                         if (val == null || val.isEmpty) return 'Required';
                         final num = int.tryParse(val) ?? 0;
-                        if (num < _bookedCount) return 'Cannot be less than booked ($_bookedCount)';
+                        if (num < _bookedCount)
+                          return 'Cannot be less than booked ($_bookedCount)';
                         return null;
                       },
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      isBooked ? 'Cannot reduce capacity below current bookings ($_bookedCount)' : 'Number of candidates that can book this slot', 
-                      style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)
+                      isBooked
+                          ? 'Cannot reduce capacity below current bookings ($_bookedCount)'
+                          : 'Number of candidates that can book this slot',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
                     ),
                   ],
                 ),
@@ -284,16 +367,41 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Booked:', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500)),
-                    Text('$_bookedCount / $_capacity', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.getPrimary(isDark))),
+                    Text(
+                      'Booked:',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      '$_bookedCount / $_capacity',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.getPrimary(isDark),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Slot ID:', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500)),
-                    Text('#${widget.slot['id']}', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
+                    Text(
+                      'Slot ID:',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      '#${widget.slot['id']}',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ],
                 ),
               ]),
@@ -305,11 +413,28 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 54),
                     backgroundColor: AppColors.getPrimary(isDark),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                   child: _isSaving
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text('UPDATE SLOT', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1)),
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'UPDATE SLOT',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 1,
+                          ),
+                        ),
                 ),
               const SizedBox(height: 40),
             ],
@@ -331,7 +456,15 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title.toUpperCase(), style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.getPrimary(isDark), letterSpacing: 1)),
+          Text(
+            title.toUpperCase(),
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: AppColors.getPrimary(isDark),
+              letterSpacing: 1,
+            ),
+          ),
           const SizedBox(height: 20),
           ...children,
         ],
@@ -339,12 +472,21 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
     );
   }
 
-  Widget _buildPicker(String label, String valueText, IconData icon, bool isDark, VoidCallback? onTap) {
+  Widget _buildPicker(
+    String label,
+    String valueText,
+    IconData icon,
+    bool isDark,
+    VoidCallback? onTap,
+  ) {
     final isDisabled = onTap == null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
         InkWell(
           onTap: onTap,
@@ -352,17 +494,29 @@ class _EditSlotScreenState extends State<EditSlotScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.05),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.grey.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  valueText, 
-                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: isDisabled ? Colors.grey : AppColors.getText(isDark))
+                  valueText,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: isDisabled ? Colors.grey : AppColors.getText(isDark),
+                  ),
                 ),
-                Icon(icon, size: 16, color: isDisabled ? Colors.grey : AppColors.getPrimary(isDark)),
+                Icon(
+                  icon,
+                  size: 16,
+                  color: isDisabled
+                      ? Colors.grey
+                      : AppColors.getPrimary(isDark),
+                ),
               ],
             ),
           ),

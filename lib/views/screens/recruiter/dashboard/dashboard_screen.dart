@@ -26,8 +26,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-
-
   String? _lastFetchedRecruiterId;
 
   @override
@@ -121,11 +119,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   hrInterviewsToday,
                   isDarkMode,
                 ),
-                _buildSectionHeader(
-                  'Hiring Overview',
-                  isDarkMode,
-                  null,
-                ),
+                _buildSectionHeader('Hiring Overview', isDarkMode, null),
                 SizedBox(height: Responsive.spacing(12)),
                 _buildHiringOverviewGrid(dashboard.dashboardData, isDarkMode),
                 SizedBox(height: Responsive.spacing(28)),
@@ -150,19 +144,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   isDarkMode,
                 ),
                 SizedBox(height: Responsive.spacing(28)),
-                _buildSectionHeader(
-                  'Upcoming Interviews',
-                  isDarkMode,
-                  null,
-                ),
+                _buildSectionHeader('Upcoming Interviews', isDarkMode, null),
                 SizedBox(height: Responsive.spacing(12)),
                 _buildInterviewList(dashboard.upcomingInterviews, isDarkMode),
                 SizedBox(height: Responsive.spacing(28)),
-                _buildSectionHeader(
-                  'Recruiter Activity',
-                  isDarkMode,
-                  null,
-                ),
+                _buildSectionHeader('Recruiter Activity', isDarkMode, null),
                 SizedBox(height: Responsive.spacing(12)),
                 _buildActivityTimeline(isDarkMode),
                 SizedBox(height: Responsive.spacing(100)),
@@ -242,7 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Text(
                             'Recruiter Dashboard',
                             style: GoogleFonts.inter(
-                              fontSize: 9,
+                              fontSize: 10,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                               letterSpacing: 0.5,
@@ -256,9 +242,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'Find Your Next Great Hire',
-                  style: GoogleFonts.outfit(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
+                  style: GoogleFonts.inter(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
                     color: Colors.white,
                     height: 1.1,
                   ),
@@ -402,7 +388,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Text(
               'No jobs posted yet',
-              style: GoogleFonts.outfit(
+              style: GoogleFonts.inter(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: AppColors.getText(isDark),
@@ -591,7 +577,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         Text(
                           val,
-                          style: GoogleFonts.outfit(
+                          style: GoogleFonts.inter(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
                             color: isDark
@@ -685,7 +671,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(width: 8),
                   Text(
                     'Recruitment Pipeline',
-                    style: GoogleFonts.outfit(
+                    style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: AppColors.getText(isDark),
@@ -861,7 +847,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         Text(
           NumberFormat('#,###').format(count),
-          style: GoogleFonts.outfit(
+          style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w800,
             color: AppColors.getText(isDark),
@@ -904,7 +890,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Text(
             'Recent Applications',
-            style: GoogleFonts.outfit(
+            style: GoogleFonts.inter(
               fontSize: 16,
               fontWeight: FontWeight.w800,
               color: AppColors.getText(isDark),
@@ -1102,7 +1088,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(width: 8),
               Text(
                 'Action Center',
-                style: GoogleFonts.outfit(
+                style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: AppColors.getText(isDark),
@@ -1320,7 +1306,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Text(
             'Conversion Metrics',
-            style: GoogleFonts.outfit(
+            style: GoogleFonts.inter(
               fontSize: 16,
               fontWeight: FontWeight.w800,
               color: AppColors.getText(isDark),
@@ -1352,7 +1338,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 4),
                     Text(
                       '$overall%',
-                      style: GoogleFonts.outfit(
+                      style: GoogleFonts.inter(
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
                         color: AppColors.getPrimary(isDark),

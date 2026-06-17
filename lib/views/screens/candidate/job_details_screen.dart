@@ -58,7 +58,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
   Map<String, dynamic>? get invitationData => _controller.invitationData.value;
   bool get isLoadingInvitation => _controller.isLoadingInvitation.value;
   List<dynamic> get questionnaireList => _controller.questionnaireList;
-  Map<String, TextEditingController> get _questionControllers => _controller.questionControllers;
+  Map<String, TextEditingController> get _questionControllers =>
+      _controller.questionControllers;
   int? getCompanyId() {
     final raw = widget.job['company_id'];
     if (raw == null) return null;
@@ -245,269 +246,277 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
         ),
       ),
       body: SafeArea(
-        child: Obx(() => isCheckingApplied
-            ? Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppColors.getPrimary(isDark),
+        child: Obx(
+          () => isCheckingApplied
+              ? Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.getPrimary(isDark),
+                    ),
                   ),
-                ),
-              )
-            : Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildRecruiterInvitationBanner(
-                        isDark,
-                        cardColor,
-                        textColor,
-                        subtitleColor,
-                      ),
-                      // Header Card
-                      _buildHeaderCard(
-                        cardColor,
-                        textColor,
-                        subtitleColor,
-                        logoUrl,
-                        initial,
-                        title,
-                        company,
-                        location,
-                        isDark,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Quick Specs
-                      _buildSpecsGrid(
-                        cardColor,
-                        textColor,
-                        subtitleColor,
-                        type,
-                        salary,
-                        experience,
-                        isDark,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // AI Interview Policy
-                      _buildAiPolicyCard(
-                        cardColor,
-                        textColor,
-                        subtitleColor,
-                        isDark,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // ATS Match Card
-                      _buildAtsScoreCard(
-                        cardColor,
-                        textColor,
-                        subtitleColor,
-                        isDark,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Description
-                      _buildSectionCard(
-                        title: 'Job Description',
-                        cardColor: cardColor,
-                        textColor: textColor,
-                        child: Text(
-                          widget.job['description'] ??
-                              'No description provided.',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: isDark
-                                ? Colors.grey[300]
-                                : const Color(0xFF334155),
-                            height: 1.5,
-                          ),
+                )
+              : Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildRecruiterInvitationBanner(
+                          isDark,
+                          cardColor,
+                          textColor,
+                          subtitleColor,
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        // Header Card
+                        _buildHeaderCard(
+                          cardColor,
+                          textColor,
+                          subtitleColor,
+                          logoUrl,
+                          initial,
+                          title,
+                          company,
+                          location,
+                          isDark,
+                        ),
+                        const SizedBox(height: 16),
 
-                      // Skills
-                      if (widget.job['required_skills'] != null &&
-                          widget.job['required_skills']
-                              .toString()
-                              .trim()
-                              .isNotEmpty) ...[
+                        // Quick Specs
+                        _buildSpecsGrid(
+                          cardColor,
+                          textColor,
+                          subtitleColor,
+                          type,
+                          salary,
+                          experience,
+                          isDark,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // AI Interview Policy
+                        _buildAiPolicyCard(
+                          cardColor,
+                          textColor,
+                          subtitleColor,
+                          isDark,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // ATS Match Card
+                        _buildAtsScoreCard(
+                          cardColor,
+                          textColor,
+                          subtitleColor,
+                          isDark,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Description
                         _buildSectionCard(
-                          title: 'Required Skills',
+                          title: 'Job Description',
                           cardColor: cardColor,
                           textColor: textColor,
-                          child: Wrap(
-                            spacing: 6,
-                            runSpacing: 6,
-                            children: widget.job['required_skills']
+                          child: Text(
+                            widget.job['description'] ??
+                                'No description provided.',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: isDark
+                                  ? Colors.grey[300]
+                                  : const Color(0xFF334155),
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Skills
+                        if (widget.job['required_skills'] != null &&
+                            widget.job['required_skills']
                                 .toString()
-                                .split(',')
-                                .map<Widget>(
-                                  (s) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.getPrimary(
-                                        isDark,
-                                      ).withOpacity(0.08),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
+                                .trim()
+                                .isNotEmpty) ...[
+                          _buildSectionCard(
+                            title: 'Required Skills',
+                            cardColor: cardColor,
+                            textColor: textColor,
+                            child: Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: widget.job['required_skills']
+                                  .toString()
+                                  .split(',')
+                                  .map<Widget>(
+                                    (s) => Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
                                         color: AppColors.getPrimary(
                                           isDark,
-                                        ).withOpacity(0.15),
+                                        ).withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: AppColors.getPrimary(
+                                            isDark,
+                                          ).withOpacity(0.15),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        s.trim(),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.getPrimary(isDark),
+                                        ),
                                       ),
                                     ),
-                                    child: Text(
-                                      s.trim(),
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.getPrimary(isDark),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // Company Snapshot
+                        if (companyInfo != null) ...[
+                          _buildCompanySnapshotCard(
+                            cardColor,
+                            textColor,
+                            isDark,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // Job Summary
+                        _buildJobSummaryCard(cardColor, textColor, isDark),
+                        const SizedBox(height: 16),
+
+                        // About Company
+                        _buildAboutCompanyCard(cardColor, textColor, isDark),
+                        const SizedBox(height: 16),
+
+                        // Questionnaire Section (If not applied yet)
+                        if (!hasApplied && questionnaireList.isNotEmpty) ...[
+                          _buildSectionCard(
+                            title: 'Additional Questions (Required)',
+                            cardColor: cardColor,
+                            textColor: textColor,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: questionnaireList.map<Widget>((q) {
+                                final id = q['id']?.toString() ?? '';
+                                final label =
+                                    q['label']?.toString() ?? 'Question';
+                                final required =
+                                    q['required'] == true ||
+                                    q['required'] == 1 ||
+                                    q['required'] == 'true';
+                                final type =
+                                    q['type']?.toString() ?? 'textarea';
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              label,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13.5,
+                                                fontWeight: FontWeight.bold,
+                                                color: textColor,
+                                              ),
+                                            ),
+                                          ),
+                                          if (required)
+                                            Text(
+                                              ' *',
+                                              style: GoogleFonts.inter(
+                                                color: Colors.redAccent,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                        ],
                                       ),
-                                    ),
+                                      const SizedBox(height: 8),
+                                      TextFormField(
+                                        controller: _questionControllers[id],
+                                        maxLines: type == 'text' ? 1 : 4,
+                                        style: GoogleFonts.inter(
+                                          color: textColor,
+                                          fontSize: 14,
+                                        ),
+                                        decoration: InputDecoration(
+                                          hintText:
+                                              q['placeholder']?.toString() ??
+                                              'Type your answer here...',
+                                          hintStyle: GoogleFonts.inter(
+                                            color: Colors.grey[500],
+                                            fontSize: 13,
+                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 14,
+                                                vertical: 12,
+                                              ),
+                                          filled: true,
+                                          fillColor: isDark
+                                              ? Colors.black26
+                                              : Colors.grey[50],
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            borderSide: BorderSide(
+                                              color: isDark
+                                                  ? Colors.grey[800]!
+                                                  : Colors.grey[300]!,
+                                            ),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            borderSide: BorderSide(
+                                              color: isDark
+                                                  ? Colors.grey[800]!
+                                                  : Colors.grey[300]!,
+                                            ),
+                                          ),
+                                        ),
+                                        validator: (value) {
+                                          if (required &&
+                                              (value == null ||
+                                                  value.trim().isEmpty)) {
+                                            return 'Please answer this question';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                )
-                                .toList(),
+                                );
+                              }).toList(),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // Action buttons
+                        _buildActionButtons(isDark, textColor),
+                        const SizedBox(height: 24),
                       ],
-
-                      // Company Snapshot
-                      if (companyInfo != null) ...[
-                        _buildCompanySnapshotCard(cardColor, textColor, isDark),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // Job Summary
-                      _buildJobSummaryCard(cardColor, textColor, isDark),
-                      const SizedBox(height: 16),
-
-                      // About Company
-                      _buildAboutCompanyCard(cardColor, textColor, isDark),
-                      const SizedBox(height: 16),
-
-                      // Questionnaire Section (If not applied yet)
-                      if (!hasApplied && questionnaireList.isNotEmpty) ...[
-                        _buildSectionCard(
-                          title: 'Additional Questions (Required)',
-                          cardColor: cardColor,
-                          textColor: textColor,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: questionnaireList.map<Widget>((q) {
-                              final id = q['id']?.toString() ?? '';
-                              final label =
-                                  q['label']?.toString() ?? 'Question';
-                              final required =
-                                  q['required'] == true ||
-                                  q['required'] == 1 ||
-                                  q['required'] == 'true';
-                              final type = q['type']?.toString() ?? 'textarea';
-
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            label,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 13.5,
-                                              fontWeight: FontWeight.bold,
-                                              color: textColor,
-                                            ),
-                                          ),
-                                        ),
-                                        if (required)
-                                          Text(
-                                            ' *',
-                                            style: GoogleFonts.inter(
-                                              color: Colors.redAccent,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    TextFormField(
-                                      controller: _questionControllers[id],
-                                      maxLines: type == 'text' ? 1 : 4,
-                                      style: GoogleFonts.inter(
-                                        color: textColor,
-                                        fontSize: 14,
-                                      ),
-                                      decoration: InputDecoration(
-                                        hintText:
-                                            q['placeholder']?.toString() ??
-                                            'Type your answer here...',
-                                        hintStyle: GoogleFonts.inter(
-                                          color: Colors.grey[500],
-                                          fontSize: 13,
-                                        ),
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal: 14,
-                                              vertical: 12,
-                                            ),
-                                        filled: true,
-                                        fillColor: isDark
-                                            ? Colors.black26
-                                            : Colors.grey[50],
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          borderSide: BorderSide(
-                                            color: isDark
-                                                ? Colors.grey[800]!
-                                                : Colors.grey[300]!,
-                                          ),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          borderSide: BorderSide(
-                                            color: isDark
-                                                ? Colors.grey[800]!
-                                                : Colors.grey[300]!,
-                                          ),
-                                        ),
-                                      ),
-                                      validator: (value) {
-                                        if (required &&
-                                            (value == null ||
-                                                value.trim().isEmpty)) {
-                                          return 'Please answer this question';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // Action buttons
-                      _buildActionButtons(isDark, textColor),
-                      const SizedBox(height: 24),
-                    ],
+                    ),
                   ),
                 ),
-              )),
+        ),
       ),
     );
   }

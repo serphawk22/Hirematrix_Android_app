@@ -28,8 +28,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final auth = Provider.of<AuthController>(context, listen: false);
     final recruiterId = auth.currentRecruiter?.id;
     if (recruiterId != null) {
-      Provider.of<DashboardController>(context, listen: false).fetchDashboard(recruiterId, auth: auth);
-      Provider.of<JobsController>(context, listen: false).fetchJobs(recruiterId);
+      Provider.of<DashboardController>(
+        context,
+        listen: false,
+      ).fetchDashboard(recruiterId, auth: auth);
+      Provider.of<JobsController>(
+        context,
+        listen: false,
+      ).fetchJobs(recruiterId);
     }
   }
 
@@ -90,7 +96,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           CircleAvatar(
             radius: Responsive.scale(34),
-            backgroundColor: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
+            backgroundColor: AppColors.getPrimary(
+              isDark,
+            ).withValues(alpha: 0.1),
             child: Text(
               (recruiter != null && recruiter.fullName.isNotEmpty)
                   ? recruiter.fullName.substring(0, 1).toUpperCase()
@@ -126,7 +134,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.blueAccent.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(6),
@@ -158,11 +169,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
-          _buildInfoRow(Icons.email_outlined, 'Work Email', recruiter?.email ?? '-'),
+          _buildInfoRow(
+            Icons.email_outlined,
+            'Work Email',
+            recruiter?.email ?? '-',
+          ),
           const Divider(height: 24),
           _buildInfoRow(Icons.phone_outlined, 'Phone', recruiter?.phone ?? '-'),
           const Divider(height: 24),
-          _buildInfoRow(Icons.location_on_outlined, 'Location', recruiter?.companyLocation ?? 'Bangalore, India'),
+          _buildInfoRow(
+            Icons.location_on_outlined,
+            'Location',
+            recruiter?.companyLocation ?? 'Bangalore, India',
+          ),
         ],
       ),
     );
@@ -224,7 +243,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Wrap(
             spacing: Responsive.spacing(8),
             runSpacing: Responsive.spacing(8),
-            children: ['Product Hiring', 'Strategy', 'Executive Search'].map((s) => _buildTag(s)).toList(),
+            children: [
+              'Product Hiring',
+              'Strategy',
+              'Executive Search',
+            ].map((s) => _buildTag(s)).toList(),
           ),
         ],
       ),
@@ -249,9 +272,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildActivityGrid(DashboardController dashboard, JobsController jobsController, bool isDark) {
+  Widget _buildActivityGrid(
+    DashboardController dashboard,
+    JobsController jobsController,
+    bool isDark,
+  ) {
     final stats = dashboard.dashboardData['stats'] as Map<String, dynamic>?;
-    final pipelineStats = dashboard.dashboardData['pipeline_stats'] as Map<String, dynamic>?;
+    final pipelineStats =
+        dashboard.dashboardData['pipeline_stats'] as Map<String, dynamic>?;
 
     final String interviews = dashboard.isLoading
         ? '...'
@@ -276,14 +304,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildActivityTile(String val, String label, Color color, bool isDark) {
+  Widget _buildActivityTile(
+    String val,
+    String label,
+    Color color,
+    bool isDark,
+  ) {
     return Expanded(
       child: Container(
         padding: EdgeInsets.symmetric(vertical: Responsive.spacing(14)),
         decoration: BoxDecoration(
           color: isDark ? AppColors.getCard(isDark) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+          border: Border.all(
+            color: isDark ? Colors.white10 : Colors.grey[200]!,
+          ),
         ),
         child: Column(
           children: [

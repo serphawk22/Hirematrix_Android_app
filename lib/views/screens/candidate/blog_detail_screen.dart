@@ -7,26 +7,23 @@ import 'package:hirematrix/controllers/theme_controller.dart';
 class BlogDetailScreen extends StatelessWidget {
   final Map<String, dynamic> post;
 
-  const BlogDetailScreen({
-    super.key,
-    required this.post,
-  });
+  const BlogDetailScreen({super.key, required this.post});
 
   String _stripHtml(String html) {
     if (html.isEmpty) return '';
     // Normalize newlines and carriage returns
     String result = html.replaceAll('\r', '');
-    
+
     // Insert newlines for paragraph, list item and line break tags
     result = result
         .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
         .replaceAll(RegExp(r'</p\s*>', caseSensitive: false), '\n\n')
         .replaceAll(RegExp(r'</li>', caseSensitive: false), '\n')
         .replaceAll(RegExp(r'</h[1-6]>', caseSensitive: false), '\n\n');
-    
+
     // Strip all remaining HTML tags
     result = result.replaceAll(RegExp(r'<[^>]*>'), '');
-    
+
     // Decode common HTML entities
     result = result
         .replaceAll('&nbsp;', ' ')
@@ -38,10 +35,10 @@ class BlogDetailScreen extends StatelessWidget {
         .replaceAll('&rsquo;', "'")
         .replaceAll('&ldquo;', '"')
         .replaceAll('&rdquo;', '"');
-        
+
     // Collapse consecutive newlines down to at most 2 newlines to prevent unwanted whitespace blocks
     result = result.replaceAll(RegExp(r'\n{3,}'), '\n\n');
-        
+
     return result.trim();
   }
 
@@ -52,18 +49,35 @@ class BlogDetailScreen extends StatelessWidget {
 
     final title = post['title'] ?? 'Career Insight';
     final coverImage = post['cover_image'] ?? '';
-    final isFeatured = post['featured'] == 1 || post['featured'] == true || post['featured'] == '1';
+    final isFeatured =
+        post['featured'] == 1 ||
+        post['featured'] == true ||
+        post['featured'] == '1';
     final author = post['author_name'] ?? 'HireMatrix Team';
     final contentHtml = post['content'] ?? post['excerpt'] ?? '';
     final cleanedContent = _stripHtml(contentHtml);
     final publishedAt = post['published_at'] ?? post['created_at'] ?? '';
-    
+
     String formattedDate = '';
     try {
       if (publishedAt.isNotEmpty) {
         final dt = DateTime.parse(publishedAt.toString());
-        final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        formattedDate = '${months[dt.month - 1]} ${dt.day.toString().padLeft(2, '0')}, ${dt.year}';
+        final months = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
+        formattedDate =
+            '${months[dt.month - 1]} ${dt.day.toString().padLeft(2, '0')}, ${dt.year}';
       }
     } catch (_) {
       formattedDate = 'Recently';
@@ -98,18 +112,21 @@ class BlogDetailScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: isFeatured 
-                            ? AppColors.getSecondary(isDark).withOpacity(0.15) 
+                        color: isFeatured
+                            ? AppColors.getSecondary(isDark).withOpacity(0.15)
                             : AppColors.getPrimary(isDark).withOpacity(0.15),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         isFeatured ? 'Featured' : 'Blog',
                         style: TextStyle(
-                          color: isFeatured 
-                              ? AppColors.getSecondary(isDark) 
+                          color: isFeatured
+                              ? AppColors.getSecondary(isDark)
                               : AppColors.getPrimary(isDark),
                           fontSize: 12,
                           fontWeight: FontWeight.bold,

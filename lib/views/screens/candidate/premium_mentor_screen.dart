@@ -76,7 +76,9 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
       final cardColor = isDark ? const Color(0xFF1E293B) : Colors.white;
 
       return Scaffold(
-        backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        backgroundColor: isDark
+            ? const Color(0xFF0F172A)
+            : const Color(0xFFF8FAFC),
         appBar: AppBar(
           backgroundColor: cardColor,
           elevation: 0,
@@ -98,11 +100,18 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                 icon: const Icon(Icons.playlist_add),
                 color: textColor,
                 tooltip: 'Start Transition Plan',
-                onPressed: () => _showCreatePlanBottomSheet(isDark, textColor, cardColor),
+                onPressed: () =>
+                    _showCreatePlanBottomSheet(isDark, textColor, cardColor),
               ),
               Container(
-                margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                margin: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 12,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
@@ -112,10 +121,15 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    FaIcon(FontAwesomeIcons.crown, color: Colors.white, size: 10),
+                    FaIcon(
+                      FontAwesomeIcons.crown,
+                      color: Colors.white,
+                      size: 10,
+                    ),
                     const SizedBox(width: 4),
                     Text(
-                      controller.subscription['plan_name']?.toString() ?? 'Premium',
+                      controller.subscription['plan_name']?.toString() ??
+                          'Premium',
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -137,8 +151,8 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                 ),
               )
             : !controller.hasSubscription.value
-                ? _buildNotSubscribedView(isDark)
-                : _buildDashboardView(isDark, textColor, subtitleColor, cardColor),
+            ? _buildNotSubscribedView(isDark)
+            : _buildDashboardView(isDark, textColor, subtitleColor, cardColor),
       );
     });
   }
@@ -349,7 +363,12 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                     itemCount: controller.chatHistory.length,
                     itemBuilder: (context, idx) {
                       final msg = controller.chatHistory[idx];
-                      return _buildChatBubble(msg, isDark, textColor, cardColor);
+                      return _buildChatBubble(
+                        msg,
+                        isDark,
+                        textColor,
+                        cardColor,
+                      );
                     },
                   ),
           ),
@@ -362,7 +381,10 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius: BorderRadius.circular(16),
@@ -434,31 +456,31 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
         'label': 'Career Plan',
         'icon': FontAwesomeIcons.route,
         'prompt': 'Help me create a career plan to become a Software Engineer',
-        'color': const Color(0xFF3B82F6)
+        'color': const Color(0xFF3B82F6),
       },
       {
         'label': 'Skill Gap',
         'icon': FontAwesomeIcons.chartSimple,
         'prompt': 'Do a skill gap analysis for my target role',
-        'color': const Color(0xFF10B981)
+        'color': const Color(0xFF10B981),
       },
       {
         'label': 'Interview Prep',
         'icon': FontAwesomeIcons.microphone,
         'prompt': 'Help me prepare for interviews',
-        'color': const Color(0xFF06B6D4)
+        'color': const Color(0xFF06B6D4),
       },
       {
         'label': 'Resume Review',
         'icon': FontAwesomeIcons.fileLines,
         'prompt': 'Review and optimize my resume',
-        'color': const Color(0xFFF59E0B)
+        'color': const Color(0xFFF59E0B),
       },
       {
         'label': 'Salary Tips',
         'icon': FontAwesomeIcons.dollarSign,
         'prompt': 'Give me salary negotiation tips',
-        'color': const Color(0xFFEF4444)
+        'color': const Color(0xFFEF4444),
       },
     ];
 
@@ -481,9 +503,7 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: act['color'].withOpacity(0.3),
-                  ),
+                  border: Border.all(color: act['color'].withOpacity(0.3)),
                   borderRadius: BorderRadius.circular(20),
                   color: act['color'].withOpacity(0.06),
                 ),
@@ -559,9 +579,7 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
 
     final bubbleBg = isUser
         ? AppColors.getPrimary(isDark)
-        : (isSystemError
-            ? Colors.red[900]?.withOpacity(0.2)
-            : cardColor);
+        : (isSystemError ? Colors.red[900]?.withOpacity(0.2) : cardColor);
 
     final bubbleTextColor = isUser
         ? Colors.white
@@ -598,14 +616,16 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
           border: isUser
               ? null
               : Border.all(
-                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  color: isDark
+                      ? const Color(0xFF334155)
+                      : const Color(0xFFE2E8F0),
                 ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.02),
               blurRadius: 4,
               offset: const Offset(0, 2),
-            )
+            ),
           ],
         ),
         child: Column(
@@ -630,15 +650,22 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                 color: bubbleTextColor,
               ),
             ),
-            if (!isUser && premiumFeaturesList != null && premiumFeaturesList.isNotEmpty) ...[
+            if (!isUser &&
+                premiumFeaturesList != null &&
+                premiumFeaturesList.isNotEmpty) ...[
               const SizedBox(height: 10),
               Wrap(
                 spacing: 6,
                 runSpacing: 4,
                 children: premiumFeaturesList.map((feature) {
-                  final label = feature.toString().replaceAll('_', ' ').capitalizeFirst ?? '';
+                  final label =
+                      feature.toString().replaceAll('_', ' ').capitalizeFirst ??
+                      '';
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.getPrimary(isDark).withOpacity(0.08),
                       borderRadius: BorderRadius.circular(12),
@@ -671,15 +698,20 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
     final nextMilestones = s['next_milestones'] as List?;
     final roleName = s['target_role']?.toString() ?? 'career';
     final lastNudge = s['last_nudge']?.toString() ?? '';
-    final milestone = (nextMilestones != null && nextMilestones.isNotEmpty) ? nextMilestones[0] : null;
+    final milestone = (nextMilestones != null && nextMilestones.isNotEmpty)
+        ? nextMilestones[0]
+        : null;
 
     String continuePrompt = '';
     if (milestone != null) {
-      continuePrompt = "I'm ready to work on '$milestone'. Any tips on getting started?";
+      continuePrompt =
+          "I'm ready to work on '$milestone'. Any tips on getting started?";
     } else if (lastNudge.isNotEmpty && lastNudge.length < 100) {
-      continuePrompt = "Regarding your advice \"$lastNudge\"—what's the best next step?";
+      continuePrompt =
+          "Regarding your advice \"$lastNudge\"—what's the best next step?";
     } else {
-      continuePrompt = "I'm ready to keep moving on my $roleName goal. What's the next step?";
+      continuePrompt =
+          "I'm ready to keep moving on my $roleName goal. What's the next step?";
     }
 
     return Padding(
@@ -688,7 +720,10 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
         alignment: Alignment.centerLeft,
         child: InkWell(
           onTap: () {
-            controller.switchContext('plan-${s['id']}', s['target_role'] ?? 'Active Plan');
+            controller.switchContext(
+              'plan-${s['id']}',
+              s['target_role'] ?? 'Active Plan',
+            );
             _chatInputController.text = continuePrompt;
             _submitChat();
           },
@@ -706,13 +741,17 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                   color: Colors.black.withOpacity(0.04),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
-                )
+                ),
               ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                FaIcon(FontAwesomeIcons.wandMagicSparkles, size: 10, color: const Color(0xFFF59E0B)),
+                FaIcon(
+                  FontAwesomeIcons.wandMagicSparkles,
+                  size: 10,
+                  color: const Color(0xFFF59E0B),
+                ),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
@@ -755,7 +794,10 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
               },
               borderRadius: BorderRadius.circular(20),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.getPrimary(isDark).withOpacity(0.05),
                   borderRadius: BorderRadius.circular(20),
@@ -804,7 +846,10 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
               style: GoogleFonts.inter(color: textColor, fontSize: 14),
               decoration: InputDecoration(
                 hintText: 'Ask your AI career mentor anything...',
-                hintStyle: GoogleFonts.inter(color: subtitleColor, fontSize: 14),
+                hintStyle: GoogleFonts.inter(
+                  color: subtitleColor,
+                  fontSize: 14,
+                ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8),
               ),
@@ -841,9 +886,11 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
     });
   }
 
-
-
-  void _showCreatePlanBottomSheet(bool isDark, Color textColor, Color cardColor) {
+  void _showCreatePlanBottomSheet(
+    bool isDark,
+    Color textColor,
+    Color cardColor,
+  ) {
     // Reset inputs
     _selectedCurrentRole = controller.userProfile['current_role']?.toString();
     _selectedTargetRole = controller.userProfile['target_role']?.toString();
@@ -859,7 +906,9 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
 
           final List<String> currentRoleOptions = [];
           if (controller.userProfile['current_role'] != null) {
-            currentRoleOptions.add(controller.userProfile['current_role'].toString());
+            currentRoleOptions.add(
+              controller.userProfile['current_role'].toString(),
+            );
           }
           currentRoleOptions.addAll(controller.suggestedRoles.take(5));
           currentRoleOptions.add('custom');
@@ -867,7 +916,9 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
 
           final List<String> targetRoleOptions = [];
           if (controller.userProfile['target_role'] != null) {
-            targetRoleOptions.add(controller.userProfile['target_role'].toString());
+            targetRoleOptions.add(
+              controller.userProfile['target_role'].toString(),
+            );
           }
           targetRoleOptions.addAll(controller.suggestedRoles.take(10));
           targetRoleOptions.add('custom');
@@ -902,17 +953,27 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                     // Current Role
                     Text(
                       'Current Position',
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: textColor),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
                       isExpanded: true,
-                      value: finalCurrentOptions.contains(_selectedCurrentRole) ? _selectedCurrentRole : null,
+                      value: finalCurrentOptions.contains(_selectedCurrentRole)
+                          ? _selectedCurrentRole
+                          : null,
                       dropdownColor: cardColor,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        fillColor: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF8FAFC),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                       items: finalCurrentOptions.map((role) {
                         return DropdownMenuItem<String>(
@@ -920,7 +981,10 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                           child: Text(
                             role == 'custom' ? 'Type Custom...' : role,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(fontSize: 14, color: textColor),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: textColor,
+                            ),
                           ),
                         );
                       }).toList(),
@@ -929,7 +993,8 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                           _selectedCurrentRole = val;
                         });
                       },
-                      validator: (val) => val == null ? 'Current role is required' : null,
+                      validator: (val) =>
+                          val == null ? 'Current role is required' : null,
                     ),
                     if (isCurrentCustom) ...[
                       const SizedBox(height: 10),
@@ -939,10 +1004,16 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                         decoration: InputDecoration(
                           hintText: 'Enter your current role name',
                           filled: true,
-                          fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          fillColor: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF8FAFC),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                        validator: (val) => isCurrentCustom && (val == null || val.trim().isEmpty)
+                        validator: (val) =>
+                            isCurrentCustom &&
+                                (val == null || val.trim().isEmpty)
                             ? 'Please enter your current role'
                             : null,
                       ),
@@ -952,17 +1023,27 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                     // Target Role
                     Text(
                       'Target Role / Objective',
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: textColor),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
                       isExpanded: true,
-                      value: finalTargetOptions.contains(_selectedTargetRole) ? _selectedTargetRole : null,
+                      value: finalTargetOptions.contains(_selectedTargetRole)
+                          ? _selectedTargetRole
+                          : null,
                       dropdownColor: cardColor,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        fillColor: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF8FAFC),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                       items: finalTargetOptions.map((role) {
                         return DropdownMenuItem<String>(
@@ -970,7 +1051,10 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                           child: Text(
                             role == 'custom' ? 'Type Custom...' : role,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(fontSize: 14, color: textColor),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: textColor,
+                            ),
                           ),
                         );
                       }).toList(),
@@ -979,7 +1063,8 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                           _selectedTargetRole = val;
                         });
                       },
-                      validator: (val) => val == null ? 'Target role is required' : null,
+                      validator: (val) =>
+                          val == null ? 'Target role is required' : null,
                     ),
                     if (isTargetCustom) ...[
                       const SizedBox(height: 10),
@@ -987,12 +1072,19 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                         controller: _customTargetRoleController,
                         style: TextStyle(color: textColor),
                         decoration: InputDecoration(
-                          hintText: 'Enter target job title (e.g. Senior DevOps)',
+                          hintText:
+                              'Enter target job title (e.g. Senior DevOps)',
                           filled: true,
-                          fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          fillColor: isDark
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFFF8FAFC),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                        validator: (val) => isTargetCustom && (val == null || val.trim().isEmpty)
+                        validator: (val) =>
+                            isTargetCustom &&
+                                (val == null || val.trim().isEmpty)
                             ? 'Please enter target role'
                             : null,
                       ),
@@ -1002,7 +1094,11 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                     // Timeline
                     Text(
                       'Transition Timeline',
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: textColor),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
@@ -1010,15 +1106,22 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                       dropdownColor: cardColor,
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        fillColor: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF8FAFC),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                       items: _timelineOptions.map((t) {
                         return DropdownMenuItem<String>(
                           value: t,
                           child: Text(
                             t,
-                            style: GoogleFonts.inter(fontSize: 14, color: textColor),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: textColor,
+                            ),
                           ),
                         );
                       }).toList(),
@@ -1040,19 +1143,24 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                               ? null
                               : () async {
                                   if (_formKey.currentState!.validate()) {
-                                    final current = _selectedCurrentRole == 'custom'
-                                        ? _customCurrentRoleController.text.trim()
+                                    final current =
+                                        _selectedCurrentRole == 'custom'
+                                        ? _customCurrentRoleController.text
+                                              .trim()
                                         : _selectedCurrentRole!;
-                                    final target = _selectedTargetRole == 'custom'
-                                        ? _customTargetRoleController.text.trim()
+                                    final target =
+                                        _selectedTargetRole == 'custom'
+                                        ? _customTargetRoleController.text
+                                              .trim()
                                         : _selectedTargetRole!;
                                     final timeline = _selectedTimeline!;
 
-                                    final success = await controller.createCareerPlan(
-                                      target,
-                                      timeline,
-                                      current,
-                                    );
+                                    final success = await controller
+                                        .createCareerPlan(
+                                          target,
+                                          timeline,
+                                          current,
+                                        );
                                     if (success) {
                                       Get.back(); // close bottom sheet
                                     }
@@ -1060,7 +1168,9 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                                 },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.getPrimary(isDark),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                           child: controller.isPlanCreating.value
                               ? const SizedBox(
@@ -1068,7 +1178,9 @@ class _PremiumMentorScreenState extends State<PremiumMentorScreen> {
                                   width: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
                                   ),
                                 )
                               : Text(

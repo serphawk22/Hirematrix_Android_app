@@ -21,7 +21,7 @@ class AppTheme {
       brightness: brightness,
       primaryColor: primary,
       scaffoldBackgroundColor: background,
-      
+
       appBarTheme: AppBarTheme(
         backgroundColor: cardColor,
         elevation: 0,
@@ -29,7 +29,7 @@ class AppTheme {
         toolbarHeight: AppSpacing.appBarHeight,
         iconTheme: IconThemeData(color: textColor, size: 20),
         titleTextStyle: GoogleFonts.inter(
-          fontSize: 18, 
+          fontSize: 18,
           fontWeight: FontWeight.w800,
           color: textColor,
         ),
@@ -51,21 +51,53 @@ class AppTheme {
       // STANDARDIZED TYPOGRAPHY SYSTEM
       textTheme: TextTheme(
         // Page titles: 24sp w800
-        displayLarge: GoogleFonts.inter(fontSize: AppTypography.display, fontWeight: FontWeight.w800, color: textColor),
+        displayLarge: GoogleFonts.inter(
+          fontSize: AppTypography.display,
+          fontWeight: FontWeight.w800,
+          color: textColor,
+        ),
         // Section titles: 20sp w700
-        displayMedium: GoogleFonts.inter(fontSize: AppTypography.heading, fontWeight: FontWeight.w700, color: textColor),
+        displayMedium: GoogleFonts.inter(
+          fontSize: AppTypography.heading,
+          fontWeight: FontWeight.w700,
+          color: textColor,
+        ),
         // Metric numbers: 18-22sp w800
-        headlineLarge: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, color: textColor),
+        headlineLarge: GoogleFonts.inter(
+          fontSize: 22,
+          fontWeight: FontWeight.w800,
+          color: textColor,
+        ),
         // Card titles: 14-16sp w700
-        titleLarge: GoogleFonts.inter(fontSize: AppTypography.subheading, fontWeight: FontWeight.w700, color: textColor),
+        titleLarge: GoogleFonts.inter(
+          fontSize: AppTypography.subheading,
+          fontWeight: FontWeight.w700,
+          color: textColor,
+        ),
         // Medium body / Tabs: 14sp w600
-        titleMedium: GoogleFonts.inter(fontSize: AppTypography.body, fontWeight: FontWeight.w600, color: textColor),
+        titleMedium: GoogleFonts.inter(
+          fontSize: AppTypography.body,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
         // Labels: 11-13sp w400
-        bodySmall: GoogleFonts.inter(fontSize: AppTypography.small, fontWeight: FontWeight.w400, color: textMuted),
+        bodySmall: GoogleFonts.inter(
+          fontSize: AppTypography.small,
+          fontWeight: FontWeight.w400,
+          color: textMuted,
+        ),
         // Standard body: 14sp w400
-        bodyMedium: GoogleFonts.inter(fontSize: AppTypography.body, fontWeight: FontWeight.w400, color: textColor),
+        bodyMedium: GoogleFonts.inter(
+          fontSize: AppTypography.body,
+          fontWeight: FontWeight.w400,
+          color: textColor,
+        ),
         // Buttons: 13-14sp w700
-        labelLarge: GoogleFonts.inter(fontSize: AppTypography.button, fontWeight: FontWeight.w700, color: textColor),
+        labelLarge: GoogleFonts.inter(
+          fontSize: AppTypography.button,
+          fontWeight: FontWeight.w700,
+          color: textColor,
+        ),
       ),
 
       cardTheme: CardThemeData(
@@ -89,9 +121,15 @@ class AppTheme {
           backgroundColor: primary,
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.button),
+          ),
           elevation: 0,
-          textStyle: GoogleFonts.inter(fontSize: AppTypography.button, fontWeight: FontWeight.w700, letterSpacing: 0.5),
+          textStyle: GoogleFonts.inter(
+            fontSize: AppTypography.button,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
@@ -100,16 +138,24 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: primary,
           side: BorderSide(color: primary.withValues(alpha: 0.5), width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.button),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          textStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700),
+          textStyle: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: isDark ? AppColors.bgSoftDark : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
           borderSide: BorderSide(color: borderColor),
@@ -129,8 +175,14 @@ class AppTheme {
         backgroundColor: cardColor,
         selectedItemColor: primary,
         unselectedItemColor: textMuted,
-        selectedLabelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700),
-        unselectedLabelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500),
+        selectedLabelStyle: GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+        unselectedLabelStyle: GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),

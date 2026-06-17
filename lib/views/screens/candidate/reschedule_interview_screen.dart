@@ -8,13 +8,11 @@ import 'package:hirematrix/controllers/reschedule_interview_controller.dart';
 class RescheduleInterviewScreen extends StatefulWidget {
   final dynamic applicationId;
 
-  const RescheduleInterviewScreen({
-    super.key,
-    required this.applicationId,
-  });
+  const RescheduleInterviewScreen({super.key, required this.applicationId});
 
   @override
-  State<RescheduleInterviewScreen> createState() => _RescheduleInterviewScreenState();
+  State<RescheduleInterviewScreen> createState() =>
+      _RescheduleInterviewScreenState();
 }
 
 class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
@@ -31,10 +29,28 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
   String _formatDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
-      final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      final days = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
+      ];
       final months = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
       ];
       return '${days[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}, ${date.year}';
     } catch (_) {
@@ -45,7 +61,9 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
   String _formatTime(String dateTimeStr) {
     try {
       final parsed = DateTime.parse(dateTimeStr);
-      final hour = parsed.hour > 12 ? parsed.hour - 12 : (parsed.hour == 0 ? 12 : parsed.hour);
+      final hour = parsed.hour > 12
+          ? parsed.hour - 12
+          : (parsed.hour == 0 ? 12 : parsed.hour);
       final minute = parsed.minute.toString().padLeft(2, '0');
       final period = parsed.hour >= 12 ? 'PM' : 'AM';
       return '$hour:$minute $period';
@@ -57,12 +75,32 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
   String _formatDateTimeString(String dateTimeStr) {
     try {
       final parsed = DateTime.parse(dateTimeStr);
-      final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-      final months = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
+      final days = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
       ];
-      final hour = parsed.hour > 12 ? parsed.hour - 12 : (parsed.hour == 0 ? 12 : parsed.hour);
+      final months = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
+      ];
+      final hour = parsed.hour > 12
+          ? parsed.hour - 12
+          : (parsed.hour == 0 ? 12 : parsed.hour);
       final minute = parsed.minute.toString().padLeft(2, '0');
       final period = parsed.hour >= 12 ? 'PM' : 'AM';
       return '${days[parsed.weekday - 1]}, ${months[parsed.month - 1]} ${parsed.day}, ${parsed.year} at $hour:$minute $period';
@@ -99,7 +137,9 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
     final mainBg = AppColors.getBackground(isDark);
     final cardColor = AppColors.getCard(isDark);
     final textColor = isDark ? Colors.white : const Color(0xFF111827);
-    final subtitleColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+    final subtitleColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF475569);
 
     return Scaffold(
       backgroundColor: mainBg,
@@ -128,9 +168,12 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
             );
           }
 
-          final jobTitle = _controller.application.value?['job_title'] ?? 'Position';
+          final jobTitle =
+              _controller.application.value?['job_title'] ?? 'Position';
           final currentBooking = _controller.booking.value;
-          final remaining = _controller.canRescheduleInfo.value?['remaining_reschedules'] ?? 0;
+          final remaining =
+              _controller.canRescheduleInfo.value?['remaining_reschedules'] ??
+              0;
           final maxReschedules = currentBooking?['max_reschedules'] ?? 2;
 
           return SingleChildScrollView(
@@ -214,7 +257,11 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.calendar_today, color: AppColors.getPrimary(isDark), size: 18),
+                            Icon(
+                              Icons.calendar_today,
+                              color: AppColors.getPrimary(isDark),
+                              size: 18,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'Current Booking',
@@ -228,7 +275,9 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          _formatDateTimeString(currentBooking['slot_datetime'] ?? ''),
+                          _formatDateTimeString(
+                            currentBooking['slot_datetime'] ?? '',
+                          ),
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             color: textColor,
@@ -237,7 +286,10 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                         ),
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.orange.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(6),
@@ -260,7 +312,10 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                 if (_controller.availableSlots.isEmpty) ...[
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 24,
+                    ),
                     decoration: BoxDecoration(
                       color: cardColor,
                       borderRadius: BorderRadius.circular(16),
@@ -270,7 +325,11 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                     ),
                     child: Column(
                       children: [
-                        Icon(Icons.warning_amber_rounded, size: 40, color: Colors.orange[400]),
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          size: 40,
+                          color: Colors.orange[400],
+                        ),
                         const SizedBox(height: 12),
                         Text(
                           'No Alternative Slots Available',
@@ -310,7 +369,8 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
 
                     // Filter out current slot
                     final filteredSlots = daySlots.where((slot) {
-                      final slotId = int.tryParse(slot['id']?.toString() ?? '') ?? 0;
+                      final slotId =
+                          int.tryParse(slot['id']?.toString() ?? '') ?? 0;
                       return slotId != currentBooking?['slot_id'];
                     }).toList();
 
@@ -330,16 +390,23 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                         children: [
                           // Date Header
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.grey[900] : const Color(0xFFF9FAFB),
+                              color: isDark
+                                  ? Colors.grey[900]
+                                  : const Color(0xFFF9FAFB),
                               borderRadius: const BorderRadius.only(
                                 topLeft: Radius.circular(15),
                                 topRight: Radius.circular(15),
                               ),
                               border: Border(
                                 bottom: BorderSide(
-                                  color: isDark ? Colors.grey[850]! : Colors.grey[200]!,
+                                  color: isDark
+                                      ? Colors.grey[850]!
+                                      : Colors.grey[200]!,
                                 ),
                               ),
                             ),
@@ -371,20 +438,34 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                             child: GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
-                                childAspectRatio: 2.3,
-                              ),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 10,
+                                    mainAxisSpacing: 10,
+                                    childAspectRatio: 2.3,
+                                  ),
                               itemCount: filteredSlots.length,
                               itemBuilder: (context, idx) {
                                 final slot = filteredSlots[idx];
-                                final int slotId = int.tryParse(slot['id']?.toString() ?? '') ?? 0;
-                                final capacity = int.tryParse(slot['capacity']?.toString() ?? '') ?? 0;
-                                final booked = int.tryParse(slot['booked_count']?.toString() ?? '') ?? 0;
+                                final int slotId =
+                                    int.tryParse(
+                                      slot['id']?.toString() ?? '',
+                                    ) ??
+                                    0;
+                                final capacity =
+                                    int.tryParse(
+                                      slot['capacity']?.toString() ?? '',
+                                    ) ??
+                                    0;
+                                final booked =
+                                    int.tryParse(
+                                      slot['booked_count']?.toString() ?? '',
+                                    ) ??
+                                    0;
                                 final spotsLeft = capacity - booked;
-                                final isSelected = _controller.selectedSlotId.value == slotId;
+                                final isSelected =
+                                    _controller.selectedSlotId.value == slotId;
 
                                 return InkWell(
                                   onTap: () {
@@ -394,22 +475,31 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: isSelected
-                                          ? AppColors.getPrimary(isDark).withOpacity(0.08)
+                                          ? AppColors.getPrimary(
+                                              isDark,
+                                            ).withOpacity(0.08)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(
                                         color: isSelected
                                             ? AppColors.getPrimary(isDark)
-                                            : (isDark ? Colors.grey[800]! : Colors.grey[300]!),
+                                            : (isDark
+                                                  ? Colors.grey[800]!
+                                                  : Colors.grey[300]!),
                                         width: isSelected ? 1.8 : 1,
                                       ),
                                     ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8,
+                                    ),
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Icon(
                                               Icons.access_time_outlined,
@@ -420,11 +510,19 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                                             ),
                                             const SizedBox(width: 4),
                                             Text(
-                                              _formatTime(slot['slot_datetime'] ?? ''),
+                                              _formatTime(
+                                                slot['slot_datetime'] ?? '',
+                                              ),
                                               style: GoogleFonts.inter(
-                                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w500,
                                                 fontSize: 12.5,
-                                                color: isSelected ? AppColors.getPrimary(isDark) : textColor,
+                                                color: isSelected
+                                                    ? AppColors.getPrimary(
+                                                        isDark,
+                                                      )
+                                                    : textColor,
                                               ),
                                             ),
                                           ],
@@ -434,9 +532,13 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                                           '$spotsLeft spots left',
                                           style: GoogleFonts.inter(
                                             fontSize: 10.5,
-                                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                            fontWeight: isSelected
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
                                             color: isSelected
-                                                ? AppColors.getPrimary(isDark).withOpacity(0.8)
+                                                ? AppColors.getPrimary(
+                                                    isDark,
+                                                  ).withOpacity(0.8)
                                                 : subtitleColor,
                                           ),
                                         ),
@@ -469,7 +571,10 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                     maxLines: 3,
                     decoration: InputDecoration(
                       hintText: 'Please provide a brief reason...',
-                      hintStyle: GoogleFonts.inter(fontSize: 12.5, color: subtitleColor),
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 12.5,
+                        color: subtitleColor,
+                      ),
                       filled: true,
                       fillColor: cardColor,
                       contentPadding: const EdgeInsets.all(12),
@@ -498,16 +603,18 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                     decoration: BoxDecoration(
                       color: Colors.red.withOpacity(0.06),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.red.withOpacity(0.15),
-                      ),
+                      border: Border.all(color: Colors.red.withOpacity(0.15)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 16),
+                            const Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.red,
+                              size: 16,
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               'Warning',
@@ -522,15 +629,27 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                         const SizedBox(height: 8),
                         Text(
                           '• You have $remaining reschedule(s) remaining.',
-                          style: GoogleFonts.inter(fontSize: 12, color: Colors.red[850], height: 1.4),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: Colors.red[850],
+                            height: 1.4,
+                          ),
                         ),
                         Text(
                           '• After reaching the limit, you won\'t be able to reschedule again.',
-                          style: GoogleFonts.inter(fontSize: 12, color: Colors.red[850], height: 1.4),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: Colors.red[850],
+                            height: 1.4,
+                          ),
                         ),
                         Text(
                           '• Cancellation is NOT allowed.',
-                          style: GoogleFonts.inter(fontSize: 12, color: Colors.red[850], height: 1.4),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: Colors.red[850],
+                            height: 1.4,
+                          ),
                         ),
                       ],
                     ),
@@ -542,11 +661,16 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: (_controller.selectedSlotId.value == null || _controller.isRescheduling.value || _isRescheduled)
+                      onPressed:
+                          (_controller.selectedSlotId.value == null ||
+                              _controller.isRescheduling.value ||
+                              _isRescheduled)
                           ? null
                           : _processReschedule,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isRescheduled ? Colors.grey : const Color(0xFFF59E0B),
+                        backgroundColor: _isRescheduled
+                            ? Colors.grey
+                            : const Color(0xFFF59E0B),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -568,7 +692,9 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                                 const Icon(Icons.sync, size: 18),
                                 const SizedBox(width: 6),
                                 Text(
-                                  _isRescheduled ? 'Rescheduled' : 'Confirm Reschedule',
+                                  _isRescheduled
+                                      ? 'Rescheduled'
+                                      : 'Confirm Reschedule',
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
@@ -605,7 +731,9 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                           color: cardColor,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isDark ? Colors.grey[850]! : Colors.grey[200]!,
+                            color: isDark
+                                ? Colors.grey[850]!
+                                : Colors.grey[200]!,
                           ),
                         ),
                         child: Column(
@@ -614,28 +742,57 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(Icons.history, color: subtitleColor, size: 16),
+                                Icon(
+                                  Icons.history,
+                                  color: subtitleColor,
+                                  size: 16,
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       RichText(
                                         text: TextSpan(
-                                          style: GoogleFonts.inter(fontSize: 12, color: textColor),
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            color: textColor,
+                                          ),
                                           children: [
-                                            const TextSpan(text: 'From: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                            TextSpan(text: _formatDateTimeString(item['old_slot_datetime'] ?? '')),
+                                            const TextSpan(
+                                              text: 'From: ',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: _formatDateTimeString(
+                                                item['old_slot_datetime'] ?? '',
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
                                       const SizedBox(height: 4),
                                       RichText(
                                         text: TextSpan(
-                                          style: GoogleFonts.inter(fontSize: 12, color: textColor),
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            color: textColor,
+                                          ),
                                           children: [
-                                            const TextSpan(text: 'To: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                            TextSpan(text: _formatDateTimeString(item['new_slot_datetime'] ?? '')),
+                                            const TextSpan(
+                                              text: 'To: ',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: _formatDateTimeString(
+                                                item['new_slot_datetime'] ?? '',
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -644,13 +801,19 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                                 ),
                               ],
                             ),
-                            if (item['reason'] != null && item['reason'].toString().trim().isNotEmpty) ...[
+                            if (item['reason'] != null &&
+                                item['reason']
+                                    .toString()
+                                    .trim()
+                                    .isNotEmpty) ...[
                               const SizedBox(height: 8),
                               Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: isDark ? Colors.black.withOpacity(0.2) : Colors.grey[100],
+                                  color: isDark
+                                      ? Colors.black.withOpacity(0.2)
+                                      : Colors.grey[100],
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -667,7 +830,9 @@ class _RescheduleInterviewScreenState extends State<RescheduleInterviewScreen> {
                             Align(
                               alignment: Alignment.bottomRight,
                               child: Text(
-                                _formatDateTimeString(item['rescheduled_at'] ?? ''),
+                                _formatDateTimeString(
+                                  item['rescheduled_at'] ?? '',
+                                ),
                                 style: GoogleFonts.inter(
                                   fontSize: 10.5,
                                   color: subtitleColor,

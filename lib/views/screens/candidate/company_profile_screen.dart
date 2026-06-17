@@ -35,7 +35,8 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
   Map<String, dynamic> get reviewSummary => _controller.reviewSummary;
   List<dynamic> get reviews => _controller.reviews;
   Map<String, dynamic> get eligibility => _controller.eligibility;
-  Map<String, dynamic>? get currentUserReview => _controller.currentUserReview.value;
+  Map<String, dynamic>? get currentUserReview =>
+      _controller.currentUserReview.value;
 
   @override
   void initState() {
@@ -100,7 +101,8 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
           actions: [
             IconButton(
               icon: Icon(Icons.refresh, color: textColor),
-              onPressed: () => _controller.fetchCompanyProfile(widget.companyId),
+              onPressed: () =>
+                  _controller.fetchCompanyProfile(widget.companyId),
             ),
           ],
         ),
@@ -136,7 +138,8 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => _controller.fetchCompanyProfile(widget.companyId),
+                          onPressed: () =>
+                              _controller.fetchCompanyProfile(widget.companyId),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.getPrimary(isDark),
                           ),

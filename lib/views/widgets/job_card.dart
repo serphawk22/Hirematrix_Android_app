@@ -149,7 +149,9 @@ class JobCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
+                        color: AppColors.getPrimary(
+                          isDark,
+                        ).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(50),
                       ),
                       child: Text(
@@ -167,7 +169,9 @@ class JobCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.getSecondary(isDark).withValues(alpha: 0.1),
+                        color: AppColors.getSecondary(
+                          isDark,
+                        ).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(50),
                       ),
                       child: Text(

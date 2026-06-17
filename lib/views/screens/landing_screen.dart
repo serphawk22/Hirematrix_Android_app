@@ -59,7 +59,9 @@ class _LandingScreenState extends State<LandingScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark ? Colors.transparent : Colors.white.withValues(alpha: 0.98),
+        color: isDark
+            ? Colors.transparent
+            : Colors.white.withValues(alpha: 0.98),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -457,7 +459,9 @@ class _HeroSectionState extends State<HeroSection> {
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: AppColors.getPrimary(widget.isDark).withValues(alpha: 0.25),
+                color: AppColors.getPrimary(
+                  widget.isDark,
+                ).withValues(alpha: 0.25),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -1312,10 +1316,7 @@ class _FeaturedJobsSectionState extends State<FeaturedJobsSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 4,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
             color: AppColors.getPrimary(widget.isDark).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(50),

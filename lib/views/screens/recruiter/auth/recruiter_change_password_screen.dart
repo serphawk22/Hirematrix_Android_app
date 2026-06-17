@@ -12,15 +12,17 @@ class RecruiterChangePasswordScreen extends StatefulWidget {
   const RecruiterChangePasswordScreen({super.key});
 
   @override
-  State<RecruiterChangePasswordScreen> createState() => _RecruiterChangePasswordScreenState();
+  State<RecruiterChangePasswordScreen> createState() =>
+      _RecruiterChangePasswordScreenState();
 }
 
-class _RecruiterChangePasswordScreenState extends State<RecruiterChangePasswordScreen> {
+class _RecruiterChangePasswordScreenState
+    extends State<RecruiterChangePasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _obscureCurrent = true;
   bool _obscureNew = true;
@@ -36,10 +38,10 @@ class _RecruiterChangePasswordScreenState extends State<RecruiterChangePasswordS
 
   Future<void> _changePassword() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final authController = Provider.of<AuthController>(context, listen: false);
     final recruiterId = authController.currentRecruiter?.id;
-    
+
     if (recruiterId == null) return;
 
     setState(() {
@@ -97,7 +99,7 @@ class _RecruiterChangePasswordScreenState extends State<RecruiterChangePasswordS
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       backgroundColor: isDarkMode ? AppColors.bgDark : const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -242,7 +244,7 @@ class _RecruiterChangePasswordScreenState extends State<RecruiterChangePasswordS
     required String? Function(String?) validator,
   }) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -265,8 +267,13 @@ class _RecruiterChangePasswordScreenState extends State<RecruiterChangePasswordS
           ),
           decoration: InputDecoration(
             filled: true,
-            fillColor: isDarkMode ? AppColors.getCard(isDarkMode) : Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            fillColor: isDarkMode
+                ? AppColors.getCard(isDarkMode)
+                : Colors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
@@ -288,13 +295,13 @@ class _RecruiterChangePasswordScreenState extends State<RecruiterChangePasswordS
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.error,
-              ),
+              borderSide: const BorderSide(color: AppColors.error),
             ),
             suffixIcon: IconButton(
               icon: Icon(
-                obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                obscureText
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
                 color: Colors.grey[500],
                 size: 20,
               ),

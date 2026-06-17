@@ -57,8 +57,10 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await controller.fetchStudioData();
       if (widget.jobId != null && widget.jobTitle != null) {
-        final exists = controller.resumeTargets.any((item) =>
-            int.tryParse(item['job_id']?.toString() ?? '') == widget.jobId);
+        final exists = controller.resumeTargets.any(
+          (item) =>
+              int.tryParse(item['job_id']?.toString() ?? '') == widget.jobId,
+        );
         if (!exists) {
           controller.resumeTargets.insert(0, {
             'job_id': widget.jobId,
@@ -82,7 +84,9 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
       final mainBg = AppColors.getBackground(isDark);
       final cardColor = isDark ? AppColors.getCard(isDark) : Colors.white;
       final textColor = isDark ? Colors.white : const Color(0xFF111827);
-      final subtitleColor = isDark ? Colors.grey[400]! : const Color(0xFF475569);
+      final subtitleColor = isDark
+          ? Colors.grey[400]!
+          : const Color(0xFF475569);
       final borderColor = isDark ? Colors.grey[800]! : Colors.grey[200]!;
 
       return Scaffold(
@@ -129,16 +133,32 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                         else ...[
                           // Sync Active Transition Card
                           if (controller.activeTransition.isNotEmpty)
-                            _buildSyncTransitionCard(isDark, textColor, subtitleColor),
+                            _buildSyncTransitionCard(
+                              isDark,
+                              textColor,
+                              subtitleColor,
+                            ),
 
                           // AI Resume Generator Form Card
-                          _buildGeneratorForm(isDark, cardColor, textColor, subtitleColor, borderColor),
+                          _buildGeneratorForm(
+                            isDark,
+                            cardColor,
+                            textColor,
+                            subtitleColor,
+                            borderColor,
+                          ),
                         ],
 
                         const SizedBox(height: 28),
 
                         // Saved Versions Section
-                        _buildSavedVersionsList(isDark, cardColor, textColor, subtitleColor, borderColor),
+                        _buildSavedVersionsList(
+                          isDark,
+                          cardColor,
+                          textColor,
+                          subtitleColor,
+                          borderColor,
+                        ),
                         const SizedBox(height: 32),
                       ],
                     ),
@@ -206,7 +226,11 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 24),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: Colors.redAccent,
+            size: 24,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -226,23 +250,32 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                   style: TextStyle(fontSize: 12, color: subtitleColor),
                 ),
                 const SizedBox(height: 12),
-                ...?((controller.profileReadiness['missing_details'] as List?)?.map((detail) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.circle, size: 6, color: Colors.redAccent),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            detail.toString(),
-                            style: TextStyle(fontSize: 12, color: textColor),
-                          ),
+                ...?((controller.profileReadiness['missing_details'] as List?)
+                    ?.map((detail) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.circle,
+                              size: 6,
+                              color: Colors.redAccent,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                detail.toString(),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: textColor,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  );
-                }).toList()),
+                      );
+                    })
+                    .toList()),
               ],
             ),
           ),
@@ -251,19 +284,28 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
     );
   }
 
-  Widget _buildSyncTransitionCard(bool isDark, Color textColor, Color subtitleColor) {
+  Widget _buildSyncTransitionCard(
+    bool isDark,
+    Color textColor,
+    Color subtitleColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
-              ? [const Color(0xFF0F766E).withOpacity(0.2), const Color(0xFF0F172A)]
+              ? [
+                  const Color(0xFF0F766E).withOpacity(0.2),
+                  const Color(0xFF0F172A),
+                ]
               : [const Color(0xFFCCFBF1), Colors.white],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(0xFF0F766E).withOpacity(0.4) : const Color(0xFF99F6E4),
+          color: isDark
+              ? const Color(0xFF0F766E).withOpacity(0.4)
+              : const Color(0xFF99F6E4),
         ),
       ),
       child: Column(
@@ -301,11 +343,16 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                   ? const SizedBox(
                       width: 16,
                       height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                      ),
                     )
                   : const Icon(Icons.refresh, size: 16),
               label: Text(
-                controller.isActionLoading.value ? 'Syncing...' : 'Sync Transition Resume',
+                controller.isActionLoading.value
+                    ? 'Syncing...'
+                    : 'Sync Transition Resume',
                 style: GoogleFonts.inter(fontWeight: FontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
@@ -313,7 +360,9 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                 foregroundColor: Colors.white,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ),
@@ -322,7 +371,13 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
     );
   }
 
-  Widget _buildGeneratorForm(bool isDark, Color cardColor, Color textColor, Color subtitleColor, Color borderColor) {
+  Widget _buildGeneratorForm(
+    bool isDark,
+    Color cardColor,
+    Color textColor,
+    Color subtitleColor,
+    Color borderColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -373,11 +428,17 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                         });
                       }
                     },
-                    selectedColor: AppColors.getPrimary(isDark).withOpacity(0.15),
+                    selectedColor: AppColors.getPrimary(
+                      isDark,
+                    ).withOpacity(0.15),
                     checkmarkColor: AppColors.getPrimary(isDark),
                     labelStyle: TextStyle(
-                      color: _generationMode == 'role' ? AppColors.getPrimary(isDark) : textColor,
-                      fontWeight: _generationMode == 'role' ? FontWeight.bold : FontWeight.normal,
+                      color: _generationMode == 'role'
+                          ? AppColors.getPrimary(isDark)
+                          : textColor,
+                      fontWeight: _generationMode == 'role'
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -393,11 +454,17 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                         });
                       }
                     },
-                    selectedColor: AppColors.getPrimary(isDark).withOpacity(0.15),
+                    selectedColor: AppColors.getPrimary(
+                      isDark,
+                    ).withOpacity(0.15),
                     checkmarkColor: AppColors.getPrimary(isDark),
                     labelStyle: TextStyle(
-                      color: _generationMode == 'job' ? AppColors.getPrimary(isDark) : textColor,
-                      fontWeight: _generationMode == 'job' ? FontWeight.bold : FontWeight.normal,
+                      color: _generationMode == 'job'
+                          ? AppColors.getPrimary(isDark)
+                          : textColor,
+                      fontWeight: _generationMode == 'job'
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -426,7 +493,9 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                   hintText: 'Select target role',
                   hintStyle: TextStyle(color: subtitleColor),
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                  fillColor: isDark
+                      ? const Color(0xFF1E293B)
+                      : const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: borderColor),
@@ -442,10 +511,7 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                     child: Text(
                       role,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        color: textColor,
-                        fontSize: 14,
-                      ),
+                      style: GoogleFonts.inter(color: textColor, fontSize: 14),
                     ),
                   );
                 }).toList(),
@@ -454,7 +520,8 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                     _selectedTargetRole = val;
                   });
                 },
-                validator: (val) => _generationMode == 'role' && (val == null || val.isEmpty)
+                validator: (val) =>
+                    _generationMode == 'role' && (val == null || val.isEmpty)
                     ? 'Target role is required'
                     : null,
               ),
@@ -476,14 +543,18 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                   : DropdownButtonFormField<int>(
                       isExpanded: true,
                       value: _selectedJobId,
-                      dropdownColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      dropdownColor: isDark
+                          ? const Color(0xFF1E293B)
+                          : Colors.white,
                       iconEnabledColor: textColor,
                       style: TextStyle(color: textColor),
                       decoration: InputDecoration(
                         hintText: 'Choose from matches / saved jobs',
                         hintStyle: TextStyle(color: subtitleColor),
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                        fillColor: isDark
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFFF8FAFC),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide(color: borderColor),
@@ -511,7 +582,8 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                           _selectedJobId = val;
                         });
                       },
-                      validator: (val) => _generationMode == 'job' && val == null
+                      validator: (val) =>
+                          _generationMode == 'job' && val == null
                           ? 'Selecting a job target is required'
                           : null,
                     ),
@@ -542,10 +614,13 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                   return GestureDetector(
                     onTap: isBlocked
                         ? () {
-                            Get.snackbar('Template Restricted', blockReason,
-                                snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: Colors.amber[800],
-                                colorText: Colors.white);
+                            Get.snackbar(
+                              'Template Restricted',
+                              blockReason,
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.amber[800],
+                              colorText: Colors.white,
+                            );
                           }
                         : () {
                             setState(() {
@@ -561,12 +636,16 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                         decoration: BoxDecoration(
                           color: isSelected
                               ? AppColors.getPrimary(isDark).withOpacity(0.08)
-                              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC)),
+                              : (isDark
+                                    ? const Color(0xFF1E293B)
+                                    : const Color(0xFFF8FAFC)),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isSelected
                                 ? AppColors.getPrimary(isDark)
-                                : (isBlocked ? Colors.redAccent.withOpacity(0.3) : borderColor),
+                                : (isBlocked
+                                      ? Colors.redAccent.withOpacity(0.3)
+                                      : borderColor),
                             width: isSelected ? 2 : 1,
                           ),
                         ),
@@ -587,18 +666,25 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                if (tpl['badge'] != null && tpl['badge'].toString().isNotEmpty)
+                                if (tpl['badge'] != null &&
+                                    tpl['badge'].toString().isNotEmpty)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 1.5,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: Colors.blueAccent.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
                                       tpl['badge'],
-                                      style: const TextStyle(fontSize: 8, color: Colors.blueAccent),
+                                      style: const TextStyle(
+                                        fontSize: 8,
+                                        color: Colors.blueAccent,
+                                      ),
                                     ),
-                                  )
+                                  ),
                               ],
                             ),
                             const SizedBox(height: 6),
@@ -655,8 +741,12 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                         if (_formKey.currentState!.validate()) {
                           final success = await controller.generateAiResume(
                             mode: _generationMode,
-                            targetRole: _generationMode == 'role' ? (_selectedTargetRole ?? '') : '',
-                            jobId: _generationMode == 'job' ? (_selectedJobId ?? 0) : 0,
+                            targetRole: _generationMode == 'role'
+                                ? (_selectedTargetRole ?? '')
+                                : '',
+                            jobId: _generationMode == 'job'
+                                ? (_selectedJobId ?? 0)
+                                : 0,
                             templateKey: _selectedTemplateKey,
                             makePrimary: _makePrimary,
                           );
@@ -697,9 +787,7 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                       )
                     : Text(
                         'Generate AI Resume',
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                       ),
               ),
             ),
@@ -709,7 +797,13 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
     );
   }
 
-  Widget _buildSavedVersionsList(bool isDark, Color cardColor, Color textColor, Color subtitleColor, Color borderColor) {
+  Widget _buildSavedVersionsList(
+    bool isDark,
+    Color cardColor,
+    Color textColor,
+    Color subtitleColor,
+    Color borderColor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -739,8 +833,11 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                 itemCount: controller.resumeVersions.length,
                 itemBuilder: (context, index) {
                   final version = controller.resumeVersions[index];
-                  final versionId = int.tryParse(version['id']?.toString() ?? '') ?? 0;
-                  final isPrimary = (version['is_primary'] ?? 0) == 1 || (version['is_primary']?.toString() == '1');
+                  final versionId =
+                      int.tryParse(version['id']?.toString() ?? '') ?? 0;
+                  final isPrimary =
+                      (version['is_primary'] ?? 0) == 1 ||
+                      (version['is_primary']?.toString() == '1');
                   final isExpanded = _expandedVersions[versionId] ?? false;
 
                   Color strengthColor = Colors.green;
@@ -756,7 +853,9 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                       color: cardColor,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: isPrimary ? AppColors.getPrimary(isDark) : borderColor,
+                        color: isPrimary
+                            ? AppColors.getPrimary(isDark)
+                            : borderColor,
                         width: isPrimary ? 1.5 : 1,
                       ),
                     ),
@@ -790,10 +889,15 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                                     ),
                                     if (isPrimary)
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: Colors.green.withOpacity(0.12),
-                                          borderRadius: BorderRadius.circular(6),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
                                         ),
                                         child: const Text(
                                           'Primary',
@@ -812,15 +916,22 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                                     // Target Info
                                     Expanded(
                                       child: Text(
-                                        version['generation_source'] == 'job_version'
+                                        version['generation_source'] ==
+                                                'job_version'
                                             ? 'Targeting: ${version['job_title'] ?? 'Job Match'}'
                                             : 'Targeting: ${version['target_role'] ?? 'Role'}',
-                                        style: TextStyle(fontSize: 12.5, color: subtitleColor),
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          color: subtitleColor,
+                                        ),
                                       ),
                                     ),
                                     // Strength Badge
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 3,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: strengthColor.withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(6),
@@ -828,7 +939,11 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(Icons.bolt, size: 12, color: strengthColor),
+                                          Icon(
+                                            Icons.bolt,
+                                            size: 12,
+                                            color: strengthColor,
+                                          ),
                                           const SizedBox(width: 2),
                                           Text(
                                             'Score: ${version['strength_score'] ?? 0}%',
@@ -846,15 +961,24 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                                 const SizedBox(height: 6),
                                 Row(
                                   children: [
-                                    Icon(Icons.style_outlined, size: 12, color: subtitleColor),
+                                    Icon(
+                                      Icons.style_outlined,
+                                      size: 12,
+                                      color: subtitleColor,
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
                                       'Template: ${version['template_label'] ?? 'Modern'}',
-                                      style: TextStyle(fontSize: 11.5, color: subtitleColor),
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        color: subtitleColor,
+                                      ),
                                     ),
                                     const Spacer(),
                                     Icon(
-                                      isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                      isExpanded
+                                          ? Icons.keyboard_arrow_up
+                                          : Icons.keyboard_arrow_down,
                                       size: 18,
                                       color: subtitleColor,
                                     ),
@@ -868,7 +992,9 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                         // Expanded summary snippet
                         if (isExpanded)
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -915,9 +1041,14 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
 
                         // Actions Row
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E293B).withOpacity(0.3) : const Color(0xFFF8FAFC),
+                            color: isDark
+                                ? const Color(0xFF1E293B).withOpacity(0.3)
+                                : const Color(0xFFF8FAFC),
                             borderRadius: const BorderRadius.only(
                               bottomLeft: Radius.circular(14),
                               bottomRight: Radius.circular(14),
@@ -931,12 +1062,22 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                                   onPressed: controller.isActionLoading.value
                                       ? null
                                       : () async {
-                                          await controller.setPrimary(versionId);
+                                          await controller.setPrimary(
+                                            versionId,
+                                          );
                                         },
-                                  icon: const Icon(Icons.star_outline, size: 16),
-                                  label: const Text('Make Primary', style: TextStyle(fontSize: 12)),
+                                  icon: const Icon(
+                                    Icons.star_outline,
+                                    size: 16,
+                                  ),
+                                  label: const Text(
+                                    'Make Primary',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
                                   style: TextButton.styleFrom(
-                                    foregroundColor: AppColors.getPrimary(isDark),
+                                    foregroundColor: AppColors.getPrimary(
+                                      isDark,
+                                    ),
                                     padding: EdgeInsets.zero,
                                   ),
                                 ),
@@ -946,11 +1087,19 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                               // Preview Button
                               IconButton(
                                 tooltip: 'Preview Layout',
-                                icon: const Icon(Icons.remove_red_eye_outlined, color: Colors.blueAccent, size: 20),
+                                icon: const Icon(
+                                  Icons.remove_red_eye_outlined,
+                                  color: Colors.blueAccent,
+                                  size: 20,
+                                ),
                                 onPressed: () async {
-                                  final previewRawUrl = version['preview_url'] ?? '';
+                                  final previewRawUrl =
+                                      version['preview_url'] ?? '';
                                   if (previewRawUrl.isNotEmpty) {
-                                    final resolved = ApiConstants.resolveImageUrl(previewRawUrl);
+                                    final resolved =
+                                        ApiConstants.resolveImageUrl(
+                                          previewRawUrl,
+                                        );
                                     await launchUrl(
                                       Uri.parse(resolved),
                                       mode: LaunchMode.externalApplication,
@@ -962,11 +1111,19 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                               // Download PDF
                               IconButton(
                                 tooltip: 'Download PDF',
-                                icon: const Icon(Icons.download_rounded, color: Colors.green, size: 20),
+                                icon: const Icon(
+                                  Icons.download_rounded,
+                                  color: Colors.green,
+                                  size: 20,
+                                ),
                                 onPressed: () async {
-                                  final downloadRawUrl = version['download_url'] ?? '';
+                                  final downloadRawUrl =
+                                      version['download_url'] ?? '';
                                   if (downloadRawUrl.isNotEmpty) {
-                                    final resolved = ApiConstants.resolveImageUrl(downloadRawUrl);
+                                    final resolved =
+                                        ApiConstants.resolveImageUrl(
+                                          downloadRawUrl,
+                                        );
                                     await launchUrl(
                                       Uri.parse(resolved),
                                       mode: LaunchMode.externalApplication,
@@ -978,27 +1135,34 @@ class _ResumeStudioScreenState extends State<ResumeStudioScreen> {
                               // Delete Button
                               IconButton(
                                 tooltip: 'Delete Version',
-                                icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.redAccent,
+                                  size: 20,
+                                ),
                                 onPressed: controller.isActionLoading.value
                                     ? null
                                     : () {
                                         Get.defaultDialog(
                                           title: 'Delete Resume Version',
-                                          middleText: 'Are you sure you want to delete this version? This action is permanent.',
+                                          middleText:
+                                              'Are you sure you want to delete this version? This action is permanent.',
                                           textConfirm: 'Delete',
                                           textCancel: 'Cancel',
                                           confirmTextColor: Colors.white,
                                           buttonColor: Colors.redAccent,
                                           onConfirm: () async {
                                             Get.back();
-                                            await controller.deleteVersion(versionId);
+                                            await controller.deleteVersion(
+                                              versionId,
+                                            );
                                           },
                                         );
                                       },
                               ),
                             ],
                           ),
-                        )
+                        ),
                       ],
                     ),
                   );

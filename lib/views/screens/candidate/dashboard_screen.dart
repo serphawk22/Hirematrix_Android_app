@@ -185,7 +185,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Text(
                       'HireMatrix',
-                      style: GoogleFonts.outfit(
+                      style: GoogleFonts.inter(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
@@ -745,40 +745,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               color: isDark ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
-          const SizedBox(height: 24),
-          Obx(() {
-            final currentStats = dashboardController.stats;
-            return Row(
-              children: [
-                Expanded(
-                  child: _buildSummaryStat(
-                    currentStats['unread_notifications']?.toString() ?? '0',
-                    'Updates',
-                    AppColors.getPrimary(isDark),
-                    isDark,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildSummaryStat(
-                    currentStats['active_alerts']?.toString() ?? '0',
-                    'Alerts',
-                    const Color(0xFFF59E0B), // Amber
-                    isDark,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildSummaryStat(
-                    currentStats['saved_jobs']?.toString() ?? '0',
-                    'Saved Jobs',
-                    const Color(0xFF10B981), // Emerald
-                    isDark,
-                  ),
-                ),
-              ],
-            );
-          }),
+
           const SizedBox(height: 24),
           Row(
             children: [
@@ -1103,7 +1070,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         width: 38,
                         height: 38,
                         decoration: BoxDecoration(
-                          color: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
+                          color: AppColors.getPrimary(
+                            isDark,
+                          ).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Center(
@@ -1226,16 +1195,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
               String googleLogoUrl = '';
               if (website.isNotEmpty) {
                 try {
-                  var uri = Uri.parse(website.startsWith('http') ? website : 'https://$website');
+                  var uri = Uri.parse(
+                    website.startsWith('http') ? website : 'https://$website',
+                  );
                   var host = uri.host.replaceAll('www.', '');
                   if (host.isNotEmpty) {
-                    googleLogoUrl = 'https://www.google.com/s2/favicons?domain=$host&sz=96';
+                    googleLogoUrl =
+                        'https://www.google.com/s2/favicons?domain=$host&sz=96';
                   }
                 } catch (_) {}
               }
 
-              final logoUrl = dbLogo.isNotEmpty 
-                  ? ApiConstants.resolveImageUrl(dbLogo) 
+              final logoUrl = dbLogo.isNotEmpty
+                  ? ApiConstants.resolveImageUrl(dbLogo)
                   : googleLogoUrl;
 
               return InkWell(
@@ -2155,7 +2127,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             onTap: () {
               try {
-                final ApplicationsController appsController = Get.isRegistered<ApplicationsController>()
+                final ApplicationsController appsController =
+                    Get.isRegistered<ApplicationsController>()
                     ? Get.find<ApplicationsController>()
                     : Get.put(ApplicationsController());
                 final appId = int.tryParse(app['id']?.toString() ?? '');
@@ -2163,7 +2136,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   appsController.selectedApplicationIdForDetails.value = appId;
                 }
               } catch (_) {}
-              dashboardController.currentIndex.value = 2; // Switch to Applications tab (index 2)
+              dashboardController.currentIndex.value =
+                  2; // Switch to Applications tab (index 2)
             },
           );
         },

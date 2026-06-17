@@ -15,9 +15,16 @@ class ManageJobsScreen extends StatefulWidget {
   State<ManageJobsScreen> createState() => _ManageJobsScreenState();
 }
 
-class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerProviderStateMixin {
+class _ManageJobsScreenState extends State<ManageJobsScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final List<String> _tabs = ['All Jobs', 'Active', 'Drafts', 'Expired', 'Closed'];
+  final List<String> _tabs = [
+    'All Jobs',
+    'Active',
+    'Drafts',
+    'Expired',
+    'Closed',
+  ];
   final TextEditingController _searchController = TextEditingController();
 
   String? _selectedWorkMode;
@@ -35,9 +42,15 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
   }
 
   void _loadData() {
-    final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
     if (recruiterId != null) {
-      Provider.of<JobsController>(context, listen: false).fetchJobs(recruiterId);
+      Provider.of<JobsController>(
+        context,
+        listen: false,
+      ).fetchJobs(recruiterId);
     }
   }
 
@@ -54,7 +67,10 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
     final recruiter = Provider.of<AuthController>(context).currentRecruiter;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    if (recruiter == null) return const Scaffold(body: Center(child: Text('Please login to manage jobs')));
+    if (recruiter == null)
+      return const Scaffold(
+        body: Center(child: Text('Please login to manage jobs')),
+      );
 
     return Scaffold(
       backgroundColor: isDarkMode ? AppColors.bgDark : const Color(0xFFF8FAFC),
@@ -70,11 +86,21 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
               child: Consumer<JobsController>(
                 builder: (context, controller, child) {
                   if (controller.isLoading) {
-                    return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+                    return const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    );
                   }
                   return TabBarView(
                     controller: _tabController,
-                    children: _tabs.map((status) => _buildJobWorkspace(controller.jobs, status, isDarkMode)).toList(),
+                    children: _tabs
+                        .map(
+                          (status) => _buildJobWorkspace(
+                            controller.jobs,
+                            status,
+                            isDarkMode,
+                          ),
+                        )
+                        .toList(),
                   );
                 },
               ),
@@ -90,19 +116,48 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
       builder: (context, controller, child) {
         int active = controller.jobs.where((j) => j.status == 'Active').length;
         int draft = controller.jobs.where((j) => j.status == 'Draft').length;
-        int expired = controller.jobs.where((j) => j.status == 'Expired').length;
+        int expired = controller.jobs
+            .where((j) => j.status == 'Expired')
+            .length;
         int closed = controller.jobs.where((j) => j.status == 'Closed').length;
 
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.symmetric(horizontal: Responsive.paddingH, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: Responsive.paddingH,
+            vertical: 8,
+          ),
           child: Row(
             children: [
-              _buildCompactStatCard('Active', active.toString(), Icons.bolt_rounded, Colors.green, isDark),
-              _buildCompactStatCard('Drafts', draft.toString(), Icons.edit_note_rounded, Colors.orange, isDark),
-              _buildCompactStatCard('Expired', expired.toString(), Icons.history_rounded, Colors.redAccent, isDark),
-              _buildCompactStatCard('Closed', closed.toString(), Icons.lock_outline_rounded, Colors.blueGrey, isDark),
+              _buildCompactStatCard(
+                'Active',
+                active.toString(),
+                Icons.bolt_rounded,
+                Colors.green,
+                isDark,
+              ),
+              _buildCompactStatCard(
+                'Drafts',
+                draft.toString(),
+                Icons.edit_note_rounded,
+                Colors.orange,
+                isDark,
+              ),
+              _buildCompactStatCard(
+                'Expired',
+                expired.toString(),
+                Icons.history_rounded,
+                Colors.redAccent,
+                isDark,
+              ),
+              _buildCompactStatCard(
+                'Closed',
+                closed.toString(),
+                Icons.lock_outline_rounded,
+                Colors.blueGrey,
+                isDark,
+              ),
             ],
           ),
         );
@@ -110,7 +165,13 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
     );
   }
 
-  Widget _buildCompactStatCard(String label, String count, IconData icon, Color color, bool isDark) {
+  Widget _buildCompactStatCard(
+    String label,
+    String count,
+    IconData icon,
+    Color color,
+    bool isDark,
+  ) {
     String subtext = '';
     if (label == 'Active') {
       subtext = 'Live on portal';
@@ -131,15 +192,18 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
         color: isDark ? AppColors.getCard(isDark) : Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey[200]!,
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.grey[200]!,
           width: 1,
         ),
         boxShadow: [
-          if (!isDark) BoxShadow(
-            color: Colors.black.withValues(alpha: 0.015),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.015),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
         ],
       ),
       child: Column(
@@ -151,7 +215,7 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
             children: [
               Text(
                 count,
-                style: GoogleFonts.outfit(
+                style: GoogleFonts.inter(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
                   color: isDark ? Colors.white : const Color(0xFF0F172A),
@@ -163,11 +227,7 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                   color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  icon,
-                  size: 16,
-                  color: color,
-                ),
+                child: Icon(icon, size: 16, color: color),
               ),
             ],
           ),
@@ -200,13 +260,19 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
   }
 
   Widget _buildSearchRow(bool isDark) {
-    final hasActiveFilters = _selectedWorkMode != null ||
+    final hasActiveFilters =
+        _selectedWorkMode != null ||
         _selectedExperience != null ||
         _selectedDepartment != null ||
         _selectedLocation != null;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(Responsive.paddingH, 8, Responsive.paddingH, 16),
+      padding: EdgeInsets.fromLTRB(
+        Responsive.paddingH,
+        8,
+        Responsive.paddingH,
+        16,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -215,21 +281,36 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
               decoration: BoxDecoration(
                 color: isDark ? AppColors.getCard(isDark) : Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+                border: Border.all(
+                  color: isDark ? Colors.white10 : Colors.grey[200]!,
+                ),
               ),
               child: TextField(
                 controller: _searchController,
                 onChanged: (v) {
-                  final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter?.id;
+                  final recruiterId = Provider.of<AuthController>(
+                    context,
+                    listen: false,
+                  ).currentRecruiter?.id;
                   if (recruiterId != null) {
-                    Provider.of<JobsController>(context, listen: false).fetchJobs(recruiterId, query: v);
+                    Provider.of<JobsController>(
+                      context,
+                      listen: false,
+                    ).fetchJobs(recruiterId, query: v);
                   }
                 },
                 style: GoogleFonts.inter(fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Search workspace roles...',
-                  hintStyle: GoogleFonts.inter(fontSize: 13, color: Colors.grey),
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20, color: Colors.grey),
+                  hintStyle: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: Colors.grey,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    size: 20,
+                    color: Colors.grey,
+                  ),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 ),
@@ -238,22 +319,25 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
           ),
           const SizedBox(width: 10),
           Container(
-            height: 44, width: 44,
+            height: 44,
+            width: 44,
             decoration: BoxDecoration(
               color: isDark ? AppColors.getCard(isDark) : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: hasActiveFilters 
-                    ? AppColors.getPrimary(isDark) 
+                color: hasActiveFilters
+                    ? AppColors.getPrimary(isDark)
                     : (isDark ? Colors.white10 : Colors.grey[200]!),
                 width: hasActiveFilters ? 1.5 : 1,
               ),
             ),
             child: IconButton(
               icon: Icon(
-                Icons.tune_rounded, 
-                size: 20, 
-                color: hasActiveFilters ? AppColors.getPrimary(isDark) : Colors.grey,
+                Icons.tune_rounded,
+                size: 20,
+                color: hasActiveFilters
+                    ? AppColors.getPrimary(isDark)
+                    : Colors.grey,
               ),
               onPressed: () => _showFilterBottomSheet(isDark),
             ),
@@ -273,13 +357,22 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
         tabAlignment: TabAlignment.start,
         dividerColor: Colors.transparent,
         indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(width: 2.5, color: AppColors.getPrimary(isDark)),
+          borderSide: BorderSide(
+            width: 2.5,
+            color: AppColors.getPrimary(isDark),
+          ),
           insets: const EdgeInsets.symmetric(horizontal: 16),
         ),
         labelColor: AppColors.getPrimary(isDark),
         unselectedLabelColor: Colors.grey[500],
-        labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400),
+        labelStyle: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+        ),
         labelPadding: const EdgeInsets.symmetric(horizontal: 16),
         tabs: _tabs.map((t) => Tab(text: t)).toList(),
       ),
@@ -293,39 +386,70 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
       if (filterStatus == 'drafts') {
         filterStatus = 'draft';
       }
-      filteredJobs = filteredJobs.where((j) => j.status.toLowerCase() == filterStatus).toList();
+      filteredJobs = filteredJobs
+          .where((j) => j.status.toLowerCase() == filterStatus)
+          .toList();
     }
 
     if (_selectedWorkMode != null) {
-      filteredJobs = filteredJobs.where((j) => j.workMode.toLowerCase() == _selectedWorkMode!.toLowerCase()).toList();
+      filteredJobs = filteredJobs
+          .where(
+            (j) => j.workMode.toLowerCase() == _selectedWorkMode!.toLowerCase(),
+          )
+          .toList();
     }
 
     if (_selectedExperience != null) {
-      filteredJobs = filteredJobs.where((j) => j.experience.toLowerCase() == _selectedExperience!.toLowerCase()).toList();
+      filteredJobs = filteredJobs
+          .where(
+            (j) =>
+                j.experience.toLowerCase() ==
+                _selectedExperience!.toLowerCase(),
+          )
+          .toList();
     }
 
     if (_selectedDepartment != null) {
-      filteredJobs = filteredJobs.where((j) => (j.department ?? 'Engineering').toLowerCase() == _selectedDepartment!.toLowerCase()).toList();
+      filteredJobs = filteredJobs
+          .where(
+            (j) =>
+                (j.department ?? 'Engineering').toLowerCase() ==
+                _selectedDepartment!.toLowerCase(),
+          )
+          .toList();
     }
 
     if (_selectedLocation != null) {
-      filteredJobs = filteredJobs.where((j) => (j.location ?? 'Remote').toLowerCase() == _selectedLocation!.toLowerCase()).toList();
+      filteredJobs = filteredJobs
+          .where(
+            (j) =>
+                (j.location ?? 'Remote').toLowerCase() ==
+                _selectedLocation!.toLowerCase(),
+          )
+          .toList();
     }
 
     if (filteredJobs.isEmpty) return _buildEmptyATSState(isDark);
 
     return RefreshIndicator(
       onRefresh: () async {
-         final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter?.id;
-         if (recruiterId != null) {
-            await Provider.of<JobsController>(context, listen: false).fetchJobs(recruiterId);
-         }
+        final recruiterId = Provider.of<AuthController>(
+          context,
+          listen: false,
+        ).currentRecruiter?.id;
+        if (recruiterId != null) {
+          await Provider.of<JobsController>(
+            context,
+            listen: false,
+          ).fetchJobs(recruiterId);
+        }
       },
       child: ListView.separated(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
         itemCount: filteredJobs.length,
         separatorBuilder: (context, index) => const SizedBox(height: 12),
-        itemBuilder: (context, index) => _buildAtsJobCard(filteredJobs[index], isDark),
+        itemBuilder: (context, index) =>
+            _buildAtsJobCard(filteredJobs[index], isDark),
       ),
     );
   }
@@ -343,11 +467,12 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
           width: 1.2,
         ),
         boxShadow: [
-          if (!isDark) BoxShadow(
-            color: Colors.black.withValues(alpha: 0.015), 
-            blurRadius: 10, 
-            offset: const Offset(0, 4),
-          )
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.015),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
         ],
       ),
       child: Column(
@@ -362,25 +487,33 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 40, height: 40,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.getPrimary(isDark).withValues(alpha: 0.08), 
-                        borderRadius: BorderRadius.circular(10)
+                        color: AppColors.getPrimary(
+                          isDark,
+                        ).withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(Icons.business_center_rounded, size: 20, color: AppColors.getPrimary(isDark)),
+                      child: Icon(
+                        Icons.business_center_rounded,
+                        size: 20,
+                        color: AppColors.getPrimary(isDark),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(job.jobTitle, 
+                          Text(
+                            job.jobTitle,
                             style: GoogleFonts.inter(
-                              fontSize: 16, 
-                              fontWeight: FontWeight.w600, 
-                              color: AppColors.getText(isDark), 
-                              height: 1.2, 
-                              letterSpacing: -0.2
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.getText(isDark),
+                              height: 1.2,
+                              letterSpacing: -0.2,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -388,30 +521,42 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              Icon(Icons.location_on_outlined, size: 13, color: AppColors.getTextMuted(isDark)),
+                              Icon(
+                                Icons.location_on_outlined,
+                                size: 13,
+                                color: AppColors.getTextMuted(isDark),
+                              ),
                               const SizedBox(width: 4),
                               Flexible(
-                                child: Text(job.location ?? 'Remote', 
+                                child: Text(
+                                  job.location ?? 'Remote',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.inter(
-                                    fontSize: 12.5, 
-                                    color: AppColors.getTextMuted(isDark), 
-                                    fontWeight: FontWeight.w500
-                                  )),
+                                    fontSize: 12.5,
+                                    color: AppColors.getTextMuted(isDark),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 12),
-                              Icon(Icons.apartment_rounded, size: 13, color: AppColors.getTextMuted(isDark)),
+                              Icon(
+                                Icons.apartment_rounded,
+                                size: 13,
+                                color: AppColors.getTextMuted(isDark),
+                              ),
                               const SizedBox(width: 4),
                               Flexible(
-                                child: Text(job.department ?? 'Engineering', 
+                                child: Text(
+                                  job.department ?? 'Engineering',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.inter(
-                                    fontSize: 12.5, 
-                                    color: AppColors.getTextMuted(isDark), 
-                                    fontWeight: FontWeight.w500
-                                  )),
+                                    fontSize: 12.5,
+                                    color: AppColors.getTextMuted(isDark),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -436,7 +581,10 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                         _buildMetadataBadge('💰 ${job.salary}', isDark),
                       ],
                       const SizedBox(width: 8),
-                      _buildMetadataBadge('📅 Posted ${_formatDate(job.createdAt)}', isDark),
+                      _buildMetadataBadge(
+                        '📅 Posted ${_formatDate(job.createdAt)}',
+                        isDark,
+                      ),
                     ],
                   ),
                 ),
@@ -448,10 +596,14 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.getBorder(isDark).withValues(alpha: 0.15) : const Color(0xFFF8FAFC),
+              color: isDark
+                  ? AppColors.getBorder(isDark).withValues(alpha: 0.15)
+                  : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isDark ? AppColors.getBorder(isDark).withValues(alpha: 0.3) : const Color(0xFFEDF2F7),
+                color: isDark
+                    ? AppColors.getBorder(isDark).withValues(alpha: 0.3)
+                    : const Color(0xFFEDF2F7),
                 width: 1,
               ),
             ),
@@ -464,25 +616,45 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                     Text(
                       'APPLICANT PIPELINE',
                       style: GoogleFonts.inter(
-                        fontSize: 9.5, 
-                        fontWeight: FontWeight.w700, 
-                        color: AppColors.getTextMuted(isDark), 
-                        letterSpacing: 0.5
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.getTextMuted(isDark),
+                        letterSpacing: 0.5,
                       ),
                     ),
-                    Icon(Icons.trending_up_rounded, size: 13, color: AppColors.getTextMuted(isDark)),
+                    Icon(
+                      Icons.trending_up_rounded,
+                      size: 13,
+                      color: AppColors.getTextMuted(isDark),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    _buildPipelineSegment((job.applicationsCount ?? 0).toString(), 'Applied', isDark),
+                    _buildPipelineSegment(
+                      (job.applicationsCount ?? 0).toString(),
+                      'Applied',
+                      isDark,
+                    ),
                     _buildPipelineDivider(isDark),
-                    _buildPipelineSegment((job.shortlistedCount ?? 0).toString(), 'Shortlisted', isDark),
+                    _buildPipelineSegment(
+                      (job.shortlistedCount ?? 0).toString(),
+                      'Shortlisted',
+                      isDark,
+                    ),
                     _buildPipelineDivider(isDark),
-                    _buildPipelineSegment(pipeline['Interview']?.toString() ?? '0', 'Interviews', isDark),
+                    _buildPipelineSegment(
+                      pipeline['Interview']?.toString() ?? '0',
+                      'Interviews',
+                      isDark,
+                    ),
                     _buildPipelineDivider(isDark),
-                    _buildPipelineSegment(pipeline['Hired']?.toString() ?? '0', 'Hires', isDark),
+                    _buildPipelineSegment(
+                      pipeline['Hired']?.toString() ?? '0',
+                      'Hires',
+                      isDark,
+                    ),
                   ],
                 ),
               ],
@@ -495,26 +667,45 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
               height: 40,
               child: OutlinedButton(
                 onPressed: () {
-                   Navigator.push(context, MaterialPageRoute(builder: (context) => JobDetailResponsesScreen(job: job)));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => JobDetailResponsesScreen(job: job),
+                    ),
+                  );
                 },
                 style: OutlinedButton.styleFrom(
-                  backgroundColor: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.white,
+                  backgroundColor: isDark
+                      ? Colors.white.withValues(alpha: 0.02)
+                      : Colors.white,
                   foregroundColor: AppColors.getPrimary(isDark),
                   side: BorderSide(
-                    color: isDark 
-                      ? AppColors.getPrimary(isDark).withValues(alpha: 0.3) 
-                      : AppColors.getPrimary(isDark).withValues(alpha: 0.4),
-                    width: 1.2
+                    color: isDark
+                        ? AppColors.getPrimary(isDark).withValues(alpha: 0.3)
+                        : AppColors.getPrimary(isDark).withValues(alpha: 0.4),
+                    width: 1.2,
                   ),
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Pipeline', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                    Text(
+                      'Pipeline',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(width: 6),
-                    Icon(Icons.arrow_forward_ios_rounded, size: 10, color: AppColors.getPrimary(isDark)),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 10,
+                      color: AppColors.getPrimary(isDark),
+                    ),
                   ],
                 ),
               ),
@@ -537,10 +728,7 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
         Container(
           width: 7,
           height: 7,
-          decoration: BoxDecoration(
-            color: dotColor,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
         ),
         const SizedBox(width: 6),
         Text(
@@ -559,10 +747,14 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.03) : const Color(0xFFF1F5F9),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.03)
+            : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFE2E8F0),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.06)
+              : const Color(0xFFE2E8F0),
           width: 1,
         ),
       ),
@@ -615,7 +807,20 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
   }
 
   String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return "${date.day} ${months[date.month - 1]}";
   }
 
@@ -627,17 +832,35 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.grey[100],
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.03)
+                  : Colors.grey[100],
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.business_center_outlined, size: 40, color: Colors.grey.withValues(alpha: 0.3)),
+            child: Icon(
+              Icons.business_center_outlined,
+              size: 40,
+              color: Colors.grey.withValues(alpha: 0.3),
+            ),
           ),
           const SizedBox(height: 16),
-          Text('No roles found in this status.', 
-            style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.w600)),
+          Text(
+            'No roles found in this status.',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text('Try refining your search or filters.', 
-            style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[400], fontWeight: FontWeight.w500)),
+          Text(
+            'Try refining your search or filters.',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: Colors.grey[400],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
@@ -665,7 +888,7 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
     String? tempExperience = _selectedExperience;
     String? tempDepartment = _selectedDepartment;
     String? tempLocation = _selectedLocation;
-    
+
     int currentTabIdx = _tabController.index;
     String? tempStatus = _tabs[currentTabIdx];
 
@@ -680,7 +903,12 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 24),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -737,20 +965,24 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                               setModalState(() => tempStatus = status);
                             }
                           },
-                          selectedColor: AppColors.getPrimary(isDark).withOpacity(0.15),
-                          backgroundColor: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F5F9),
+                          selectedColor: AppColors.getPrimary(
+                            isDark,
+                          ).withOpacity(0.15),
+                          backgroundColor: isDark
+                              ? Colors.white.withOpacity(0.03)
+                              : const Color(0xFFF1F5F9),
                           labelStyle: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: isSelected 
-                                ? AppColors.getPrimary(isDark) 
+                            color: isSelected
+                                ? AppColors.getPrimary(isDark)
                                 : AppColors.getTextMuted(isDark),
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                             side: BorderSide(
-                              color: isSelected 
-                                  ? AppColors.getPrimary(isDark) 
+                              color: isSelected
+                                  ? AppColors.getPrimary(isDark)
                                   : Colors.transparent,
                               width: 1,
                             ),
@@ -776,20 +1008,24 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                               tempWorkMode = selected ? mode : null;
                             });
                           },
-                          selectedColor: AppColors.getPrimary(isDark).withOpacity(0.15),
-                          backgroundColor: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F5F9),
+                          selectedColor: AppColors.getPrimary(
+                            isDark,
+                          ).withOpacity(0.15),
+                          backgroundColor: isDark
+                              ? Colors.white.withOpacity(0.03)
+                              : const Color(0xFFF1F5F9),
                           labelStyle: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: isSelected 
-                                ? AppColors.getPrimary(isDark) 
+                            color: isSelected
+                                ? AppColors.getPrimary(isDark)
                                 : AppColors.getTextMuted(isDark),
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                             side: BorderSide(
-                              color: isSelected 
-                                  ? AppColors.getPrimary(isDark) 
+                              color: isSelected
+                                  ? AppColors.getPrimary(isDark)
                                   : Colors.transparent,
                               width: 1,
                             ),
@@ -805,37 +1041,44 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: ['Fresher', '1-2 Years', '3-5 Years', '5+ Years'].map((exp) {
-                        final isSelected = tempExperience == exp;
-                        return ChoiceChip(
-                          label: Text(exp),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setModalState(() {
-                              tempExperience = selected ? exp : null;
-                            });
-                          },
-                          selectedColor: AppColors.getPrimary(isDark).withOpacity(0.15),
-                          backgroundColor: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F5F9),
-                          labelStyle: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: isSelected 
-                                ? AppColors.getPrimary(isDark) 
-                                : AppColors.getTextMuted(isDark),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            side: BorderSide(
-                              color: isSelected 
-                                  ? AppColors.getPrimary(isDark) 
-                                  : Colors.transparent,
-                              width: 1,
-                            ),
-                          ),
-                          showCheckmark: false,
-                        );
-                      }).toList(),
+                      children:
+                          ['Fresher', '1-2 Years', '3-5 Years', '5+ Years'].map(
+                            (exp) {
+                              final isSelected = tempExperience == exp;
+                              return ChoiceChip(
+                                label: Text(exp),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  setModalState(() {
+                                    tempExperience = selected ? exp : null;
+                                  });
+                                },
+                                selectedColor: AppColors.getPrimary(
+                                  isDark,
+                                ).withOpacity(0.15),
+                                backgroundColor: isDark
+                                    ? Colors.white.withOpacity(0.03)
+                                    : const Color(0xFFF1F5F9),
+                                labelStyle: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: isSelected
+                                      ? AppColors.getPrimary(isDark)
+                                      : AppColors.getTextMuted(isDark),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  side: BorderSide(
+                                    color: isSelected
+                                        ? AppColors.getPrimary(isDark)
+                                        : Colors.transparent,
+                                    width: 1,
+                                  ),
+                                ),
+                                showCheckmark: false,
+                              );
+                            },
+                          ).toList(),
                     ),
                     const SizedBox(height: 20),
 
@@ -845,26 +1088,49 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F5F9),
+                          color: isDark
+                              ? Colors.white.withOpacity(0.03)
+                              : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: isDark ? Colors.white10 : Colors.grey[300]!),
+                          border: Border.all(
+                            color: isDark ? Colors.white10 : Colors.grey[300]!,
+                          ),
                         ),
                         child: DropdownButton<String>(
                           value: tempDepartment,
                           isExpanded: true,
                           underline: const SizedBox(),
-                          dropdownColor: isDark ? AppColors.bgCardDark : Colors.white,
-                          hint: Text('Select Department', style: GoogleFonts.inter(fontSize: 12.5, color: Colors.grey)),
-                          style: GoogleFonts.inter(fontSize: 13, color: AppColors.getText(isDark)),
+                          dropdownColor: isDark
+                              ? AppColors.bgCardDark
+                              : Colors.white,
+                          hint: Text(
+                            'Select Department',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.5,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: AppColors.getText(isDark),
+                          ),
                           items: [
                             DropdownMenuItem<String>(
                               value: null,
-                              child: Text('All Departments', style: GoogleFonts.inter(fontSize: 13, color: AppColors.getTextMuted(isDark))),
+                              child: Text(
+                                'All Departments',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: AppColors.getTextMuted(isDark),
+                                ),
+                              ),
                             ),
-                            ...departments.map((d) => DropdownMenuItem<String>(
-                              value: d,
-                              child: Text(d),
-                            )),
+                            ...departments.map(
+                              (d) => DropdownMenuItem<String>(
+                                value: d,
+                                child: Text(d),
+                              ),
+                            ),
                           ],
                           onChanged: (val) {
                             setModalState(() => tempDepartment = val);
@@ -880,26 +1146,49 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF1F5F9),
+                          color: isDark
+                              ? Colors.white.withOpacity(0.03)
+                              : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: isDark ? Colors.white10 : Colors.grey[300]!),
+                          border: Border.all(
+                            color: isDark ? Colors.white10 : Colors.grey[300]!,
+                          ),
                         ),
                         child: DropdownButton<String>(
                           value: tempLocation,
                           isExpanded: true,
                           underline: const SizedBox(),
-                          dropdownColor: isDark ? AppColors.bgCardDark : Colors.white,
-                          hint: Text('Select Location', style: GoogleFonts.inter(fontSize: 12.5, color: Colors.grey)),
-                          style: GoogleFonts.inter(fontSize: 13, color: AppColors.getText(isDark)),
+                          dropdownColor: isDark
+                              ? AppColors.bgCardDark
+                              : Colors.white,
+                          hint: Text(
+                            'Select Location',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.5,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: AppColors.getText(isDark),
+                          ),
                           items: [
                             DropdownMenuItem<String>(
                               value: null,
-                              child: Text('All Locations', style: GoogleFonts.inter(fontSize: 13, color: AppColors.getTextMuted(isDark))),
+                              child: Text(
+                                'All Locations',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: AppColors.getTextMuted(isDark),
+                                ),
+                              ),
                             ),
-                            ...locations.map((l) => DropdownMenuItem<String>(
-                              value: l,
-                              child: Text(l),
-                            )),
+                            ...locations.map(
+                              (l) => DropdownMenuItem<String>(
+                                value: l,
+                                child: Text(l),
+                              ),
+                            ),
                           ],
                           onChanged: (val) {
                             setModalState(() => tempLocation = val);
@@ -930,7 +1219,9 @@ class _ManageJobsScreenState extends State<ManageJobsScreen> with SingleTickerPr
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.getPrimary(isDark),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           elevation: 0,
                         ),
                         child: Text(

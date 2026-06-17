@@ -14,7 +14,10 @@ class PlansScreen extends StatefulWidget {
 
 class _PlansScreenState extends State<PlansScreen> {
   late final PlansController _plansController;
-  final PageController _pageController = PageController(viewportFraction: 0.88, initialPage: 0);
+  final PageController _pageController = PageController(
+    viewportFraction: 0.88,
+    initialPage: 0,
+  );
   int _currentPlanPage = 0;
 
   @override
@@ -37,7 +40,9 @@ class _PlansScreenState extends State<PlansScreen> {
           ? AppColors.getBackground(isDark)
           : AppColors.getBackground(isDark),
       appBar: AppBar(
-        backgroundColor: isDark ? AppColors.getBackground(isDark) : Colors.white,
+        backgroundColor: isDark
+            ? AppColors.getBackground(isDark)
+            : Colors.white,
         elevation: 0,
         title: Text(
           'Premium Services',
@@ -57,17 +62,23 @@ class _PlansScreenState extends State<PlansScreen> {
         centerTitle: true,
       ),
       body: Obx(() {
-        if (_plansController.isLoading.value && _plansController.plansList.isEmpty) {
+        if (_plansController.isLoading.value &&
+            _plansController.plansList.isEmpty) {
           return Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.getPrimary(isDark)),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                AppColors.getPrimary(isDark),
+              ),
             ),
           );
         }
 
         final hasSub =
             _plansController.currentSubscription.isNotEmpty &&
-            _plansController.currentSubscription['status']?.toString().toLowerCase() == 'active';
+            _plansController.currentSubscription['status']
+                    ?.toString()
+                    .toLowerCase() ==
+                'active';
         final subPlanName = hasSub
             ? (_plansController.currentSubscription['plan_name'] ?? 'Pro')
             : '';
@@ -204,7 +215,9 @@ class _PlansScreenState extends State<PlansScreen> {
                       final priceStr = plan['price']?.toString() ?? '0';
                       final price = double.tryParse(priceStr) ?? 0.0;
                       final durationDays =
-                          int.tryParse(plan['duration_days']?.toString() ?? '') ??
+                          int.tryParse(
+                            plan['duration_days']?.toString() ?? '',
+                          ) ??
                           30;
                       final desc = plan['description'] ?? '';
 
@@ -222,12 +235,14 @@ class _PlansScreenState extends State<PlansScreen> {
                         }
                       }
 
-                      final isPopular = planName.toString().toLowerCase().contains(
-                        'pro monthly',
-                      );
+                      final isPopular = planName
+                          .toString()
+                          .toLowerCase()
+                          .contains('pro monthly');
                       final isCurrentActive =
                           hasSub &&
-                          _plansController.currentSubscription['plan_id']?.toString() ==
+                          _plansController.currentSubscription['plan_id']
+                                  ?.toString() ==
                               planId.toString();
 
                       return AnimatedBuilder(
@@ -246,7 +261,10 @@ class _PlansScreenState extends State<PlansScreen> {
                           );
                         },
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                            vertical: 8.0,
+                          ),
                           child: _buildPlanCard(
                             planId: planId,
                             name: planName,
@@ -266,7 +284,9 @@ class _PlansScreenState extends State<PlansScreen> {
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(_plansController.plansList.length, (index) {
+                  children: List.generate(_plansController.plansList.length, (
+                    index,
+                  ) {
                     final isActive = _currentPlanPage == index;
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
@@ -369,8 +389,9 @@ class _PlansScreenState extends State<PlansScreen> {
         color: isDark ? AppColors.getCard(isDark) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+          color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
         ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

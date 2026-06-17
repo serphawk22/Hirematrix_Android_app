@@ -10,14 +10,20 @@ import 'package:hirematrix/controllers/notification_controller.dart';
 import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:hirematrix/services/local_notification_service.dart';
 import 'package:provider/provider.dart';
-import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart' as rec_auth_ctrl;
-import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart' as rec_jobs_ctrl;
-import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart' as rec_dash_ctrl;
-import 'package:hirematrix/controllers/recruiter_controller/applications_controller.dart' as rec_app_ctrl;
-import 'package:hirematrix/controllers/recruiter_controller/candidates_controller.dart' as rec_candidates_ctrl;
-import 'package:hirematrix/views/screens/recruiter/utils/theme_provider.dart' as rec_theme;
-import 'package:hirematrix/controllers/recruiter_controller/leaderboard_controller.dart' as rec_leaderboard_ctrl;
-
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart'
+    as rec_auth_ctrl;
+import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart'
+    as rec_jobs_ctrl;
+import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart'
+    as rec_dash_ctrl;
+import 'package:hirematrix/controllers/recruiter_controller/applications_controller.dart'
+    as rec_app_ctrl;
+import 'package:hirematrix/controllers/recruiter_controller/candidates_controller.dart'
+    as rec_candidates_ctrl;
+import 'package:hirematrix/views/screens/recruiter/utils/theme_provider.dart'
+    as rec_theme;
+import 'package:hirematrix/controllers/recruiter_controller/leaderboard_controller.dart'
+    as rec_leaderboard_ctrl;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,11 +82,19 @@ class HireMatrixApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => rec_auth_ctrl.AuthController()),
         ChangeNotifierProvider(create: (_) => rec_jobs_ctrl.JobsController()),
-        ChangeNotifierProvider(create: (_) => rec_dash_ctrl.DashboardController()),
-        ChangeNotifierProvider(create: (_) => rec_app_ctrl.ApplicationsController()),
-        ChangeNotifierProvider(create: (_) => rec_candidates_ctrl.CandidatesController()),
+        ChangeNotifierProvider(
+          create: (_) => rec_dash_ctrl.DashboardController(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => rec_app_ctrl.ApplicationsController(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => rec_candidates_ctrl.CandidatesController(),
+        ),
         ChangeNotifierProvider(create: (_) => rec_theme.ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => rec_leaderboard_ctrl.LeaderboardController()),
+        ChangeNotifierProvider(
+          create: (_) => rec_leaderboard_ctrl.LeaderboardController(),
+        ),
       ],
       child: Obx(
         () => GetMaterialApp(

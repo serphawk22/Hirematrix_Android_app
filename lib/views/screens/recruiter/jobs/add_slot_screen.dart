@@ -25,7 +25,7 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
   int _capacity = 1;
   bool _excludeWeekends = true;
   List<TimeOfDay> _times = [];
-  
+
   bool _isSaving = false;
   String? _error;
 
@@ -53,7 +53,9 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
   Future<void> _selectDate(BuildContext context, bool isStart) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: isStart ? (_startDate ?? DateTime.now()) : (_endDate ?? _startDate ?? DateTime.now()),
+      initialDate: isStart
+          ? (_startDate ?? DateTime.now())
+          : (_endDate ?? _startDate ?? DateTime.now()),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
@@ -94,7 +96,10 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
       return;
     }
 
-    final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter?.id;
+    final recruiterId = Provider.of<AuthController>(
+      context,
+      listen: false,
+    ).currentRecruiter?.id;
     if (recruiterId == null) return;
 
     setState(() {
@@ -113,7 +118,9 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
         'recruiter_id': recruiterId.toString(),
         'job_id': widget.job.jobId.toString(),
         'start_date': DateFormat('yyyy-MM-dd').format(_startDate!),
-        'end_date': _endDate != null ? DateFormat('yyyy-MM-dd').format(_endDate!) : '',
+        'end_date': _endDate != null
+            ? DateFormat('yyyy-MM-dd').format(_endDate!)
+            : '',
         'times': formattedTimes,
         'capacity': _capacity.toString(),
         'exclude_weekends': _excludeWeekends ? '1' : '0',
@@ -121,13 +128,15 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
 
       // Ensure your backend supports this route, otherwise you will get a 404
       final res = await _apiService.addInterviewSlot(payload);
-      
+
       setState(() => _isSaving = false);
 
       if (res['success'] == true) {
         if (mounted) Navigator.pop(context, true);
       } else {
-        setState(() => _error = res['message']?.toString() ?? 'Failed to save slots');
+        setState(
+          () => _error = res['message']?.toString() ?? 'Failed to save slots',
+        );
       }
     } catch (e) {
       setState(() {
@@ -140,7 +149,7 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDark),
       appBar: AppBar(
@@ -166,7 +175,10 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
             children: [
               Text(
                 'Generate one or more booking windows for a job while keeping scheduling clear and organized.',
-                style: GoogleFonts.inter(fontSize: 14, color: isDark ? Colors.grey[400] : Colors.blueGrey[600]),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: isDark ? Colors.grey[400] : Colors.blueGrey[600],
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -177,14 +189,27 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: Colors.red.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 20,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(_error!, style: GoogleFonts.inter(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w500)),
+                        child: Text(
+                          _error!,
+                          style: GoogleFonts.inter(
+                            color: Colors.red,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -195,17 +220,28 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.05),
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.grey.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.grey[200]!,
+                    ),
                   ),
                   child: Text(
                     widget.job.jobTitle,
-                    style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.getText(isDark)),
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.getText(isDark),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text('Select the job position for these interview slots', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+                Text(
+                  'Select the job position for these interview slots',
+                  style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                ),
               ]),
 
               const SizedBox(height: 16),
@@ -214,19 +250,23 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
                   children: [
                     Expanded(
                       child: _buildDatePicker(
-                        'Start Date *', 
-                        _startDate == null ? 'Select Date' : DateFormat('MMM dd, yyyy').format(_startDate!), 
-                        isDark, 
-                        () => _selectDate(context, true)
+                        'Start Date *',
+                        _startDate == null
+                            ? 'Select Date'
+                            : DateFormat('MMM dd, yyyy').format(_startDate!),
+                        isDark,
+                        () => _selectDate(context, true),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildDatePicker(
-                        'End Date (Optional)', 
-                        _endDate == null ? 'Select Date' : DateFormat('MMM dd, yyyy').format(_endDate!), 
-                        isDark, 
-                        () => _selectDate(context, false)
+                        'End Date (Optional)',
+                        _endDate == null
+                            ? 'Select Date'
+                            : DateFormat('MMM dd, yyyy').format(_endDate!),
+                        isDark,
+                        () => _selectDate(context, false),
                       ),
                     ),
                   ],
@@ -250,16 +290,32 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
                               onTap: () => _selectTime(context, index),
                               borderRadius: BorderRadius.circular(12),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.05),
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.05)
+                                      : Colors.grey.withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(timeStr, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)),
-                                    Icon(Icons.access_time, size: 18, color: AppColors.getPrimary(isDark)),
+                                    Text(
+                                      timeStr,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.access_time,
+                                      size: 18,
+                                      color: AppColors.getPrimary(isDark),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -269,9 +325,12 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
                             const SizedBox(width: 8),
                             IconButton(
                               onPressed: () => _removeTimeSlot(index),
-                              icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
-                            )
-                          ]
+                              icon: const Icon(
+                                Icons.remove_circle_outline,
+                                color: Colors.redAccent,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     );
@@ -286,7 +345,10 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
-                Text('Add multiple time slots for each day', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+                Text(
+                  'Add multiple time slots for each day',
+                  style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                ),
               ]),
 
               const SizedBox(height: 16),
@@ -294,7 +356,13 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Capacity per Slot *', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+                    Text(
+                      'Capacity per Slot *',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     TextFormField(
                       initialValue: _capacity.toString(),
@@ -302,9 +370,17 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
                       style: GoogleFonts.inter(fontSize: 14),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.05),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        fillColor: isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.grey.withValues(alpha: 0.05),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                       ),
                       onChanged: (val) => _capacity = int.tryParse(val) ?? 1,
                       validator: (val) {
@@ -314,14 +390,29 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
                       },
                     ),
                     const SizedBox(height: 4),
-                    Text('Number of candidates that can book each slot', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+                    Text(
+                      'Number of candidates that can book each slot',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('Exclude Weekends', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600)),
-                  subtitle: Text('Do not create slots on Saturday & Sunday', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+                  title: Text(
+                    'Exclude Weekends',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Do not create slots on Saturday & Sunday',
+                    style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                  ),
                   value: _excludeWeekends,
                   activeColor: AppColors.getPrimary(isDark),
                   onChanged: (val) => setState(() => _excludeWeekends = val),
@@ -334,11 +425,28 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 54),
                   backgroundColor: AppColors.getPrimary(isDark),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 child: _isSaving
-                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : Text('CREATE SLOTS', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1)),
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        'CREATE SLOTS',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 1,
+                        ),
+                      ),
               ),
               const SizedBox(height: 40),
             ],
@@ -360,7 +468,15 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title.toUpperCase(), style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.getPrimary(isDark), letterSpacing: 1)),
+          Text(
+            title.toUpperCase(),
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: AppColors.getPrimary(isDark),
+              letterSpacing: 1,
+            ),
+          ),
           const SizedBox(height: 20),
           ...children,
         ],
@@ -368,11 +484,19 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
     );
   }
 
-  Widget _buildDatePicker(String label, String valueText, bool isDark, VoidCallback onTap) {
+  Widget _buildDatePicker(
+    String label,
+    String valueText,
+    bool isDark,
+    VoidCallback onTap,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
         InkWell(
           onTap: onTap,
@@ -380,14 +504,26 @@ class _AddSlotScreenState extends State<AddSlotScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.05),
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.grey.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(valueText, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500)),
-                Icon(Icons.calendar_today, size: 16, color: AppColors.getPrimary(isDark)),
+                Text(
+                  valueText,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: AppColors.getPrimary(isDark),
+                ),
               ],
             ),
           ),
