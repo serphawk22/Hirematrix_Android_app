@@ -94,6 +94,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           final dateStr = item['interview_date'] ?? '';
           final date = DateTime.tryParse(dateStr);
           if (date == null) return false;
+          final status = (item['booking_status'] ?? 'booked').toString().toLowerCase();
+          final isStatusMatch = const ['booked', 'rescheduled', 'confirmed'].contains(status);
+          if (!isStatusMatch) return false;
           return date.year == now.year &&
               date.month == now.month &&
               date.day == now.day;
@@ -627,7 +630,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         int.tryParse(stats['Shortlisted']?.toString() ?? '0') ?? 0;
     final int rejected =
         int.tryParse(stats['Rejected']?.toString() ?? '0') ?? 0;
-    final int screeningCompleted = shortlisted + rejected;
+    final int aiInterviewCompleted =
+        int.tryParse(stats['ai_interview_completed']?.toString() ?? '0') ?? 0;
+    final int screeningCompleted = shortlisted + rejected + aiInterviewCompleted;
     final int interviewSlotBooked =
         int.tryParse(stats['Interview']?.toString() ?? '0') ?? 0;
 

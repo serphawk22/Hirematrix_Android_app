@@ -7,6 +7,7 @@ import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart
 import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/models/job.dart';
 import 'job_detail_responses_screen.dart';
+import 'edit_job_screen.dart';
 
 class ManageJobsScreen extends StatefulWidget {
   const ManageJobsScreen({super.key});
@@ -662,53 +663,108 @@ class _ManageJobsScreenState extends State<ManageJobsScreen>
           ),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              height: 40,
-              child: OutlinedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => JobDetailResponsesScreen(job: job),
-                    ),
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: isDark
-                      ? Colors.white.withValues(alpha: 0.02)
-                      : Colors.white,
-                  foregroundColor: AppColors.getPrimary(isDark),
-                  side: BorderSide(
-                    color: isDark
-                        ? AppColors.getPrimary(isDark).withValues(alpha: 0.3)
-                        : AppColors.getPrimary(isDark).withValues(alpha: 0.4),
-                    width: 1.2,
-                  ),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Pipeline',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+            child: Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditJobScreen(job: job),
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: isDark
+                            ? Colors.white.withValues(alpha: 0.02)
+                            : Colors.white,
+                        foregroundColor: AppColors.getPrimary(isDark),
+                        side: BorderSide(
+                          color: isDark
+                              ? AppColors.getPrimary(isDark).withValues(alpha: 0.3)
+                              : AppColors.getPrimary(isDark).withValues(alpha: 0.4),
+                          width: 1.2,
+                        ),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.edit_outlined,
+                            size: 14,
+                            color: AppColors.getPrimary(isDark),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Edit',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 10,
-                      color: AppColors.getPrimary(isDark),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => JobDetailResponsesScreen(job: job),
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: isDark
+                            ? Colors.white.withValues(alpha: 0.02)
+                            : Colors.white,
+                        foregroundColor: AppColors.getPrimary(isDark),
+                        side: BorderSide(
+                          color: isDark
+                              ? AppColors.getPrimary(isDark).withValues(alpha: 0.3)
+                              : AppColors.getPrimary(isDark).withValues(alpha: 0.4),
+                          width: 1.2,
+                        ),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Pipeline',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 10,
+                            color: AppColors.getPrimary(isDark),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

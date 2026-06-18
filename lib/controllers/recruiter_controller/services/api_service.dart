@@ -431,8 +431,9 @@ class ApiService {
   }
 
   // Placeholder methods for missing legacy endpoints to prevent compilation errors
-  Future<Map<String, dynamic>> updateJob(Map<String, dynamic> jobData) async =>
-      {'success': false};
+  Future<Map<String, dynamic>> updateJob(Map<String, dynamic> jobData) async {
+    return _performPost("jobs/update", jobData);
+  }
   Future<Map<String, dynamic>> deleteJob(
           String jobId, String recruiterId) async =>
       {'success': false};

@@ -16,6 +16,19 @@ class Job {
   final int? shortlistedCount;
   final DateTime createdAt;
 
+  // Additional fields for editing
+  final String? category;
+  final String? requiredSkills;
+  final String? postedFor;
+  final String? clientCompanyName;
+  final String? clientDisclosure;
+  final String? payrollType;
+  final String? applicationDeadline;
+  final int? openings;
+  final String? aiInterviewPolicy;
+  final int? minAiCutoffScore;
+  final String? applicationQuestionnaire;
+
   Job({
     required this.jobId,
     required this.recruiterId,
@@ -33,6 +46,17 @@ class Job {
     this.applicationsCount = 0,
     this.shortlistedCount = 0,
     required this.createdAt,
+    this.category,
+    this.requiredSkills,
+    this.postedFor,
+    this.clientCompanyName,
+    this.clientDisclosure,
+    this.payrollType,
+    this.applicationDeadline,
+    this.openings,
+    this.aiInterviewPolicy,
+    this.minAiCutoffScore,
+    this.applicationQuestionnaire,
   });
 
   factory Job.fromJson(Map<String, dynamic> json) {
@@ -64,6 +88,17 @@ class Job {
       applicationsCount: int.tryParse(json['applications_count']?.toString() ?? '') ?? 0,
       shortlistedCount: int.tryParse(json['shortlisted_count']?.toString() ?? '') ?? 0,
       createdAt: DateTime.parse(json['created_at']),
+      category: json['category'],
+      requiredSkills: json['required_skills'],
+      postedFor: json['posted_for'],
+      clientCompanyName: json['client_company_name'],
+      clientDisclosure: json['client_disclosure'],
+      payrollType: json['payroll_type'],
+      applicationDeadline: json['application_deadline'],
+      openings: int.tryParse(json['openings']?.toString() ?? ''),
+      aiInterviewPolicy: json['ai_interview_policy'],
+      minAiCutoffScore: int.tryParse(json['min_ai_cutoff_score']?.toString() ?? ''),
+      applicationQuestionnaire: json['application_questionnaire'],
     );
   }
 }

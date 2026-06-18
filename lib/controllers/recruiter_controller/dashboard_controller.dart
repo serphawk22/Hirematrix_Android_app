@@ -135,19 +135,6 @@ class DashboardController extends ChangeNotifier {
         }
       }
 
-      // DEBUG REQUIREMENT: Console logs for verification
-      debugPrint("--- DATABASE PIPELINE REFLECTION ---");
-      debugPrint("Applied Count: ${pipelineStats['Applied']}");
-      debugPrint("Screening Count: ${pipelineStats['Screening']}");
-      debugPrint("Shortlisted Count: ${pipelineStats['Shortlisted']}");
-      debugPrint("Interview Count: ${pipelineStats['Interview']}");
-      debugPrint("Hired Count: ${pipelineStats['Hired']}");
-      debugPrint("Rejected Count: ${pipelineStats['Rejected']}");
-      debugPrint("-------------------------------------");
-
-      _dashboardData['pipeline_stats'] = pipelineStats;
-      _applications = applications;
-
       // Helper function to extract normalized status keys (matching normalizeApplicationStatus in PHP backend)
       String getStatusKey(dynamic app) {
         if (app is! Map) return 'applied';
@@ -176,27 +163,64 @@ class DashboardController extends ChangeNotifier {
         return status;
       }
 
+      int aiCompleted = applications.where((app) => getStatusKey(app) == 'ai_interview_completed').length;
+      pipelineStats['ai_interview_completed'] = aiCompleted;
+
+      // DEBUG REQUIREMENT: Console logs for verification
+      debugPrint("--- DATABASE PIPELINE REFLECTION ---");
+      debugPrint("Applied Count: ${pipelineStats['Applied']}");
+      debugPrint("Screening Count: ${pipelineStats['Screening']}");
+      debugPrint("Shortlisted Count: ${pipelineStats['Shortlisted']}");
+      debugPrint("Interview Count: ${pipelineStats['Interview']}");
+      debugPrint("Hired Count: ${pipelineStats['Hired']}");
+      debugPrint("Rejected Count: ${pipelineStats['Rejected']}");
+      debugPrint("AI Interview Completed Count: ${pipelineStats['ai_interview_completed']}");
+      debugPrint("-------------------------------------");
+
+      _dashboardData['pipeline_stats'] = pipelineStats;
+      _applications = applications;
+
       // Calculate Conversion Metrics exactly matching DashboardController.php (web)
       int total = applications.length;
       int screenedCount = applications.where((app) {
         final key = getStatusKey(app);
-        return key == 'shortlisted' || key == 'rejected' || key == 'hold';
+        return const [
+          'ai_interview_completed',
+          'shortlisted',
+          'interview_slot_booked',
+          'selected',
+          'hired',
+          'rejected',
+          'hold',
+          'filtered_out'
+        ].contains(key);
       }).length;
 
       int shortlistedCount = applications.where((app) {
-        return getStatusKey(app) == 'shortlisted';
+        final key = getStatusKey(app);
+        return const [
+          'shortlisted',
+          'interview_slot_booked',
+          'selected',
+          'hired'
+        ].contains(key);
       }).length;
 
       int hrScheduledCount = applications.where((app) {
-        return getStatusKey(app) == 'interview_slot_booked';
-      }).length;
-
-      int hrCompletedCount = applications.where((app) {
-        return getStatusKey(app) == 'hr_interview_completed';
+        final key = getStatusKey(app);
+        return const [
+          'interview_slot_booked',
+          'selected',
+          'hired'
+        ].contains(key);
       }).length;
 
       int selectedCount = applications.where((app) {
-        return getStatusKey(app) == 'selected';
+        final key = getStatusKey(app);
+        return const [
+          'selected',
+          'hired'
+        ].contains(key);
       }).length;
 
       double safeRate(int numerator, int denominator) {
@@ -217,8 +241,8 @@ class DashboardController extends ChangeNotifier {
         'shortlist_to_hr_interview': shortlistedCount > 0
             ? safeRate(hrScheduledCount, shortlistedCount)
             : null,
-        'hr_interview_to_selection': hrCompletedCount > 0
-            ? safeRate(selectedCount, hrCompletedCount)
+        'hr_interview_to_selection': hrScheduledCount > 0
+            ? safeRate(selectedCount, hrScheduledCount)
             : null,
         'overall_conversion': safeRate(selectedCount, total),
       };
@@ -238,8 +262,10 @@ class DashboardController extends ChangeNotifier {
       }).length;
 
       // Need Review → applications.status='Screening'
-      stats['need_review'] =
-          (pipelineStats['Applied'] ?? 0) + (pipelineStats['Screening'] ?? 0);
+      stats['need_review'] = applications.where((app) {
+        final key = getStatusKey(app);
+        return key == 'pending' || key == 'applied' || key == 'ai_interview_completed';
+      }).length;
 
       // Drop Rate → rejected/decisioned ratio
       int totalDecisioned =

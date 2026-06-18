@@ -2,7 +2,7 @@ class ApiConstants {
   // Using the machine's specific local IPv4 address so that a physical
   // device on the same Wi-Fi/Network can connect to XAMPP.
   // Uncomment this to use local:
-  static const String baseUrl = 'http://10.25.155.26/ai-job-portal/public/api';
+  static const String baseUrl = 'http://10.182.143.26/ai-job-portal/public/api';
 
   // Comment this out:
   //static const String baseUrl = 'https://hirematrix.serphawk.in/api';
