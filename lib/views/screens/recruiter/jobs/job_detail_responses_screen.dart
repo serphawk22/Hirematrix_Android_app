@@ -1901,10 +1901,12 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
       } else if (dt != null && dt.isBefore(now)) {
         completed++;
       }
+    }
 
-      if (status == 'booked' ||
-          status == 'confirmed' ||
-          status == 'rescheduled') {
+    for (var slot in _slots) {
+      final bookedCount =
+          int.tryParse(slot['booked_count']?.toString() ?? '0') ?? 0;
+      if (bookedCount > 0) {
         bookedSlots++;
       }
     }

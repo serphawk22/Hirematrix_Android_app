@@ -6,6 +6,7 @@ import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
 import 'package:hirematrix/views/screens/recruiter/candidates/candidate_management_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/candidates/candidate_profile_view_screen.dart';
 import 'package:hirematrix/views/screens/recruiter/jobs/interview_bookings_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -568,6 +569,37 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final uri = Uri.tryParse(actionLink);
     if (uri == null) return;
     final path = uri.path;
+
+    final String message = notifData != null ? (notifData['message']?.toString() ?? '') : '';
+
+    if (notifType == 'candidate_message_reply' || path.contains('/recruiter/candidate/')) {
+      final segments = uri.pathSegments;
+      final candidateIndex = segments.indexOf('candidate');
+      if (candidateIndex != -1 && candidateIndex + 1 < segments.length) {
+        final candidateId = segments[candidateIndex + 1];
+        final appId = uri.queryParameters['application_id'];
+        final jobId = uri.queryParameters['job_id'];
+
+        String candidateName = 'Candidate';
+        if (message.contains(' replied to your message.')) {
+          candidateName = message.split(' replied to your message.').first;
+        }
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CandidateProfileViewScreen(
+              candidateId: candidateId,
+              applicationId: appId,
+              jobId: jobId,
+              candidateName: candidateName,
+              initialTabIndex: 2,
+            ),
+          ),
+        );
+        return;
+      }
+    }
 
     if (path.contains('/recruiter/candidates') ||
         path.contains('/recruiter/applications')) {

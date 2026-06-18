@@ -13,6 +13,7 @@ class CandidateProfileViewScreen extends StatefulWidget {
   final String? applicationId;
   final String? jobId;
   final String candidateName;
+  final int initialTabIndex;
 
   const CandidateProfileViewScreen({
     super.key,
@@ -20,6 +21,7 @@ class CandidateProfileViewScreen extends StatefulWidget {
     this.applicationId,
     this.jobId,
     required this.candidateName,
+    this.initialTabIndex = 0,
   });
 
   @override
@@ -54,7 +56,11 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
     _loadProfileData();
   }
 
@@ -102,7 +108,7 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
           _showContact = res['application_id'] != null || res['job_id'] != null;
           // Set tags and notes if present
           final note = res['recruiter_note'];
-          if (note != null) {
+          if (note is Map) {
             _tagsController.text = note['tags']?.toString() ?? '';
             _notesController.text = note['notes']?.toString() ?? '';
           }
@@ -418,20 +424,32 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
   }
 
   Widget _buildProfileTab(bool isDark) {
-    final candidate = _data?['candidate'] ?? {};
-    final photoUrl = candidate['profile_photo_url'] ?? '';
-    final resumePath = candidate['resume_path'] ?? '';
-    final bio = candidate['bio'] ?? '';
-    final videoUrl = candidate['intro_video_url'] ?? '';
-    final pitch = candidate['intro_video_pitch'] ?? '';
-    final targetRole = candidate['intro_video_target_role'] ?? '';
+    final rawCandidate = _data?['candidate'];
+    final Map candidate = (rawCandidate is Map) ? rawCandidate : {};
+    final photoUrl = candidate['profile_photo_url']?.toString() ?? '';
+    final resumePath = candidate['resume_path']?.toString() ?? '';
+    final bio = candidate['bio']?.toString() ?? '';
+    final videoUrl = candidate['intro_video_url']?.toString() ?? '';
+    final pitch = candidate['intro_video_pitch']?.toString() ?? '';
+    final targetRole = candidate['intro_video_target_role']?.toString() ?? '';
 
     final workExperiences = _data?['work_experiences'] as List? ?? [];
     final education = _data?['education'] as List? ?? [];
     final certifications = _data?['certifications'] as List? ?? [];
     final projects = _data?['projects'] as List? ?? [];
-    final skillsRow = _data?['skills']?['skill_name']?.toString() ?? '';
-    final github = _data?['github'] ?? {};
+
+    String skillsRow = '';
+    final rawSkills = _data?['skills'];
+    if (rawSkills is Map) {
+      skillsRow = rawSkills['skill_name']?.toString() ?? '';
+    } else if (rawSkills is List && rawSkills.isNotEmpty) {
+      if (rawSkills.first is Map) {
+        skillsRow = rawSkills.first['skill_name']?.toString() ?? '';
+      }
+    }
+
+    final rawGithub = _data?['github'];
+    final Map github = (rawGithub is Map) ? rawGithub : {};
     final interests = _data?['interests'] as List? ?? [];
 
     return SingleChildScrollView(
@@ -1023,53 +1041,81 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
           // Job Interests
           if (interests.isNotEmpty) ...[
             _buildSectionHeader('Job Interests'),
-            ...interests.map((interest) {
-              return Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 8.0),
-                padding: const EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.getCard(isDark) : Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: isDark ? Colors.white10 : Colors.grey[200]!,
+            if (interests.first is Map)
+              ...interests.map((interest) {
+                final mapInterest = interest as Map;
+                return Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 8.0),
+                  padding: const EdgeInsets.all(12.0),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.getCard(isDark) : Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.grey[200]!,
+                    ),
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      interest['job_title'] ?? 'Role Interest',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      "Type: ${interest['job_type'] ?? 'N/A'} • Expected Salary: ${interest['expected_salary'] ?? 'N/A'}",
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    if (interest['preferred_locations'] != null &&
-                        interest['preferred_locations']
-                            .toString()
-                            .isNotEmpty) ...[
-                      const SizedBox(height: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        "Preferred Locations: ${interest['preferred_locations']}",
+                        mapInterest['job_title'] ?? 'Role Interest',
                         style: GoogleFonts.inter(
-                          fontSize: 11,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "Type: ${mapInterest['job_type'] ?? 'N/A'} • Expected Salary: ${mapInterest['expected_salary'] ?? 'N/A'}",
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
                           color: Colors.grey,
                         ),
                       ),
+                      if (mapInterest['preferred_locations'] != null &&
+                          mapInterest['preferred_locations']
+                              .toString()
+                              .isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          "Preferred Locations: ${mapInterest['preferred_locations']}",
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-              );
-            }),
+                  ),
+                );
+              }).toList()
+            else
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: interests.map((interest) {
+                  return Chip(
+                    label: Text(
+                      interest.toString().trim(),
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.getPrimary(isDark),
+                      ),
+                    ),
+                    backgroundColor: AppColors.getPrimary(
+                      isDark,
+                    ).withValues(alpha: 0.08),
+                    elevation: 0,
+                    side: BorderSide.none,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 0,
+                    ),
+                  );
+                }).toList(),
+              ),
             const SizedBox(height: 16),
           ],
         ],
@@ -1212,7 +1258,8 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
         : {};
 
     // Extract saved tags for the display badges
-    final recruiterNoteData = _data?['recruiter_note'] as Map?;
+    final rawRecruiterNote = _data?['recruiter_note'];
+    final Map? recruiterNoteData = (rawRecruiterNote is Map) ? rawRecruiterNote : null;
     final savedTagsRaw = recruiterNoteData?['tags']?.toString() ?? '';
     final List<String> existingTags = savedTagsRaw
         .split(',')
