@@ -407,6 +407,7 @@ class OnboardingScreen extends StatelessWidget {
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /*
           // Fast-Track Section
           Container(
             padding: const EdgeInsets.all(16),
@@ -485,6 +486,7 @@ class OnboardingScreen extends StatelessWidget {
               ],
             ),
           ),
+          */
           TextField(
             controller: controller.nameController,
             decoration: _inputDeco('Full Name *', isDark),

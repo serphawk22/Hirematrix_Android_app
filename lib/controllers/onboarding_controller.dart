@@ -178,6 +178,7 @@ class OnboardingController extends GetxController {
           'POST',
           Uri.parse('${ApiConstants.baseUrl}/onboarding/parse-resume'),
         );
+        request.fields['user_id'] = userId.toString();
         request.files.add(
           await http.MultipartFile.fromPath('resume', selectedResumePath.value),
         );

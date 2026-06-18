@@ -27,7 +27,11 @@ import 'package:hirematrix/controllers/recruiter_controller/leaderboard_controll
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await LocalNotificationService.initialize();
+  try {
+    await LocalNotificationService.initialize();
+  } catch (e) {
+    debugPrint("Failed to initialize LocalNotificationService: $e");
+  }
   final prefs = await SharedPreferences.getInstance();
   final isDarkMode = prefs.getBool('isDarkMode') ?? false;
 
