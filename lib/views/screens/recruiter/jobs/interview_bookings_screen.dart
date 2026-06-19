@@ -43,6 +43,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
       listen: false,
     ).currentRecruiter?.id;
     if (recruiterId != null) {
+      await Provider.of<JobsController>(context, listen: false).fetchJobs(recruiterId);
       final response = await _apiService.fetchInterviewBookings(
         recruiterId,
         jobId: _selectedJobId,
@@ -50,33 +51,15 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
       );
       if (response['success'] == true) {
         final List<dynamic> bookingsList = response['bookings'] ?? [];
-
-        // Calculate metrics locally
-        int total = bookingsList.length;
-        int upcoming = 0;
-        int completed = 0;
-        int rescheduled = 0;
-
-        for (var booking in bookingsList) {
-          final bStatus = (booking['booking_status'] ?? '')
-              .toString()
-              .toLowerCase();
-          if (bStatus == 'booked' || bStatus == 'confirmed') {
-            upcoming++;
-          } else if (bStatus == 'completed') {
-            completed++;
-          } else if (bStatus == 'rescheduled') {
-            rescheduled++;
-          }
-        }
+        final Map<String, dynamic> stats = response['stats'] ?? {};
 
         setState(() {
           _bookings = bookingsList;
           _metrics = {
-            'total': total.toString(),
-            'upcoming': upcoming.toString(),
-            'completed': completed.toString(),
-            'rescheduled': rescheduled.toString(),
+            'total': (stats['total_bookings'] ?? bookingsList.length).toString(),
+            'upcoming': (stats['upcoming'] ?? 0).toString(),
+            'completed': (stats['completed'] ?? 0).toString(),
+            'rescheduled': (stats['rescheduled'] ?? 0).toString(),
           };
         });
       }
@@ -90,7 +73,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
     Responsive().init(context);
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.bgDark : const Color(0xFFF6F8FA),
+      backgroundColor: isDark ? AppColors.bgDark : const Color(0xFFF4FBFA),
       appBar: AppBar(
         backgroundColor: isDark ? AppColors.getCard(isDark) : Colors.white,
         elevation: 0,
@@ -114,36 +97,75 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-          : Column(
-              children: [
-                _buildMetricsHeader(isDark),
-                _buildFilterBar(isDark),
-                Expanded(
-                  child: _bookings.isEmpty
-                      ? _buildEmptyState(isDark)
-                      : ListView.separated(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: isDark ? null : const LinearGradient(
+            colors: [Color(0xFFF4FBFA), Color(0xFFEEF9F2)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeaderBlock(isDark),
+                  _buildMetricsHeader(isDark),
+                  _buildFilterBar(isDark),
+                  Expanded(
+                    child: _bookings.isEmpty
+                        ? _buildEmptyState(isDark)
+                        : ListView.separated(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            itemCount: _bookings.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) =>
+                                _buildBookingCard(_bookings[index], isDark),
                           ),
-                          itemCount: _bookings.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 12),
-                          itemBuilder: (context, index) =>
-                              _buildBookingCard(_bookings[index], isDark),
-                        ),
-                ),
-              ],
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderBlock(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Interview Bookings',
+            style: GoogleFonts.inter(
+              fontSize: 19,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : const Color(0xFF16212B),
             ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Track confirmed interviews, manage reschedules, and complete finished booking flows.',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
+            ),
+          ),
+          const Divider(height: 24, thickness: 0.5),
+        ],
+      ),
     );
   }
 
   Widget _buildMetricsHeader(bool isDark) {
     return Container(
       height: 94,
-      margin: const EdgeInsets.only(top: 12),
+      margin: const EdgeInsets.only(bottom: 4),
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -199,7 +221,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
         border: Border.all(
           color: isDark
               ? Colors.white.withValues(alpha: 0.08)
-              : Colors.grey[200]!,
+              : const Color(0xFFD9ECE5),
           width: 1,
         ),
       ),
@@ -215,7 +237,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  color: isDark ? Colors.white : const Color(0xFF16212B),
                 ),
               ),
               Icon(icon, size: 18, color: color.withValues(alpha: 0.8)),
@@ -241,121 +263,121 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
     final jobs = Provider.of<JobsController>(context, listen: false).jobs;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.getCard(isDark) : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isDark ? Colors.white10 : Colors.grey[200]!,
-                ),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _selectedJobId,
-                  hint: Text(
-                    'Filter by Job',
-                    style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
-                  ),
-                  isExpanded: true,
-                  icon: Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    size: 18,
-                    color: AppColors.getPrimary(isDark),
-                  ),
-                  items: [
-                    DropdownMenuItem(
-                      value: null,
-                      child: Text(
-                        'All Jobs',
-                        style: GoogleFonts.inter(fontSize: 12),
-                      ),
-                    ),
-                    ...jobs.map(
-                      (j) => DropdownMenuItem(
-                        value: j.jobId,
-                        child: Text(
-                          j.jobTitle,
-                          style: GoogleFonts.inter(fontSize: 12),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  ],
-                  onChanged: (val) {
-                    setState(() => _selectedJobId = val);
-                    _loadData();
-                  },
-                ),
-              ),
+          Text(
+            'FILTERS',
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: Colors.grey[500],
+              letterSpacing: 0.5,
             ),
           ),
-          const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.getCard(isDark) : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isDark ? Colors.white10 : Colors.grey[200]!,
-              ),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedStatus,
-                hint: Text(
-                  'Status',
-                  style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.getCard(isDark) : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : const Color(0xFFD9ECE5),
+                    ),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedJobId,
+                      hint: Text(
+                        'Filter by Job',
+                        style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                      ),
+                      isExpanded: true,
+                      icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                      items: [
+                        DropdownMenuItem(
+                          value: null,
+                          child: Text(
+                            'All Jobs',
+                            style: GoogleFonts.inter(fontSize: 12),
+                          ),
+                        ),
+                        ...jobs.map(
+                          (j) => DropdownMenuItem(
+                            value: j.jobId,
+                            child: Text(
+                              j.jobTitle,
+                              style: GoogleFonts.inter(fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                      onChanged: (val) {
+                        setState(() => _selectedJobId = val);
+                        _loadData();
+                      },
+                    ),
+                  ),
                 ),
-                icon: Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  size: 18,
-                  color: AppColors.getPrimary(isDark),
-                ),
-                items: [
-                  DropdownMenuItem(
-                    value: null,
-                    child: Text('All', style: GoogleFonts.inter(fontSize: 12)),
-                  ),
-                  DropdownMenuItem(
-                    value: 'booked',
-                    child: Text(
-                      'Booked',
-                      style: GoogleFonts.inter(fontSize: 12),
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'confirmed',
-                    child: Text(
-                      'Confirmed',
-                      style: GoogleFonts.inter(fontSize: 12),
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'rescheduled',
-                    child: Text(
-                      'Rescheduled',
-                      style: GoogleFonts.inter(fontSize: 12),
-                    ),
-                  ),
-                  DropdownMenuItem(
-                    value: 'completed',
-                    child: Text(
-                      'Completed',
-                      style: GoogleFonts.inter(fontSize: 12),
-                    ),
-                  ),
-                ],
-                onChanged: (val) {
-                  setState(() => _selectedStatus = val);
-                  _loadData();
-                },
               ),
-            ),
+              const SizedBox(width: 10),
+              Container(
+                width: 140,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.getCard(isDark) : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? Colors.white10 : const Color(0xFFD9ECE5),
+                  ),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedStatus,
+                    hint: Text(
+                      'Status',
+                      style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                    ),
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                    items: [
+                      DropdownMenuItem(
+                        value: null,
+                        child: Text('All Status', style: GoogleFonts.inter(fontSize: 12)),
+                      ),
+                      DropdownMenuItem(
+                        value: 'confirmed',
+                        child: Text('Confirmed', style: GoogleFonts.inter(fontSize: 12)),
+                      ),
+                      DropdownMenuItem(
+                        value: 'completed',
+                        child: Text('Completed', style: GoogleFonts.inter(fontSize: 12)),
+                      ),
+                      DropdownMenuItem(
+                        value: 'rescheduled',
+                        child: Text('Rescheduled', style: GoogleFonts.inter(fontSize: 12)),
+                      ),
+                      DropdownMenuItem(
+                        value: 'no_show',
+                        child: Text('No Show', style: GoogleFonts.inter(fontSize: 12)),
+                      ),
+                      DropdownMenuItem(
+                        value: 'cancelled',
+                        child: Text('Cancelled', style: GoogleFonts.inter(fontSize: 12)),
+                      ),
+                    ],
+                    onChanged: (val) {
+                      setState(() => _selectedStatus = val);
+                      _loadData();
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -363,22 +385,31 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
   }
 
   Widget _buildBookingCard(Map<String, dynamic> booking, bool isDark) {
-    final status = (booking['booking_status'] ?? 'confirmed')
-        .toString()
-        .toUpperCase();
-    final review = (booking['review_status'] ?? 'pending')
-        .toString()
-        .toUpperCase();
+    final status = (booking['booking_status'] ?? 'confirmed').toString().toUpperCase();
+    final reviewDecision = booking['review_decision']?.toString();
+    final hasReview = booking['review_id'] != null;
+
+    // Check if slot date is past
+    bool isPast = false;
+    final slotDatetimeStr = booking['slot_datetime']?.toString() ?? '';
+    if (slotDatetimeStr.isNotEmpty) {
+      final dt = DateTime.tryParse(slotDatetimeStr);
+      if (dt != null) {
+        isPast = dt.isBefore(DateTime.now());
+      }
+    }
+
+    final int rescheduleCount = int.tryParse(booking['reschedule_count']?.toString() ?? '0') ?? 0;
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isDark ? AppColors.getCard(isDark) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.grey[100]!),
+        border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFD9ECE5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.15 : 0.015),
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.015),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -391,7 +422,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: AppColors.getPrimary(isDark).withOpacity(0.08),
+                backgroundColor: AppColors.getPrimary(isDark).withValues(alpha: 0.08),
                 child: Text(
                   (booking['candidate_name'] ?? 'C')[0].toUpperCase(),
                   style: GoogleFonts.inter(
@@ -415,17 +446,32 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      booking['job_title'] ?? 'Role',
+                      booking['candidate_email'] ?? '',
                       style: GoogleFonts.inter(
                         fontSize: 10.5,
                         color: Colors.grey[500],
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
-              _buildStatusBadge(status),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  _buildStatusBadge(status),
+                  if (rescheduleCount > 0) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      'Rescheduled: ${rescheduleCount}x',
+                      style: GoogleFonts.inter(
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.amber[800],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -433,24 +479,46 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withOpacity(0.02)
+                  ? Colors.white.withValues(alpha: 0.02)
                   : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.calendar_today_rounded,
-                  size: 12,
-                  color: AppColors.getPrimary(isDark),
+                Row(
+                  children: [
+                    const Icon(Icons.work_outline_rounded, size: 12, color: Color(0xFF1FB7B5)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        booking['job_title'] ?? 'Role',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  "${booking['slot_date']}  •  ${booking['slot_time']}",
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today_rounded,
+                      size: 12,
+                      color: AppColors.getPrimary(isDark),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "${booking['slot_date']}  •  ${booking['slot_time']}",
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -459,68 +527,166 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
           Row(
             children: [
               _buildLabelValue(
-                'BOOKED DATE',
-                _formatBookedDate(booking['created_at']),
+                'BOOKED ON',
+                _formatBookedDate(booking['booked_at'] ?? booking['created_at']),
               ),
-              const SizedBox(width: 32),
-              _buildLabelValue('REVIEW STATUS', review),
+              const SizedBox(width: 48),
+              _buildLabelValue('REVIEW STATUS', hasReview ? 'REVIEWED' : 'PENDING'),
             ],
           ),
+          
+          if (hasReview) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withValues(alpha: 0.01) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'INTERVIEW SUMMARY',
+                        style: GoogleFonts.inter(fontSize: 8, fontWeight: FontWeight.w800, color: Colors.grey),
+                      ),
+                      if (reviewDecision != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _getDecisionColor(reviewDecision).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            reviewDecision.toUpperCase(),
+                            style: GoogleFonts.inter(
+                              fontSize: 7.5,
+                              fontWeight: FontWeight.w800,
+                              color: _getDecisionColor(reviewDecision),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  if (booking['review_attendance_status'] != null) ...[
+                    RichText(
+                      text: TextSpan(
+                        style: GoogleFonts.inter(fontSize: 10, color: isDark ? Colors.white : Colors.black87),
+                        children: [
+                          TextSpan(
+                            text: 'Attendance: ',
+                            style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                          ),
+                          TextSpan(text: booking['review_attendance_status'].toString().toUpperCase()),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  if (booking['review_notes'] != null && booking['review_notes'].toString().isNotEmpty)
+                    Text(
+                      booking['review_notes'].toString(),
+                      style: GoogleFonts.inter(fontSize: 10.5, color: isDark ? Colors.grey[350] : Colors.black54, fontStyle: FontStyle.italic),
+                    ),
+                ],
+              ),
+            ),
+          ],
+
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
             child: Divider(height: 1, thickness: 0.5),
           ),
+          
           Row(
             children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _showReviewDialog(context, booking),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+              // Reschedule visible only if upcoming and confirmed/booked/rescheduled
+              if (!isPast && ['booked', 'confirmed', 'rescheduled'].contains(booking['booking_status']?.toString().toLowerCase())) ...[
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showRescheduleSheet(context, booking),
+                    icon: const Icon(Icons.sync_rounded, size: 14, color: Colors.white),
+                    label: Text(
+                      'Reschedule',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
-                    side: BorderSide(
-                      color: isDark ? Colors.white24 : Colors.grey[300]!,
-                    ),
-                  ),
-                  child: Text(
-                    'Review',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.getPrimary(isDark),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _showRescheduleSheet(context, booking),
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: AppColors.getPrimary(isDark),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: Text(
-                    'Reschedule',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: const Color(0xFF1FB7B5),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                const SizedBox(width: 8),
+              ],
+              
+              // Review visible if past or status completed/no_show/rescheduled
+              if (isPast || ['completed', 'no_show', 'rescheduled'].contains(booking['booking_status']?.toString().toLowerCase())) ...[
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showReviewDialog(context, booking),
+                    icon: Icon(Icons.rate_review_rounded, size: 14, color: AppColors.getPrimary(isDark)),
+                    label: Text(
+                      hasReview ? 'Edit Review' : 'Review Interview',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.getPrimary(isDark),
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      side: BorderSide(
+                        color: AppColors.getPrimary(isDark),
+                      ),
+                    ),
+                  ),
+                ),
+              ] else if (isPast == false && !['booked', 'confirmed', 'rescheduled'].contains(booking['booking_status']?.toString().toLowerCase())) ...[
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      '-',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                )
+              ]
             ],
           ),
         ],
       ),
     );
+  }
+
+  Color _getDecisionColor(String decision) {
+    switch (decision.toLowerCase()) {
+      case 'selected':
+      case 'shortlisted':
+        return Colors.green;
+      case 'hold':
+        return Colors.amber[800]!;
+      case 'rejected':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget _buildLabelValue(String label, String value) {
@@ -551,7 +717,15 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
       return 'Unknown';
     }
     final parts = dateString.split(' ');
-    return parts.isNotEmpty && parts[0].isNotEmpty ? parts[0] : dateString;
+    if (parts.isNotEmpty && parts[0].isNotEmpty) {
+      try {
+        final parsed = DateTime.parse(parts[0]);
+        return DateFormat('MMM dd, yyyy').format(parsed);
+      } catch (_) {
+        return parts[0];
+      }
+    }
+    return dateString;
   }
 
   Widget _buildStatusBadge(String status) {
@@ -559,15 +733,16 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
     if (status == 'CANCELLED') color = Colors.redAccent;
     if (status == 'COMPLETED') color = Colors.teal;
     if (status == 'RESCHEDULED') color = Colors.amber;
+    if (status == 'NO_SHOW') color = Colors.redAccent;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        status,
+        status.replaceAll('_', ' '),
         style: GoogleFonts.inter(
           fontSize: 8,
           fontWeight: FontWeight.w800,
@@ -586,7 +761,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
           Icon(
             Icons.event_busy_rounded,
             size: 40,
-            color: Colors.grey.withOpacity(0.3),
+            color: Colors.grey.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 12),
           Text(
@@ -620,13 +795,19 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
   }
 
   void _showReviewDialog(BuildContext context, Map<String, dynamic> booking) {
-    final notesController = TextEditingController();
-    String decision = 'shortlisted'; // default decision
+    final notesController = TextEditingController(text: booking['review_notes']?.toString() ?? '');
+    final strengthsController = TextEditingController(text: booking['review_strengths']?.toString() ?? '');
+    final concernsController = TextEditingController(text: booking['review_concerns']?.toString() ?? '');
+    
+    String attendance = booking['review_attendance_status']?.toString() ?? 'attended';
+    String decision = booking['review_decision']?.toString() ?? 'shortlisted';
+    
     bool isSaving = false;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
@@ -641,95 +822,167 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                 fontWeight: FontWeight.w800,
               ),
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Candidate: ${booking['candidate_name']}',
-                  style: GoogleFonts.inter(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Submit Decision',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    ChoiceChip(
-                      label: const Text('Shortlist'),
-                      selected: decision == 'shortlisted',
-                      onSelected: (selected) {
-                        if (selected)
-                          setDialogState(() => decision = 'shortlisted');
-                      },
-                      selectedColor: Colors.green.withOpacity(0.2),
-                      checkmarkColor: Colors.green,
-                      labelStyle: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: decision == 'shortlisted'
-                            ? Colors.green
-                            : Colors.grey,
-                      ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Candidate: ${booking['candidate_name']}',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(width: 8),
-                    ChoiceChip(
-                      label: const Text('Reject'),
-                      selected: decision == 'rejected',
-                      onSelected: (selected) {
-                        if (selected)
-                          setDialogState(() => decision = 'rejected');
-                      },
-                      selectedColor: Colors.red.withOpacity(0.2),
-                      checkmarkColor: Colors.red,
-                      labelStyle: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: decision == 'rejected'
-                            ? Colors.red
-                            : Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Evaluation Notes',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.grey,
                   ),
-                ),
-                const SizedBox(height: 6),
-                TextField(
-                  controller: notesController,
-                  maxLines: 3,
-                  style: GoogleFonts.inter(fontSize: 12),
-                  decoration: InputDecoration(
-                    hintText: 'Enter evaluation feedback...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color: isDark ? Colors.white12 : Colors.grey[300]!,
-                      ),
+                  Text(
+                    'Role: ${booking['job_title']}',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: Colors.grey,
                     ),
-                    fillColor: isDark
-                        ? Colors.white.withOpacity(0.02)
-                        : Colors.grey[50],
-                    filled: true,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 14),
+                  
+                  // Attendance Dropdown
+                  Text(
+                    'ATTENDANCE',
+                    style: GoogleFonts.inter(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  DropdownButtonFormField<String>(
+                    value: attendance,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    dropdownColor: isDark ? AppColors.bgCardDark : Colors.white,
+                    items: const [
+                      DropdownMenuItem(value: 'attended', child: Text('Attended', style: TextStyle(fontSize: 12.5))),
+                      DropdownMenuItem(value: 'late', child: Text('Late but attended', style: TextStyle(fontSize: 12.5))),
+                      DropdownMenuItem(value: 'no_show', child: Text('No Show', style: TextStyle(fontSize: 12.5))),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setDialogState(() {
+                          attendance = val;
+                          if (attendance == 'no_show') {
+                            decision = 'rejected';
+                          }
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Decision Dropdown
+                  Text(
+                    'RECRUITER DECISION',
+                    style: GoogleFonts.inter(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  DropdownButtonFormField<String>(
+                    value: decision,
+                    disabledHint: const Text('Rejected (No Show)', style: TextStyle(fontSize: 12.5)),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    dropdownColor: isDark ? AppColors.bgCardDark : Colors.white,
+                    items: attendance == 'no_show'
+                        ? null
+                        : const [
+                            DropdownMenuItem(value: 'shortlisted', child: Text('Shortlist for next step', style: TextStyle(fontSize: 12.5))),
+                            DropdownMenuItem(value: 'hold', child: Text('Hold / Revisit Later', style: TextStyle(fontSize: 12.5))),
+                            DropdownMenuItem(value: 'selected', child: Text('Select / Offer', style: TextStyle(fontSize: 12.5))),
+                            DropdownMenuItem(value: 'rejected', child: Text('Reject', style: TextStyle(fontSize: 12.5))),
+                          ],
+                    onChanged: attendance == 'no_show'
+                        ? null
+                        : (val) {
+                            if (val != null) {
+                              setDialogState(() => decision = val);
+                            }
+                          },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Strengths field
+                  Text(
+                    'STRENGTHS',
+                    style: GoogleFonts.inter(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  TextField(
+                    controller: strengthsController,
+                    maxLines: 2,
+                    style: GoogleFonts.inter(fontSize: 12),
+                    decoration: InputDecoration(
+                      hintText: 'What did the candidate do well?',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      fillColor: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.grey[50],
+                      filled: true,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Concerns field
+                  Text(
+                    'CONCERNS',
+                    style: GoogleFonts.inter(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  TextField(
+                    controller: concernsController,
+                    maxLines: 2,
+                    style: GoogleFonts.inter(fontSize: 12),
+                    decoration: InputDecoration(
+                      hintText: 'Any concerns or gaps to note?',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      fillColor: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.grey[50],
+                      filled: true,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Evaluation notes field
+                  Text(
+                    'RECRUITER NOTES',
+                    style: GoogleFonts.inter(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  TextField(
+                    controller: notesController,
+                    maxLines: 3,
+                    style: GoogleFonts.inter(fontSize: 12),
+                    decoration: InputDecoration(
+                      hintText: 'Summary & next steps...',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      fillColor: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.grey[50],
+                      filled: true,
+                    ),
+                  ),
+                ],
+              ),
             ),
             actions: [
               TextButton(
@@ -743,18 +996,15 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                 onPressed: isSaving
                     ? null
                     : () async {
-                        final appId = booking['application_id']?.toString();
                         final recruiterId = Provider.of<AuthController>(
                           context,
                           listen: false,
                         ).currentRecruiter?.id;
 
-                        if (appId == null || recruiterId == null) {
+                        if (recruiterId == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                'Cannot evaluate: Missing App ID or Recruiter ID',
-                              ),
+                              content: Text('Cannot evaluate: Missing Recruiter ID'),
                               backgroundColor: AppColors.error,
                             ),
                           );
@@ -763,13 +1013,15 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
 
                         setDialogState(() => isSaving = true);
 
-                        // Update application status based on decision
-                        final response = await _apiService
-                            .updateApplicationStatus(
-                              appId,
-                              decision,
-                              recruiterId,
-                            );
+                        final response = await _apiService.saveInterviewReview({
+                          'booking_id': booking['id'],
+                          'recruiter_id': recruiterId,
+                          'attendance_status': attendance,
+                          'decision': decision,
+                          'strengths': strengthsController.text,
+                          'concerns': concernsController.text,
+                          'notes': notesController.text,
+                        });
 
                         if (context.mounted) {
                           setDialogState(() => isSaving = false);
@@ -778,7 +1030,9 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'Candidate $decision successfully',
+                                  attendance == 'no_show'
+                                      ? 'Interview marked as No Show'
+                                      : 'Evaluation review saved successfully',
                                 ),
                                 backgroundColor: AppColors.success,
                               ),
@@ -788,8 +1042,7 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  response['message'] ??
-                                      'Failed to update status',
+                                  response['message'] ?? 'Failed to update review',
                                 ),
                                 backgroundColor: AppColors.error,
                               ),
@@ -798,11 +1051,9 @@ class _InterviewBookingsScreenState extends State<InterviewBookingsScreen> {
                         }
                       },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: decision == 'shortlisted'
-                      ? Colors.green
-                      : Colors.red,
+                  backgroundColor: AppColors.getPrimary(isDark),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 child: isSaving
@@ -842,10 +1093,37 @@ class _RescheduleFormSheet extends StatefulWidget {
 }
 
 class _RescheduleFormSheetState extends State<_RescheduleFormSheet> {
-  DateTime? _selectedDate;
-  TimeOfDay? _selectedTime;
-  bool _isSaving = false;
   final ApiService _apiService = ApiService();
+  bool _isSlotsLoading = true;
+  List<dynamic> _availableSlots = [];
+  String? _selectedSlotId;
+  final TextEditingController _reasonController = TextEditingController();
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAvailableSlots();
+  }
+
+  Future<void> _loadAvailableSlots() async {
+    final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter?.id;
+    if (recruiterId != null) {
+      final response = await _apiService.fetchInterviewSlots(
+        recruiterId,
+        jobId: widget.booking['job_id']?.toString(),
+        status: 'available',
+      );
+      if (response['success'] == true) {
+        setState(() {
+          _availableSlots = response['slots'] ?? [];
+          _isSlotsLoading = false;
+        });
+        return;
+      }
+    }
+    setState(() => _isSlotsLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -883,110 +1161,93 @@ class _RescheduleFormSheetState extends State<_RescheduleFormSheet> {
             ],
           ),
           const SizedBox(height: 16),
+          
           Text(
-            'Select New Date',
+            'SELECT NEW AVAILABLE SLOT',
             style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
+              fontSize: 8.5,
+              fontWeight: FontWeight.w800,
               color: Colors.grey,
             ),
           ),
           const SizedBox(height: 6),
-          InkWell(
-            onTap: () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now().add(const Duration(days: 1)),
-                firstDate: DateTime.now(),
-                lastDate: DateTime.now().add(const Duration(days: 90)),
-              );
-              if (date != null) setState(() => _selectedDate = date);
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withOpacity(0.03)
-                    : Colors.grey[50],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isDark ? Colors.white12 : Colors.grey[200]!,
+          
+          if (_isSlotsLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today_rounded,
-                    size: 16,
-                    color: AppColors.getPrimary(isDark),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    _selectedDate == null
-                        ? 'Choose Date'
-                        : DateFormat('dd MMM, yyyy').format(_selectedDate!),
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+            )
+          else if (_availableSlots.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14.0),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'No available interview slots scheduled for this job role. Please create a slot first in the Slots screen.',
+                  style: GoogleFonts.inter(fontSize: 12, color: Colors.redAccent, fontWeight: FontWeight.w600),
+                ),
               ),
+            )
+          else
+            DropdownButtonFormField<String>(
+              value: _selectedSlotId,
+              hint: Text(
+                'Select new interview slot',
+                style: GoogleFonts.inter(fontSize: 12.5),
+              ),
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              dropdownColor: isDark ? AppColors.bgCardDark : Colors.white,
+              items: _availableSlots.map((slot) {
+                return DropdownMenuItem<String>(
+                  value: slot['id']?.toString(),
+                  child: Text(
+                    "${slot['slot_date']} at ${slot['slot_time']} (${slot['booked_count']}/${slot['capacity']} booked)",
+                    style: GoogleFonts.inter(fontSize: 12.5),
+                  ),
+                );
+              }).toList(),
+              onChanged: (val) {
+                setState(() => _selectedSlotId = val);
+              },
             ),
-          ),
           const SizedBox(height: 16),
+          
           Text(
-            'Select New Time',
+            'REASON FOR RESCHEDULING',
             style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
+              fontSize: 8.5,
+              fontWeight: FontWeight.w800,
               color: Colors.grey,
             ),
           ),
           const SizedBox(height: 6),
-          InkWell(
-            onTap: () async {
-              final time = await showTimePicker(
-                context: context,
-                initialTime: TimeOfDay.now(),
-              );
-              if (time != null) setState(() => _selectedTime = time);
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withOpacity(0.03)
-                    : Colors.grey[50],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isDark ? Colors.white12 : Colors.grey[200]!,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.access_time_rounded,
-                    size: 16,
-                    color: AppColors.getPrimary(isDark),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    _selectedTime == null
-                        ? 'Choose Time'
-                        : _selectedTime!.format(context),
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+          TextField(
+            controller: _reasonController,
+            style: GoogleFonts.inter(fontSize: 13),
+            decoration: InputDecoration(
+              hintText: 'Enter rescheduling reason...',
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
+          
           const SizedBox(height: 24),
           ElevatedButton(
-            onPressed: _isSaving ? null : _handleReschedule,
+            onPressed: _isSaving || _selectedSlotId == null ? null : _handleReschedule,
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 48),
               backgroundColor: AppColors.getPrimary(isDark),
@@ -1019,13 +1280,7 @@ class _RescheduleFormSheetState extends State<_RescheduleFormSheet> {
   }
 
   void _handleReschedule() async {
-    if (_selectedDate == null || _selectedTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select both date and time'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+    if (_selectedSlotId == null) {
       return;
     }
 
@@ -1034,18 +1289,12 @@ class _RescheduleFormSheetState extends State<_RescheduleFormSheet> {
       context,
       listen: false,
     ).currentRecruiter?.id;
-    final finalDateTime = DateTime(
-      _selectedDate!.year,
-      _selectedDate!.month,
-      _selectedDate!.day,
-      _selectedTime!.hour,
-      _selectedTime!.minute,
-    );
 
     final response = await _apiService.rescheduleInterview({
       'interview_id': widget.booking['id'],
       'recruiter_id': recruiterId,
-      'interview_date': DateFormat('yyyy-MM-dd HH:mm:ss').format(finalDateTime),
+      'slot_id': _selectedSlotId,
+      'reason': _reasonController.text.trim().isNotEmpty ? _reasonController.text.trim() : 'Rescheduled by recruiter',
     });
 
     if (mounted) {

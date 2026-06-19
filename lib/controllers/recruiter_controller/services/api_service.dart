@@ -561,6 +561,10 @@ class ApiService {
     return _performGet(ApiConstants.interviewBookings, params);
   }
 
+  Future<Map<String, dynamic>> saveInterviewReview(Map<String, dynamic> reviewData) async {
+    return _performPost("interviews/review", reviewData);
+  }
+
   Future<List<dynamic>> fetchActivity(String recruiterId) async {
     try {
       final data = await _performGet("activity", {'recruiter_id': recruiterId});
