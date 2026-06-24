@@ -460,6 +460,11 @@ class ApiService {
     return _performPost("interviews/reschedule", data);
   }
 
+  Future<Map<String, dynamic>> submitInterviewReview(
+      Map<String, dynamic> data) async {
+    return _performPost("interviews/review", data);
+  }
+
   Future<Map<String, dynamic>> markNotificationRead(
       String notificationId, String recruiterId) async {
     return _performPost("notifications/mark_read", {
@@ -529,10 +534,11 @@ class ApiService {
           String filePath, String recruiterId) async =>
       {'success': false};
   Future<Map<String, dynamic>> fetchInterviewSlots(String recruiterId,
-      {String? jobId, String? status}) async {
+      {String? jobId, String? status, String? date}) async {
     final Map<String, String> params = {'recruiter_id': recruiterId};
     if (jobId != null) params['job_id'] = jobId;
     if (status != null) params['status'] = status;
+    if (date != null) params['date'] = date;
     return _performGet(ApiConstants.interviewSlots, params);
   }
 
