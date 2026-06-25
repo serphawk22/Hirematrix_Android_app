@@ -138,7 +138,7 @@ class _PostJobScreenState extends State<PostJobScreen> {
       backgroundColor: isDark ? AppColors.bgDark : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Text(
-          'New Job Listing',
+          'Post a Job',
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
         ),
         centerTitle: true,
@@ -532,7 +532,7 @@ class _PostJobScreenState extends State<PostJobScreen> {
               : (items.isNotEmpty ? items.keys.first : null),
           style: GoogleFonts.inter(
             fontSize: 13,
-            color: Colors.blueAccent,
+            color: Colors.black,
             fontWeight: FontWeight.w600,
           ),
           isExpanded: true,

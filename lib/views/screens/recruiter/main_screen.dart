@@ -328,32 +328,40 @@ class _MainScreenState extends State<MainScreen> {
       title: const HireMatrixLogo(height: 32),
       actions: [
         IconButton(
-          icon: Icon(Icons.file_download_outlined,
-              color: isDark ? Colors.white70 : Colors.black87),
+          icon: Icon(
+            Icons.file_download_outlined,
+            color: isDark ? Colors.white70 : Colors.black87,
+          ),
           tooltip: 'Export Overview',
           onPressed: () async {
             final auth = Provider.of<AuthController>(context, listen: false);
             final recruiterId = auth.currentRecruiter?.id;
             if (recruiterId != null) {
               await Permission.storage.request();
-              
+
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Padding(
                     padding: EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text('Downloading report...', style: TextStyle(fontSize: 16)),
+                    child: Text(
+                      'Downloading report...',
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10))),
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
                 ),
               );
 
               try {
                 final apiService = ApiService();
                 final baseUrl = await apiService.getBaseUrl();
-                final url = Uri.parse('$baseUrl/export/excel?recruiter_id=$recruiterId');
-                
+                final url = Uri.parse(
+                  '$baseUrl/export/excel?recruiter_id=$recruiterId',
+                );
+
                 final response = await http.get(url);
                 if (response.statusCode == 200) {
                   Directory? directory;
@@ -367,7 +375,8 @@ class _MainScreenState extends State<MainScreen> {
                   }
 
                   if (directory != null) {
-                    final fileName = 'recruitment_overview_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+                    final fileName =
+                        'recruitment_overview_${DateTime.now().millisecondsSinceEpoch}.xlsx';
                     final file = File('${directory.path}/$fileName');
                     await file.writeAsBytes(response.bodyBytes);
 
@@ -375,11 +384,15 @@ class _MainScreenState extends State<MainScreen> {
                       SnackBar(
                         content: const Padding(
                           padding: EdgeInsets.symmetric(vertical: 8.0),
-                          child: Text('Saved to Downloads', style: TextStyle(fontSize: 16)),
+                          child: Text(
+                            'Saved to Downloads',
+                            style: TextStyle(fontSize: 16),
+                          ),
                         ),
                         behavior: SnackBarBehavior.floating,
                         shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10))),
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
                         action: SnackBarAction(
                           label: 'OPEN',
                           textColor: Colors.white,
@@ -396,11 +409,15 @@ class _MainScreenState extends State<MainScreen> {
                     const SnackBar(
                       content: Padding(
                         padding: EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text('Failed to download report', style: TextStyle(fontSize: 16)),
+                        child: Text(
+                          'Failed to download report',
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10))),
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                      ),
                     ),
                   );
                 }
@@ -409,11 +426,15 @@ class _MainScreenState extends State<MainScreen> {
                   SnackBar(
                     content: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text('Error: $e', style: const TextStyle(fontSize: 16)),
+                      child: Text(
+                        'Error: $e',
+                        style: const TextStyle(fontSize: 16),
+                      ),
                     ),
                     behavior: SnackBarBehavior.floating,
                     shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10))),
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
                   ),
                 );
               }
@@ -421,7 +442,7 @@ class _MainScreenState extends State<MainScreen> {
           },
         ),
         _buildNotificationIcon(),
-        const SizedBox(width: 8)
+        const SizedBox(width: 8),
       ],
     );
   }
@@ -463,12 +484,12 @@ class _MainScreenState extends State<MainScreen> {
     return Center(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(100),
+        borderRadius: BorderRadius.circular(10),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
             color: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(100),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: AppColors.getPrimary(isDark).withValues(alpha: 0.2),
             ),

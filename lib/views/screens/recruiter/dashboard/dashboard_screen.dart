@@ -94,8 +94,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           final dateStr = item['interview_date'] ?? '';
           final date = DateTime.tryParse(dateStr);
           if (date == null) return false;
-          final status = (item['booking_status'] ?? 'booked').toString().toLowerCase();
-          final isStatusMatch = const ['booked', 'rescheduled', 'confirmed'].contains(status);
+          final status = (item['booking_status'] ?? 'booked')
+              .toString()
+              .toLowerCase();
+          final isStatusMatch = const [
+            'booked',
+            'rescheduled',
+            'confirmed',
+          ].contains(status);
           if (!isStatusMatch) return false;
           return date.year == now.year &&
               date.month == now.month &&
@@ -146,15 +152,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   dashboard.conversionMetrics,
                   isDarkMode,
                 ),
-                SizedBox(height: Responsive.spacing(28)),
-                _buildSectionHeader('Upcoming Interviews', isDarkMode, null),
-                SizedBox(height: Responsive.spacing(12)),
-                _buildInterviewList(dashboard.upcomingInterviews, isDarkMode),
-                SizedBox(height: Responsive.spacing(28)),
-                _buildSectionHeader('Recruiter Activity', isDarkMode, null),
-                SizedBox(height: Responsive.spacing(12)),
-                _buildActivityTimeline(isDarkMode),
-                SizedBox(height: Responsive.spacing(100)),
+                // SizedBox(height: Responsive.spacing(28)),
+                // _buildSectionHeader('Upcoming Interviews', isDarkMode, null),
+                // SizedBox(height: Responsive.spacing(12)),
+                // _buildInterviewList(dashboard.upcomingInterviews, isDarkMode),
+                // SizedBox(height: Responsive.spacing(28)),
+                // _buildSectionHeader('Recruiter Activity', isDarkMode, null),
+                // SizedBox(height: Responsive.spacing(12)),
+                // _buildActivityTimeline(isDarkMode),
+                // SizedBox(height: Responsive.spacing(100)),
               ],
             ),
           ),
@@ -632,7 +638,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         int.tryParse(stats['Rejected']?.toString() ?? '0') ?? 0;
     final int aiInterviewCompleted =
         int.tryParse(stats['ai_interview_completed']?.toString() ?? '0') ?? 0;
-    final int screeningCompleted = shortlisted + rejected + aiInterviewCompleted;
+    final int screeningCompleted =
+        shortlisted + rejected + aiInterviewCompleted;
     final int interviewSlotBooked =
         int.tryParse(stats['Interview']?.toString() ?? '0') ?? 0;
 
@@ -1101,6 +1108,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
+          Divider(color: AppColors.getBorder(isDark)),
           const SizedBox(height: 16),
           if (hasActionCenterItems) ...[
             if (pendingScreening > 0) ...[
@@ -1111,12 +1119,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Colors.orange,
                 isDark,
                 () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RecruitmentPipelineScreen(),
-                    ),
-                  ).then((_) => _loadData());
+                  if (widget.onSwitchTab != null) {
+                    widget.onSwitchTab!(1);
+                  }
                 },
               ),
               if (hrInterviewsToday > 0)

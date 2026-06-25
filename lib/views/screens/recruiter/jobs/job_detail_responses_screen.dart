@@ -10,6 +10,12 @@ import 'package:hirematrix/controllers/recruiter_controller/models/job.dart';
 import '../candidates/candidate_profile_view_screen.dart';
 import 'add_slot_screen.dart';
 import 'edit_slot_screen.dart';
+import 'recruiter_reschedule_interview.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:open_file/open_file.dart';
 
 class JobDetailResponsesScreen extends StatefulWidget {
   final Job job;
@@ -395,6 +401,117 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
     }
   }
 
+  Future<void> _exportApplicants() async {
+    final auth = Provider.of<AuthController>(context, listen: false);
+    final recruiterId = auth.currentRecruiter?.id;
+    if (recruiterId == null) return;
+
+    await Permission.storage.request();
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0),
+          child: Text(
+            'Downloading applicants report...',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+      ),
+    );
+
+    try {
+      final baseUrl = await _apiService.getBaseUrl();
+      String cleanedUrl = baseUrl
+          .replaceAll('/api/mobile', '')
+          .replaceAll('/public/api/mobile', '');
+      final url = Uri.parse(
+        "$baseUrl/export/excel?recruiter_id=$recruiterId&type=detailed&job_id=${widget.job.jobId}",
+      );
+
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        Directory? directory;
+        if (Platform.isAndroid) {
+          directory = Directory('/storage/emulated/0/Download');
+          if (!await directory.exists()) {
+            directory = await getExternalStorageDirectory();
+          }
+        } else {
+          directory = await getApplicationDocumentsDirectory();
+        }
+
+        if (directory != null) {
+          final fileName =
+              'applicants_export_${widget.job.jobId}_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+          final file = File('${directory.path}/$fileName');
+          await file.writeAsBytes(response.bodyBytes);
+
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  'Saved to Downloads',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+              behavior: SnackBarBehavior.floating,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+              ),
+              action: SnackBarAction(
+                label: 'OPEN',
+                textColor: Colors.white,
+                backgroundColor: Theme.of(context).primaryColor,
+                onPressed: () {
+                  OpenFile.open(file.path);
+                },
+              ),
+            ),
+          );
+        }
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'Failed to download report',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Text('Error: $e', style: const TextStyle(fontSize: 16)),
+          ),
+          behavior: SnackBarBehavior.floating,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+        ),
+      );
+    }
+  }
+
   // Bulk Actions
   Future<void> _bulkUpdateStatus(String status) async {
     if (_selectedAppIds.isEmpty) return;
@@ -441,68 +558,270 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
   }
 
   void _showBulkEmailDialog() {
-    final subjectController = TextEditingController(
-      text: "Update on your application for ${widget.job.jobTitle}",
-    );
+    final subjectController = TextEditingController();
     final bodyController = TextEditingController();
+
+    // Get selected candidates details
+    final selectedApps = _applications.where((app) {
+      final appId = app['application_id']?.toString() ?? '';
+      return _selectedAppIds.contains(appId);
+    }).toList();
 
     showDialog(
       context: context,
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        return AlertDialog(
-          backgroundColor: isDark ? AppColors.bgDark : Colors.white,
-          title: Text(
-            'Send Bulk Email (${_selectedCandidateIds.length} Candidates)',
-            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: subjectController,
-                  decoration: const InputDecoration(
-                    labelText: 'Subject',
-                    border: OutlineInputBorder(),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            void applyTemplate(String type) {
+              String subject = '';
+              String body = '';
+              switch (type) {
+                case 'interview':
+                  subject = 'Interview Invitation - ${widget.job.jobTitle}';
+                  body =
+                      'Dear candidate,\n\nWe would like to invite you for an interview for the ${widget.job.jobTitle} position.\n\nPlease let us know your availability.';
+                  break;
+                case 'followup':
+                  subject = 'Application Update - ${widget.job.jobTitle}';
+                  body =
+                      'Dear candidate,\n\nWe are currently reviewing your application for the ${widget.job.jobTitle} position and will get back to you shortly.';
+                  break;
+                case 'rejection':
+                  subject = 'Update regarding your application';
+                  body =
+                      'Dear candidate,\n\nThank you for applying for the ${widget.job.jobTitle} position. Unfortunately, we have decided to move forward with other candidates at this time.';
+                  break;
+                case 'offer':
+                  subject = 'Offer Letter - ${widget.job.jobTitle}';
+                  body =
+                      'Dear candidate,\n\nWe are thrilled to offer you the position of ${widget.job.jobTitle}. Please find the details attached.';
+                  break;
+              }
+              setState(() {
+                subjectController.text = subject;
+                bodyController.text = body;
+              });
+            }
+
+            return AlertDialog(
+              backgroundColor: isDark ? AppColors.bgDark : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.alternate_email,
+                    color: AppColors.getPrimary(isDark),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Send Email to Selected Candidates',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.9,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'To:',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        constraints: const BoxConstraints(maxHeight: 120),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.grey[100],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isDark ? Colors.white10 : Colors.grey[300]!,
+                          ),
+                        ),
+                        child: selectedApps.isEmpty
+                            ? Text(
+                                'No recipients selected',
+                                style: GoogleFonts.inter(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              )
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: selectedApps.length,
+                                itemBuilder: (context, index) {
+                                  final app = selectedApps[index];
+                                  final name =
+                                      app['candidate_name'] ?? 'Candidate';
+                                  final email = app['candidate_email'] ?? '';
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 4),
+                                    child: Text(
+                                      '$name ${email.isNotEmpty ? "($email)" : ""}',
+                                      style: GoogleFonts.inter(fontSize: 12),
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${selectedApps.length} recipients',
+                        style: GoogleFonts.inter(
+                          color: Colors.grey,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: subjectController,
+                        style: GoogleFonts.inter(fontSize: 13),
+                        decoration: InputDecoration(
+                          labelText: 'Subject',
+                          labelStyle: GoogleFonts.inter(fontSize: 13),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: bodyController,
+                        maxLines: 8,
+                        style: GoogleFonts.inter(fontSize: 13),
+                        decoration: InputDecoration(
+                          labelText: 'Message',
+                          alignLabelWithHint: true,
+                          labelStyle: GoogleFonts.inter(fontSize: 13),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Quick Templates:',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildTemplateChip(
+                            'Interview Invitation',
+                            () => applyTemplate('interview'),
+                            isDark,
+                          ),
+                          _buildTemplateChip(
+                            'Follow-up',
+                            () => applyTemplate('followup'),
+                            isDark,
+                          ),
+                          _buildTemplateChip(
+                            'Rejection Notice',
+                            () => applyTemplate('rejection'),
+                            isDark,
+                          ),
+                          _buildTemplateChip(
+                            'Offer Letter',
+                            () => applyTemplate('offer'),
+                            isDark,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: bodyController,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    labelText: 'Message Body',
-                    border: OutlineInputBorder(),
-                    hintText: 'Dear candidate...',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.inter(
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final subject = subjectController.text.trim();
+                    final body = bodyController.text.trim();
+                    if (subject.isEmpty || body.isEmpty) return;
+
+                    Navigator.pop(context);
+                    _executeBulkEmail(subject, body);
+                  },
+                  icon: const Icon(Icons.send, size: 16),
+                  label: const Text('Send Email'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.getPrimary(isDark),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                   ),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final subject = subjectController.text.trim();
-                final body = bodyController.text.trim();
-                if (subject.isEmpty || body.isEmpty) return;
-
-                Navigator.pop(context); // Close modal
-                _executeBulkEmail(subject, body);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.getPrimary(isDark),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Send'),
-            ),
-          ],
+            );
+          },
         );
       },
+    );
+  }
+
+  Widget _buildTemplateChip(String label, VoidCallback onTap, bool isDark) {
+    return ActionChip(
+      label: Text(label),
+      onPressed: onTap,
+      backgroundColor: isDark
+          ? Colors.white.withValues(alpha: 0.05)
+          : Colors.grey[100],
+      labelStyle: GoogleFonts.inter(
+        fontSize: 11,
+        color: AppColors.getPrimary(isDark),
+        fontWeight: FontWeight.w600,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6),
+        side: BorderSide(
+          color: AppColors.getPrimary(isDark).withValues(alpha: 0.3),
+        ),
+      ),
     );
   }
 
@@ -560,25 +879,81 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return AlertDialog(
           backgroundColor: isDark ? AppColors.bgDark : Colors.white,
-          title: Text(
-            'Send In-App Message (${_selectedCandidateIds.length} Candidates)',
-            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-          content: TextField(
-            controller: messageController,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              labelText: 'Message text',
-              border: OutlineInputBorder(),
-              hintText: 'Type your message...',
+          title: Row(
+            children: [
+              Icon(
+                Icons.chat_bubble_outline,
+                color: AppColors.getPrimary(isDark),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Message Selected Candidates',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.9,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Message',
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: messageController,
+                  maxLines: 5,
+                  style: GoogleFonts.inter(fontSize: 13),
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    hintText: 'Write a message for the selected candidates...',
+                    hintStyle: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'This message will be sent to every selected candidate.',
+                  style: GoogleFonts.inter(color: Colors.grey, fontSize: 11),
+                ),
+              ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.inter(
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: () async {
                 final message = messageController.text.trim();
                 if (message.isEmpty) return;
@@ -586,11 +961,19 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                 Navigator.pop(context); // Close modal
                 _executeBulkMessage(message);
               },
+              icon: const Icon(Icons.send, size: 16),
+              label: const Text('Send Message'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.getPrimary(isDark),
                 foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
               ),
-              child: const Text('Send'),
             ),
           ],
         );
@@ -808,6 +1191,11 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                 isDark,
               ),
               _buildMetadataStat(
+                (widget.job.openings ?? 0).toString(),
+                'Openings',
+                isDark,
+              ),
+              _buildMetadataStat(
                 "${_calculateAverageAtsScore()}%",
                 'Avg. ATS Match',
                 isDark,
@@ -943,6 +1331,26 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                   ),
                 ),
             ],
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: _exportApplicants,
+            icon: Icon(
+              Icons.file_download_outlined,
+              color: AppColors.getPrimary(isDark),
+            ),
+            tooltip: 'Export Applicants',
+            style: IconButton.styleFrom(
+              backgroundColor: isDark
+                  ? AppColors.getCard(isDark)
+                  : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(
+                  color: isDark ? Colors.white10 : Colors.grey[200]!,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -2112,254 +2520,275 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
               ),
             )
           else
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                headingRowColor: WidgetStateProperty.all(
-                  isDark
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : const Color(0xFFF8FAFC),
-                ),
-                dataRowMinHeight: 60,
-                dataRowMaxHeight: 80,
-                columns: [
-                  DataColumn(
-                    label: Text(
-                      'ID',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              itemCount: _interviews.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final booking = _interviews[index];
+                final id = booking['id']?.toString() ?? '';
+                final name = booking['candidate_name'] ?? 'Candidate';
+                final email = booking['candidate_email'] ?? '';
+                final status =
+                    booking['booking_status'] ??
+                    booking['interview_type'] ??
+                    'booked';
+
+                final slotDate = booking['slot_date'] ?? '';
+                final slotTime = booking['slot_time'] ?? '';
+                final slotDatetimeStr =
+                    booking['slot_datetime'] ?? booking['interview_date'] ?? '';
+
+                DateTime? dt;
+                if (slotDatetimeStr.isNotEmpty) {
+                  dt = DateTime.tryParse(slotDatetimeStr);
+                } else if (slotDate.isNotEmpty) {
+                  dt = DateTime.tryParse("$slotDate $slotTime");
+                }
+
+                final formattedDate = dt != null
+                    ? DateFormat('MMM dd, yyyy').format(dt)
+                    : (slotDate.isNotEmpty ? slotDate : '-');
+                final formattedTime = dt != null
+                    ? DateFormat('hh:mm a').format(dt)
+                    : (slotTime.isNotEmpty ? slotTime : '-');
+
+                final bookingStatus = status.toString().toLowerCase();
+
+                final isPast = dt != null
+                    ? dt.isBefore(DateTime.now())
+                    : ['completed', 'no_show'].contains(bookingStatus);
+                final isUpcoming = dt != null
+                    ? dt.isAfter(DateTime.now())
+                    : !isPast;
+
+                final hasReview =
+                    booking['review_id'] != null ||
+                    booking['review_attendance_status'] != null;
+
+                final bookedAtStr =
+                    booking['booked_at'] ?? booking['created_at'] ?? '';
+                DateTime? bookedDt;
+                if (bookedAtStr.isNotEmpty) {
+                  bookedDt = DateTime.tryParse(bookedAtStr);
+                }
+                final formattedBookedAt = bookedDt != null
+                    ? DateFormat('MMM dd, yyyy').format(bookedDt)
+                    : '-';
+
+                final bool showReschedule =
+                    isUpcoming &&
+                    [
+                      'booked',
+                      'confirmed',
+                      'rescheduled',
+                    ].contains(bookingStatus);
+                final bool showReview =
+                    isPast ||
+                    [
+                      'completed',
+                      'no_show',
+                      'rescheduled',
+                    ].contains(bookingStatus);
+
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.03)
+                        : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.grey[200]!,
                     ),
                   ),
-                  DataColumn(
-                    label: Text(
-                      'Candidate',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Slot',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Status',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Booked On',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Actions',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-                rows: _interviews.map<DataRow>((booking) {
-                  final id = booking['id']?.toString() ?? '';
-                  final name = booking['candidate_name'] ?? 'Candidate';
-                  final email = booking['candidate_email'] ?? '';
-                  final status =
-                      booking['booking_status'] ??
-                      booking['interview_type'] ??
-                      'booked';
-
-                  final slotDate = booking['slot_date'] ?? '';
-                  final slotTime = booking['slot_time'] ?? '';
-                  final slotDatetimeStr =
-                      booking['slot_datetime'] ??
-                      booking['interview_date'] ??
-                      '';
-
-                  DateTime? dt;
-                  if (slotDatetimeStr.isNotEmpty) {
-                    dt = DateTime.tryParse(slotDatetimeStr);
-                  } else if (slotDate.isNotEmpty) {
-                    dt = DateTime.tryParse("$slotDate $slotTime");
-                  }
-
-                  final formattedDate = dt != null
-                      ? DateFormat('MMM dd, yyyy').format(dt)
-                      : (slotDate.isNotEmpty ? slotDate : '-');
-                  final formattedTime = dt != null
-                      ? DateFormat('hh:mm a').format(dt)
-                      : (slotTime.isNotEmpty ? slotTime : '-');
-
-                  final bookingStatus = status.toString().toLowerCase();
-
-                  // Default to upcoming if dt is null to be safe and show buttons, or check status
-                  final isPast = dt != null
-                      ? dt.isBefore(DateTime.now())
-                      : ['completed', 'no_show'].contains(bookingStatus);
-                  final isUpcoming = dt != null
-                      ? dt.isAfter(DateTime.now())
-                      : !isPast;
-
-                  final hasReview =
-                      booking['review_id'] != null ||
-                      booking['review_attendance_status'] != null;
-
-                  final bookedAtStr =
-                      booking['booked_at'] ?? booking['created_at'] ?? '';
-                  DateTime? bookedDt;
-                  if (bookedAtStr.isNotEmpty) {
-                    bookedDt = DateTime.tryParse(bookedAtStr);
-                  }
-                  final formattedBookedAt = bookedDt != null
-                      ? DateFormat('MMM dd, yyyy').format(bookedDt)
-                      : '-';
-
-                  final bool showReschedule =
-                      isUpcoming &&
-                      [
-                        'booked',
-                        'confirmed',
-                        'rescheduled',
-                      ].contains(bookingStatus);
-                  final bool showReview =
-                      isPast ||
-                      [
-                        'completed',
-                        'no_show',
-                        'rescheduled',
-                      ].contains(bookingStatus);
-                  final bool hasAction = showReschedule || showReview;
-
-                  return DataRow(
-                    color: WidgetStateProperty.all(
-                      isPast && !isDark ? Colors.grey[50] : null,
-                    ),
-                    cells: [
-                      DataCell(Text(id, style: GoogleFonts.inter())),
-                      DataCell(
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              name,
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              email,
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      DataCell(
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              formattedDate,
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              formattedTime,
-                              style: GoogleFonts.inter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Top Row: Date & Time + Status
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_month_outlined,
+                                size: 16,
                                 color: AppColors.getPrimary(isDark),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      DataCell(
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildInterviewStatusPill(status, isDark),
-                            if (hasReview)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(
-                                  'Reviewed',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    color: Colors.green,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      DataCell(
-                        Text(
-                          formattedBookedAt,
-                          style: GoogleFonts.inter(fontSize: 12),
-                        ),
-                      ),
-                      DataCell(
-                        Row(
-                          children: [
-                            if (showReschedule) ...[
-                              ElevatedButton.icon(
-                                onPressed: () => _openWebUrl(
-                                  "recruiter/slots/reschedule/$id",
-                                ),
-                                icon: const Icon(Icons.sync, size: 14),
-                                label: const Text('Reschedule'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  elevation: 0,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                            if (showReview) ...[
-                              OutlinedButton.icon(
-                                onPressed: () =>
-                                    _openWebUrl("recruiter/slots/review/$id"),
-                                icon: const Icon(Icons.rate_review, size: 14),
-                                label: Text(
-                                  hasReview
-                                      ? 'Edit Review'
-                                      : 'Review Interview',
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppColors.getPrimary(isDark),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  side: BorderSide(
-                                    color: AppColors.getPrimary(isDark),
-                                  ),
-                                ),
-                              ),
-                            ],
-                            if (!hasAction) ...[
+                              const SizedBox(width: 6),
                               Text(
-                                '-',
-                                style: GoogleFonts.inter(color: Colors.grey),
+                                '$formattedDate at $formattedTime',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                  color: AppColors.getPrimary(isDark),
+                                ),
                               ),
                             ],
-                          ],
-                        ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              _buildInterviewStatusPill(status, isDark),
+                              if (hasReview)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    'Reviewed',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Middle: Candidate Info
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: isDark
+                                ? Colors.grey[800]
+                                : Colors.grey[200],
+                            child: Text(
+                              name.isNotEmpty ? name[0].toUpperCase() : '?',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  name,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  email,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Bottom Row: Booked On + Actions
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Booked: $formattedBookedAt',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              if (showReschedule) ...[
+                                SizedBox(
+                                  height: 36,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      final recruiterId = Provider.of<AuthController>(
+                                        context,
+                                        listen: false,
+                                      ).currentRecruiter?.id;
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => RecruiterRescheduleInterviewScreen(
+                                            bookingId: id,
+                                            recruiterId: recruiterId?.toString() ?? '',
+                                          ),
+                                        ),
+                                      );
+                                      if (result == true) {
+                                        _loadInterviews();
+                                      }
+                                    },
+                                    icon: const Icon(Icons.sync, size: 14),
+                                    label: const Text('Reschedule'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                              if (showReview) ...[
+                                SizedBox(
+                                  height: 36,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () => _openWebUrl(
+                                      "recruiter/slots/review/$id",
+                                    ),
+                                    icon: const Icon(
+                                      Icons.rate_review,
+                                      size: 14,
+                                    ),
+                                    label: Text(
+                                      hasReview ? 'Edit Review' : 'Review',
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: AppColors.getPrimary(
+                                        isDark,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      side: BorderSide(
+                                        color: AppColors.getPrimary(isDark),
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
                       ),
                     ],
-                  );
-                }).toList(),
-              ),
+                  ),
+                );
+              },
             ),
         ],
       ),
@@ -2425,7 +2854,7 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                     side: BorderSide(color: AppColors.getPrimary(isDark)),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
-                      vertical: 8,
+                      vertical: 4,
                     ),
                   ),
                 ),
@@ -3360,110 +3789,148 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "${_selectedAppIds.length} Selected",
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedAppIds.clear();
-                        _selectedCandidateIds.clear();
-                      });
-                    },
-                    child: Text(
-                      'Clear Selection',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: Colors.red,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Wrap(
-              spacing: 6,
+            Row(
               children: [
-                OutlinedButton.icon(
-                  onPressed: _showBulkEmailDialog,
-                  icon: const Icon(Icons.mail_outline, size: 14),
-                  label: const Text('Email'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    minimumSize: Size.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    "${_selectedAppIds.length}",
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.getPrimary(isDark),
                     ),
                   ),
                 ),
-                OutlinedButton.icon(
-                  onPressed: _showBulkMessageDialog,
-                  icon: const Icon(Icons.chat_bubble_outline, size: 14),
-                  label: const Text('Msg'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    minimumSize: Size.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        "Candidates Selected",
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.redAccent, width: 1),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedAppIds.clear();
+                              _selectedCandidateIds.clear();
+                            });
+                          },
+                          child: Text(
+                            'Clear Selections',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () => _bulkUpdateStatus('shortlisted'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    minimumSize: Size.zero,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text('Shortlist'),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.spaceEvenly,
+              children: [
+                _buildActionIconButton(
+                  icon: Icons.mail_rounded,
+                  label: 'Email',
+                  color: AppColors.getPrimary(isDark),
+                  isDark: isDark,
+                  onTap: _showBulkEmailDialog,
                 ),
-                ElevatedButton(
-                  onPressed: () => _bulkUpdateStatus('rejected'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    minimumSize: Size.zero,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text('Reject'),
+                _buildActionIconButton(
+                  icon: Icons.chat_bubble_rounded,
+                  label: 'Msg',
+                  color: Colors.blue,
+                  isDark: isDark,
+                  onTap: _showBulkMessageDialog,
+                ),
+                _buildActionIconButton(
+                  icon: Icons.check_circle_rounded,
+                  label: 'Shortlist',
+                  color: Colors.green,
+                  isDark: isDark,
+                  onTap: () => _bulkUpdateStatus('shortlisted'),
+                ),
+                _buildActionIconButton(
+                  icon: Icons.cancel_rounded,
+                  label: 'Reject',
+                  color: Colors.red,
+                  isDark: isDark,
+                  onTap: () => _bulkUpdateStatus('rejected'),
                 ),
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionIconButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: color.withValues(alpha: 0.2)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

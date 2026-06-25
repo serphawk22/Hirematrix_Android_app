@@ -318,31 +318,31 @@ class _ManageJobsScreenState extends State<ManageJobsScreen>
               ),
             ),
           ),
-          const SizedBox(width: 10),
-          Container(
-            height: 44,
-            width: 44,
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.getCard(isDark) : Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: hasActiveFilters
-                    ? AppColors.getPrimary(isDark)
-                    : (isDark ? Colors.white10 : Colors.grey[200]!),
-                width: hasActiveFilters ? 1.5 : 1,
-              ),
-            ),
-            child: IconButton(
-              icon: Icon(
-                Icons.tune_rounded,
-                size: 20,
-                color: hasActiveFilters
-                    ? AppColors.getPrimary(isDark)
-                    : Colors.grey,
-              ),
-              onPressed: () => _showFilterBottomSheet(isDark),
-            ),
-          ),
+          // const SizedBox(width: 10),
+          // Container(
+          //   height: 44,
+          //   width: 44,
+          //   decoration: BoxDecoration(
+          //     color: isDark ? AppColors.getCard(isDark) : Colors.white,
+          //     borderRadius: BorderRadius.circular(12),
+          //     border: Border.all(
+          //       color: hasActiveFilters
+          //           ? AppColors.getPrimary(isDark)
+          //           : (isDark ? Colors.white10 : Colors.grey[200]!),
+          //       width: hasActiveFilters ? 1.5 : 1,
+          //     ),
+          //   ),
+          //   child: IconButton(
+          //     icon: Icon(
+          //       Icons.tune_rounded,
+          //       size: 20,
+          //       color: hasActiveFilters
+          //           ? AppColors.getPrimary(isDark)
+          //           : Colors.grey,
+          //     ),
+          //     onPressed: () => _showFilterBottomSheet(isDark),
+          //   ),
+          // ),
         ],
       ),
     );
@@ -684,8 +684,12 @@ class _ManageJobsScreenState extends State<ManageJobsScreen>
                         foregroundColor: AppColors.getPrimary(isDark),
                         side: BorderSide(
                           color: isDark
-                              ? AppColors.getPrimary(isDark).withValues(alpha: 0.3)
-                              : AppColors.getPrimary(isDark).withValues(alpha: 0.4),
+                              ? AppColors.getPrimary(
+                                  isDark,
+                                ).withValues(alpha: 0.3)
+                              : AppColors.getPrimary(
+                                  isDark,
+                                ).withValues(alpha: 0.4),
                           width: 1.2,
                         ),
                         elevation: 0,
@@ -723,7 +727,8 @@ class _ManageJobsScreenState extends State<ManageJobsScreen>
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => JobDetailResponsesScreen(job: job),
+                            builder: (context) =>
+                                JobDetailResponsesScreen(job: job),
                           ),
                         );
                       },
@@ -734,8 +739,12 @@ class _ManageJobsScreenState extends State<ManageJobsScreen>
                         foregroundColor: AppColors.getPrimary(isDark),
                         side: BorderSide(
                           color: isDark
-                              ? AppColors.getPrimary(isDark).withValues(alpha: 0.3)
-                              : AppColors.getPrimary(isDark).withValues(alpha: 0.4),
+                              ? AppColors.getPrimary(
+                                  isDark,
+                                ).withValues(alpha: 0.3)
+                              : AppColors.getPrimary(
+                                  isDark,
+                                ).withValues(alpha: 0.4),
                           width: 1.2,
                         ),
                         elevation: 0,
