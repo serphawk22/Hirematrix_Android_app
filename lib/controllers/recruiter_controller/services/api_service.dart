@@ -348,6 +348,15 @@ class ApiService {
     });
   }
 
+  Future<Map<String, dynamic>> bulkInviteCandidate(String recruiterId, List<String> candidateIds, String jobId, String? message) async {
+    return _performPost("candidates/bulk_invite", {
+      'recruiter_id': recruiterId,
+      'candidate_ids': candidateIds.join(','),
+      'job_id': jobId,
+      if (message != null && message.isNotEmpty) 'message': message,
+    });
+  }
+
   // --- Network Helpers ---
 
   Future<Map<String, dynamic>> _performPost(
@@ -411,10 +420,13 @@ class ApiService {
           return decoded;
         }
 
-        final message = decoded['message'] ??
-            decoded['error'] ??
-            decoded['messages'] ??
-            'Server error (${response.statusCode})';
+        dynamic errorMsg = decoded['message'];
+        if (errorMsg == null && decoded['messages'] is Map) {
+          errorMsg = decoded['messages']['error'] ?? decoded['messages'].values.first;
+        }
+        errorMsg ??= decoded['error'];
+        
+        final message = errorMsg ?? 'Server error (${response.statusCode})';
         return {
           'success': false,
           'message': message.toString(),

@@ -87,4 +87,58 @@ class CandidatesController extends ChangeNotifier {
     }
     return false;
   }
+
+  Future<Map<String, dynamic>> bulkInviteCandidates({
+    required String recruiterId,
+    required List<String> candidateIds,
+    required String jobId,
+    String? message,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiService.bulkInviteCandidate(
+        recruiterId,
+        candidateIds,
+        jobId,
+        message,
+      );
+      return response;
+    } catch (e) {
+      _errorMessage = e.toString();
+      return {'success': false, 'message': _errorMessage};
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<Map<String, dynamic>> bulkSendEmail({
+    required String recruiterId,
+    required List<String> candidateIds,
+    required String subject,
+    required String body,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _apiService.bulkSendEmail(
+        recruiterId,
+        candidateIds,
+        subject,
+        body,
+      );
+      return response;
+    } catch (e) {
+      _errorMessage = e.toString();
+      return {'success': false, 'message': _errorMessage};
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

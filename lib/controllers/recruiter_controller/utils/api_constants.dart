@@ -1,9 +1,10 @@
 class ApiConstants {
   // Local network testing setup (Uncomment to use local backend)
-  //static const String baseUrl = "http://10.182.143.26/ai-job-portal/public/api/mobile";
+  static const String baseUrl =
+      "http://10.25.155.26/ai-job-portal/public/api/mobile";
 
   // Live Backend URL (Comment this out if using local backend)
-  static const String baseUrl = "https://hirematrix.serphawk.in/api/mobile";
+  // static const String baseUrl = "https://hirematrix.serphawk.in/api/mobile";
 
   // Mobile Endpoints
   static const String login = "login";

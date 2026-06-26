@@ -590,6 +590,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
       Get.toNamed(AppRoutes.localCompanies);
     } else if (path.contains('/career-transition')) {
       Get.toNamed(AppRoutes.careerTransition);
+    } else if (path.contains('/job/') || path.contains('/jobs/')) {
+      _goToJobDetails(actionLink, notifData);
     } else {
       Get.snackbar(
         'Action Required',
@@ -654,9 +656,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
     if (actionLink != null && actionLink.isNotEmpty) {
       final uri = Uri.tryParse(actionLink);
       if (uri != null) {
-        // Pattern: /jobs/123
+        // Pattern: /job/123 or /jobs/123
         final segments = uri.pathSegments;
-        final jobIdx = segments.indexOf('jobs');
+        int jobIdx = segments.indexOf('job');
+        if (jobIdx == -1) jobIdx = segments.indexOf('jobs');
         if (jobIdx != -1 && jobIdx + 1 < segments.length) {
           jobId = int.tryParse(segments[jobIdx + 1]) ?? 0;
         }

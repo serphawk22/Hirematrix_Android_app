@@ -610,8 +610,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               const CandidateManagementScreen(isStandalone: true),
         ),
       );
-    } else if (path.contains('/recruiter/interviews') ||
-        path.contains('/recruiter/bookings')) {
+    } else if (path.contains('interviews') ||
+        path.contains('bookings') ||
+        path.contains('slots') ||
+        (notifType != null && notifType.contains('interview'))) {
       Navigator.push(
         context,
         MaterialPageRoute(

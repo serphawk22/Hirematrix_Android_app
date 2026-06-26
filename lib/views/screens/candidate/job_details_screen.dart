@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:hirematrix/controllers/auth_controller.dart';
@@ -28,15 +29,58 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
   late final JobDetailsController _controller;
   final _formKey = GlobalKey<FormState>();
 
+  late Map<String, dynamic> _job;
+  bool _isLoadingJob = false;
+
   @override
   void initState() {
     super.initState();
+    _job = Map<String, dynamic>.from(widget.job);
     _controller = Get.put(JobDetailsController());
-    _controller.decodeQuestionnaire(widget.job['application_questionnaire']);
-    _controller.checkAppliedStatus(widget.job['id']);
-    _controller.runAtsAnalysisOnLoad(widget.job['id']);
-    _controller.fetchCompanyDetails(widget.job['company_id']);
-    _controller.fetchJobInvitation(widget.job['id']);
+
+    if (_job['title'] == null || _job['title'].toString().isEmpty) {
+      _fetchFullJob();
+    } else {
+      _initControllerData();
+    }
+  }
+
+  void _initControllerData() {
+    _controller.decodeQuestionnaire(_job['application_questionnaire']);
+    _controller.checkAppliedStatus(_job['id']);
+    _controller.runAtsAnalysisOnLoad(_job['id']);
+    _controller.fetchCompanyDetails(_job['company_id']);
+    _controller.fetchJobInvitation(_job['id']);
+  }
+
+  Future<void> _fetchFullJob() async {
+    setState(() => _isLoadingJob = true);
+    try {
+      final userId = authController.currentUser['id'];
+      final url =
+          '${ApiConstants.baseUrl}/jobs/detail/${_job['id']}?candidate_id=$userId';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Accept': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == 'success' &&
+            data['data'] != null &&
+            data['data']['job'] != null) {
+          setState(() {
+            _job = Map<String, dynamic>.from(data['data']['job']);
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching job: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingJob = false);
+        _initControllerData();
+      }
+    }
   }
 
   bool get isCheckingApplied => _controller.isCheckingApplied.value;
@@ -61,7 +105,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
   Map<String, TextEditingController> get _questionControllers =>
       _controller.questionControllers;
   int? getCompanyId() {
-    final raw = widget.job['company_id'];
+    final raw = _job['company_id'];
     if (raw == null) return null;
     if (raw is num) return raw.toInt();
     return int.tryParse(raw.toString());
@@ -69,7 +113,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
 
   Future<void> handleApply() async {
     await _controller.handleApply(
-      jobId: widget.job['id'],
+      jobId: _job['id'],
       formKey: _formKey,
       context: context,
     );
@@ -77,9 +121,9 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
 
   Future<void> generateCoverLetter() async {
     await _controller.generateCoverLetter(
-      jobId: widget.job['id'],
-      jobTitle: widget.job['title'] ?? 'Role',
-      companyName: widget.job['company'] ?? 'Company',
+      jobId: _job['id'],
+      jobTitle: _job['title'] ?? 'Role',
+      companyName: _job['company'] ?? 'Company',
       showModal: (title, company) {
         _showCoverLetterModal(title, company);
       },
@@ -212,13 +256,13 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     final textColor = isDark ? Colors.white : const Color(0xFF111827);
     final subtitleColor = isDark ? Colors.grey[400]! : const Color(0xFF475569);
 
-    final title = widget.job['title'] ?? 'Role Details';
-    final company = widget.job['company'] ?? 'Company';
-    final location = widget.job['location'] ?? 'Not Specified';
-    final type = widget.job['employment_type'] ?? 'Full-time';
-    final salary = widget.job['salary_range']?.toString() ?? '';
-    final experience = widget.job['experience_level']?.toString() ?? '';
-    final logoUrl = widget.job['company_logo'] ?? '';
+    final title = _job['title'] ?? 'Role Details';
+    final company = _job['company'] ?? 'Company';
+    final location = _job['location'] ?? 'Not Specified';
+    final type = _job['employment_type'] ?? 'Full-time';
+    final salary = _job['salary_range']?.toString() ?? '';
+    final experience = _job['experience_level']?.toString() ?? '';
+    final logoUrl = _job['company_logo'] ?? '';
     final initial = company.isNotEmpty ? company[0].toUpperCase() : 'C';
 
     return Scaffold(
@@ -246,277 +290,307 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
         ),
       ),
       body: SafeArea(
-        child: Obx(
-          () => isCheckingApplied
-              ? Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.getPrimary(isDark),
-                    ),
+        child: _isLoadingJob
+            ? Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.getPrimary(isDark),
                   ),
-                )
-              : Form(
-                  key: _formKey,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildRecruiterInvitationBanner(
-                          isDark,
-                          cardColor,
-                          textColor,
-                          subtitleColor,
-                        ),
-                        // Header Card
-                        _buildHeaderCard(
-                          cardColor,
-                          textColor,
-                          subtitleColor,
-                          logoUrl,
-                          initial,
-                          title,
-                          company,
-                          location,
-                          isDark,
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Quick Specs
-                        _buildSpecsGrid(
-                          cardColor,
-                          textColor,
-                          subtitleColor,
-                          type,
-                          salary,
-                          experience,
-                          isDark,
-                        ),
-                        const SizedBox(height: 16),
-
-                        // AI Interview Policy
-                        _buildAiPolicyCard(
-                          cardColor,
-                          textColor,
-                          subtitleColor,
-                          isDark,
-                        ),
-                        const SizedBox(height: 16),
-
-                        // ATS Match Card
-                        _buildAtsScoreCard(
-                          cardColor,
-                          textColor,
-                          subtitleColor,
-                          isDark,
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Description
-                        _buildSectionCard(
-                          title: 'Job Description',
-                          cardColor: cardColor,
-                          textColor: textColor,
-                          child: Text(
-                            widget.job['description'] ??
-                                'No description provided.',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: isDark
-                                  ? Colors.grey[300]
-                                  : const Color(0xFF334155),
-                              height: 1.5,
-                            ),
+                ),
+              )
+            : Obx(
+                () => isCheckingApplied
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.getPrimary(isDark),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                      )
+                    : Form(
+                        key: _formKey,
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildRecruiterInvitationBanner(
+                                isDark,
+                                cardColor,
+                                textColor,
+                                subtitleColor,
+                              ),
+                              // Header Card
+                              _buildHeaderCard(
+                                cardColor,
+                                textColor,
+                                subtitleColor,
+                                logoUrl,
+                                initial,
+                                title,
+                                company,
+                                location,
+                                isDark,
+                              ),
+                              const SizedBox(height: 16),
 
-                        // Skills
-                        if (widget.job['required_skills'] != null &&
-                            widget.job['required_skills']
-                                .toString()
-                                .trim()
-                                .isNotEmpty) ...[
-                          _buildSectionCard(
-                            title: 'Required Skills',
-                            cardColor: cardColor,
-                            textColor: textColor,
-                            child: Wrap(
-                              spacing: 6,
-                              runSpacing: 6,
-                              children: widget.job['required_skills']
-                                  .toString()
-                                  .split(',')
-                                  .map<Widget>(
-                                    (s) => Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.getPrimary(
-                                          isDark,
-                                        ).withOpacity(0.08),
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: AppColors.getPrimary(
-                                            isDark,
-                                          ).withOpacity(0.15),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        s.trim(),
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.getPrimary(isDark),
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
+                              // Quick Specs
+                              _buildSpecsGrid(
+                                cardColor,
+                                textColor,
+                                subtitleColor,
+                                type,
+                                salary,
+                                experience,
+                                isDark,
+                              ),
+                              const SizedBox(height: 16),
 
-                        // Company Snapshot
-                        if (companyInfo != null) ...[
-                          _buildCompanySnapshotCard(
-                            cardColor,
-                            textColor,
-                            isDark,
-                          ),
-                          const SizedBox(height: 16),
-                        ],
+                              // AI Interview Policy
+                              _buildAiPolicyCard(
+                                cardColor,
+                                textColor,
+                                subtitleColor,
+                                isDark,
+                              ),
+                              const SizedBox(height: 16),
 
-                        // Job Summary
-                        _buildJobSummaryCard(cardColor, textColor, isDark),
-                        const SizedBox(height: 16),
+                              // ATS Match Card
+                              _buildAtsScoreCard(
+                                cardColor,
+                                textColor,
+                                subtitleColor,
+                                isDark,
+                              ),
+                              const SizedBox(height: 16),
 
-                        // About Company
-                        _buildAboutCompanyCard(cardColor, textColor, isDark),
-                        const SizedBox(height: 16),
+                              // Description
+                              _buildSectionCard(
+                                title: 'Job Description',
+                                cardColor: cardColor,
+                                textColor: textColor,
+                                child: Text(
+                                  _job['description'] ??
+                                      'No description provided.',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? Colors.grey[300]
+                                        : const Color(0xFF334155),
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
 
-                        // Questionnaire Section (If not applied yet)
-                        if (!hasApplied && questionnaireList.isNotEmpty) ...[
-                          _buildSectionCard(
-                            title: 'Additional Questions (Required)',
-                            cardColor: cardColor,
-                            textColor: textColor,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: questionnaireList.map<Widget>((q) {
-                                final id = q['id']?.toString() ?? '';
-                                final label =
-                                    q['label']?.toString() ?? 'Question';
-                                final required =
-                                    q['required'] == true ||
-                                    q['required'] == 1 ||
-                                    q['required'] == 'true';
-                                final type =
-                                    q['type']?.toString() ?? 'textarea';
+                              // Skills
+                              if (_job['required_skills'] != null &&
+                                  _job['required_skills']
+                                      .toString()
+                                      .trim()
+                                      .isNotEmpty) ...[
+                                _buildSectionCard(
+                                  title: 'Required Skills',
+                                  cardColor: cardColor,
+                                  textColor: textColor,
+                                  child: Wrap(
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: _job['required_skills']
+                                        .toString()
+                                        .split(',')
+                                        .map<Widget>(
+                                          (s) => Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.getPrimary(
+                                                isDark,
+                                              ).withOpacity(0.08),
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              border: Border.all(
+                                                color: AppColors.getPrimary(
+                                                  isDark,
+                                                ).withOpacity(0.15),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              s.trim(),
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.getPrimary(
+                                                  isDark,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
 
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 16),
+                              // Company Snapshot
+                              if (companyInfo != null) ...[
+                                _buildCompanySnapshotCard(
+                                  cardColor,
+                                  textColor,
+                                  isDark,
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+
+                              // Job Summary
+                              _buildJobSummaryCard(
+                                cardColor,
+                                textColor,
+                                isDark,
+                              ),
+                              const SizedBox(height: 16),
+
+                              // About Company
+                              _buildAboutCompanyCard(
+                                cardColor,
+                                textColor,
+                                isDark,
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Questionnaire Section (If not applied yet)
+                              if (!hasApplied &&
+                                  questionnaireList.isNotEmpty) ...[
+                                _buildSectionCard(
+                                  title: 'Additional Questions (Required)',
+                                  cardColor: cardColor,
+                                  textColor: textColor,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              label,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 13.5,
-                                                fontWeight: FontWeight.bold,
-                                                color: textColor,
-                                              ),
-                                            ),
-                                          ),
-                                          if (required)
-                                            Text(
-                                              ' *',
-                                              style: GoogleFonts.inter(
-                                                color: Colors.redAccent,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      TextFormField(
-                                        controller: _questionControllers[id],
-                                        maxLines: type == 'text' ? 1 : 4,
-                                        style: GoogleFonts.inter(
-                                          color: textColor,
-                                          fontSize: 14,
-                                        ),
-                                        decoration: InputDecoration(
-                                          hintText:
-                                              q['placeholder']?.toString() ??
-                                              'Type your answer here...',
-                                          hintStyle: GoogleFonts.inter(
-                                            color: Colors.grey[500],
-                                            fontSize: 13,
-                                          ),
-                                          contentPadding:
-                                              const EdgeInsets.symmetric(
-                                                horizontal: 14,
-                                                vertical: 12,
-                                              ),
-                                          filled: true,
-                                          fillColor: isDark
-                                              ? Colors.black26
-                                              : Colors.grey[50],
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                            borderSide: BorderSide(
-                                              color: isDark
-                                                  ? Colors.grey[800]!
-                                                  : Colors.grey[300]!,
-                                            ),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                            borderSide: BorderSide(
-                                              color: isDark
-                                                  ? Colors.grey[800]!
-                                                  : Colors.grey[300]!,
-                                            ),
-                                          ),
-                                        ),
-                                        validator: (value) {
-                                          if (required &&
-                                              (value == null ||
-                                                  value.trim().isEmpty)) {
-                                            return 'Please answer this question';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
+                                    children: questionnaireList.map<Widget>((
+                                      q,
+                                    ) {
+                                      final id = q['id']?.toString() ?? '';
+                                      final label =
+                                          q['label']?.toString() ?? 'Question';
+                                      final required =
+                                          q['required'] == true ||
+                                          q['required'] == 1 ||
+                                          q['required'] == 'true';
+                                      final type =
+                                          q['type']?.toString() ?? 'textarea';
 
-                        // Action buttons
-                        _buildActionButtons(isDark, textColor),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  ),
-                ),
-        ),
+                                      return Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 16,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    label,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 13.5,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: textColor,
+                                                    ),
+                                                  ),
+                                                ),
+                                                if (required)
+                                                  Text(
+                                                    ' *',
+                                                    style: GoogleFonts.inter(
+                                                      color: Colors.redAccent,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 8),
+                                            TextFormField(
+                                              controller:
+                                                  _questionControllers[id],
+                                              maxLines: type == 'text' ? 1 : 4,
+                                              style: GoogleFonts.inter(
+                                                color: textColor,
+                                                fontSize: 14,
+                                              ),
+                                              decoration: InputDecoration(
+                                                hintText:
+                                                    q['placeholder']
+                                                        ?.toString() ??
+                                                    'Type your answer here...',
+                                                hintStyle: GoogleFonts.inter(
+                                                  color: Colors.grey[500],
+                                                  fontSize: 13,
+                                                ),
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 14,
+                                                      vertical: 12,
+                                                    ),
+                                                filled: true,
+                                                fillColor: isDark
+                                                    ? Colors.black26
+                                                    : Colors.grey[50],
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  borderSide: BorderSide(
+                                                    color: isDark
+                                                        ? Colors.grey[800]!
+                                                        : Colors.grey[300]!,
+                                                  ),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color: isDark
+                                                            ? Colors.grey[800]!
+                                                            : Colors.grey[300]!,
+                                                      ),
+                                                    ),
+                                              ),
+                                              validator: (value) {
+                                                if (required &&
+                                                    (value == null ||
+                                                        value.trim().isEmpty)) {
+                                                  return 'Please answer this question';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+
+                              // Action buttons
+                              _buildActionButtons(isDark, textColor),
+                              const SizedBox(height: 24),
+                            ],
+                          ),
+                        ),
+                      ),
+              ),
       ),
     );
   }
@@ -636,7 +710,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
               const SizedBox(width: 5),
               Expanded(
                 child: Text(
-                  widget.job['company'] ?? 'Company',
+                  _job['company'] ?? 'Company',
                   style: GoogleFonts.inter(
                     color: isDark ? Colors.grey[400] : Colors.grey[700],
                     fontSize: 11.5,
@@ -869,7 +943,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     bool isDark,
   ) {
     final policyRaw =
-        widget.job['ai_interview_policy']?.toString().toUpperCase() ??
+        _job['ai_interview_policy']?.toString().toUpperCase() ??
         'REQUIRED_HARD';
 
     Color policyColor;
@@ -1279,8 +1353,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () {
-                final jobId = int.tryParse(widget.job['id']?.toString() ?? '');
-                final jobTitle = widget.job['title']?.toString() ?? 'Job';
+                final jobId = int.tryParse(_job['id']?.toString() ?? '');
+                final jobTitle = _job['title']?.toString() ?? 'Job';
                 Get.to(
                   () => ResumeStudioScreen(jobId: jobId, jobTitle: jobTitle),
                 );
@@ -1402,7 +1476,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
   }
 
   Widget _buildJobSummaryCard(Color cardBg, Color textC, bool isDark) {
-    final created = widget.job['created_at']?.toString() ?? '';
+    final created = _job['created_at']?.toString() ?? '';
     String publishedStr = 'Not Specified';
     if (created.isNotEmpty) {
       try {
@@ -1425,7 +1499,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       } catch (_) {}
     }
 
-    final deadline = widget.job['application_deadline']?.toString() ?? '';
+    final deadline = _job['application_deadline']?.toString() ?? '';
     String deadlineStr = 'Not Specified';
     if (deadline.isNotEmpty) {
       try {
@@ -1448,13 +1522,13 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       } catch (_) {}
     }
 
-    final companyName = widget.job['company']?.toString() ?? 'Company';
-    final type = widget.job['employment_type']?.toString() ?? 'Full-time';
-    final experience = widget.job['experience_level']?.toString() ?? '';
-    final location = widget.job['location']?.toString() ?? 'Not Specified';
-    final category = widget.job['category']?.toString() ?? '';
-    final salary = widget.job['salary_range']?.toString() ?? '';
-    final openings = widget.job['openings']?.toString() ?? '';
+    final companyName = _job['company']?.toString() ?? 'Company';
+    final type = _job['employment_type']?.toString() ?? 'Full-time';
+    final experience = _job['experience_level']?.toString() ?? '';
+    final location = _job['location']?.toString() ?? 'Not Specified';
+    final category = _job['category']?.toString() ?? '';
+    final salary = _job['salary_range']?.toString() ?? '';
+    final openings = _job['openings']?.toString() ?? '';
 
     return _buildSectionCard(
       title: 'Job Summary',
@@ -1624,10 +1698,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
   }
 
   Widget _buildAboutCompanyCard(Color cardBg, Color textC, bool isDark) {
-    final companyName = widget.job['company']?.toString() ?? 'Company';
+    final companyName = _job['company']?.toString() ?? 'Company';
     final initial = companyName.isNotEmpty ? companyName[0].toUpperCase() : 'C';
     final logoUrl = companyInfo != null ? (companyInfo!['logo_url'] ?? '') : '';
-    final rawIsExternal = widget.job['is_external'];
+    final rawIsExternal = _job['is_external'];
     bool isExternal = false;
     if (rawIsExternal != null) {
       if (rawIsExternal is num) {

@@ -42,6 +42,38 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
   TabController? _tabController;
 
   String? _lastFetchedRecruiterId;
+  final Set<String> _selectedCandidateIds = {};
+
+  void _toggleCandidateSelection(String candidateId) {
+    setState(() {
+      if (_selectedCandidateIds.contains(candidateId)) {
+        _selectedCandidateIds.remove(candidateId);
+      } else {
+        _selectedCandidateIds.add(candidateId);
+      }
+    });
+  }
+
+  void _clearSelection() {
+    setState(() {
+      _selectedCandidateIds.clear();
+    });
+  }
+
+  void _selectAllCandidates(List<Candidate> candidates) {
+    setState(() {
+      final allSelected = candidates.every((c) => _selectedCandidateIds.contains(c.id));
+      if (allSelected) {
+        for (var c in candidates) {
+          _selectedCandidateIds.remove(c.id);
+        }
+      } else {
+        for (var c in candidates) {
+          _selectedCandidateIds.add(c.id);
+        }
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -70,8 +102,13 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
     final desiredLength = hasJobSelected ? 2 : 1;
 
     if (_tabController == null || _tabController!.length != desiredLength) {
-      _tabController?.dispose();
+      final oldController = _tabController;
       _tabController = TabController(length: desiredLength, vsync: this);
+      if (oldController != null) {
+        Future.microtask(() {
+          oldController.dispose();
+        });
+      }
     }
   }
 
@@ -93,11 +130,7 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
             jobId: _selectedJobId,
           )
           .then((_) {
-            if (mounted) {
-              setState(() {
-                _updateTabController();
-              });
-            }
+            // Data loaded
           });
     }
   }
@@ -112,6 +145,7 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
       _selectedResumeFilter = '';
       _selectedJobId = widget.jobId ?? '';
       _updateTabController();
+      _selectedCandidateIds.clear();
     });
     _loadData();
   }
@@ -136,21 +170,24 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
       builder: (context, controller, child) {
         final hasJobSelected = _selectedJobId.isNotEmpty;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        return CustomScrollView(
+          slivers: [
             if (widget.jobTitle != null && _selectedJobId == widget.jobId)
-              _buildJobContextBar(isDark),
-            _buildSearchRow(isDark),
-            if (hasJobSelected && _tabController != null) _buildTabBar(isDark),
-            Expanded(
+              SliverToBoxAdapter(child: _buildJobContextBar(isDark)),
+            SliverToBoxAdapter(child: _buildFilterCard(isDark, controller)),
+            if (_selectedCandidateIds.isNotEmpty)
+              SliverToBoxAdapter(child: _buildBulkActionBar(isDark, controller)),
+            if (hasJobSelected && _tabController != null)
+              SliverToBoxAdapter(child: _buildTabBar(isDark)),
+            SliverFillRemaining(
+              hasScrollBody: true,
               child: controller.isLoading
                   ? const Center(
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : controller.errorMessage != null &&
-                        controller.candidates.isEmpty
-                  ? _buildErrorState(controller.errorMessage!, isDark)
+                  : (controller.errorMessage != null &&
+                        controller.candidates.isEmpty)
+                  ? _buildErrorState(controller.errorMessage ?? 'An error occurred', isDark)
                   : _tabController == null
                   ? const SizedBox()
                   : TabBarView(
@@ -251,78 +288,292 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
     );
   }
 
-  Widget _buildSearchRow(bool isDark) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        Responsive.paddingH,
-        12,
-        Responsive.paddingH,
-        8,
+  Widget _buildFilterCard(bool isDark, CandidatesController controller) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: Responsive.paddingH, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.getCard(isDark) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.grey[200]!,
+        ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Container(
-              height: 44,
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.getCard(isDark) : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isDark ? Colors.white10 : Colors.grey[200]!,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Search Filters',
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : Colors.black87,
                 ),
               ),
-              child: TextField(
-                controller: _keywordController,
-                textInputAction: TextInputAction.search,
-                onSubmitted: (_) => _loadData(),
-                style: GoogleFonts.inter(fontSize: 14),
-                decoration: const InputDecoration(
-                  hintText: 'Search candidate name, skills...',
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    size: 20,
-                    color: Colors.grey,
+              if (_keywordController.text.isNotEmpty ||
+                  _skillsController.text.isNotEmpty ||
+                  _locationController.text.isNotEmpty ||
+                  _expMinController.text.isNotEmpty ||
+                  _expMaxController.text.isNotEmpty ||
+                  _selectedJobId.isNotEmpty)
+                GestureDetector(
+                  onTap: _resetFilters,
+                  child: Text(
+                    'Reset All',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red[400],
+                    ),
                   ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: 10),
                 ),
-              ),
-            ),
+            ],
           ),
-          const SizedBox(width: 10),
-          GestureDetector(
-            onTap: () => _openFiltersBottomSheet(isDark),
-            child: Container(
-              height: 44,
-              width: 44,
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.getCard(isDark) : Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isDark ? Colors.white10 : Colors.grey[200]!,
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: _buildInlineInputField(
+                  _keywordController,
+                  'Keyword (Name / Email)',
+                  isDark,
                 ),
               ),
-              child: Icon(
-                Icons.tune_rounded,
-                size: 20,
-                color: _hasActiveAdvancedFilters()
-                    ? AppColors.getPrimary(isDark)
-                    : Colors.grey,
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2,
+                child: _buildInlineInputField(
+                  _skillsController,
+                  'Skills (e.g. PHP)',
+                  isDark,
+                ),
               ),
-            ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: _buildInlineInputField(
+                  _locationController,
+                  'Location',
+                  isDark,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 1,
+                child: _buildInlineInputField(
+                  _expMinController,
+                  'Exp Min',
+                  isDark,
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 1,
+                child: _buildInlineInputField(
+                  _expMaxController,
+                  'Exp Max',
+                  isDark,
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.02)
+                        : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.grey[200]!,
+                    ),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      value: _selectedJobId.isEmpty ? null : _selectedJobId,
+                      hint: Text(
+                        'Select Job Role',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      dropdownColor: isDark
+                          ? AppColors.bgSoftDark
+                          : Colors.white,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                      items: [
+                        DropdownMenuItem<String>(
+                          value: null,
+                          child: Text(
+                            'None (General search)',
+                            style: GoogleFonts.inter(fontSize: 13),
+                          ),
+                        ),
+                        ...controller.recruiterJobs.map((job) {
+                          return DropdownMenuItem<String>(
+                            value: job['id']?.toString() ?? '',
+                            child: Text(
+                              job['title'] ?? '',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }),
+                      ],
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedJobId = val ?? '';
+                          _updateTabController();
+                        });
+                        _loadData();
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                height: 40,
+                child: ElevatedButton(
+                  onPressed: _loadData,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.getPrimary(isDark),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                  ),
+                  child: Text(
+                    'Search',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  bool _hasActiveAdvancedFilters() {
-    return _skillsController.text.isNotEmpty ||
-        _locationController.text.isNotEmpty ||
-        _expMinController.text.isNotEmpty ||
-        _expMaxController.text.isNotEmpty ||
-        _selectedResumeFilter.isNotEmpty ||
-        _selectedJobId.isNotEmpty;
+  Widget _buildInlineInputField(
+    TextEditingController controller,
+    String hint,
+    bool isDark, {
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.02)
+            : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        textInputAction: TextInputAction.search,
+        onSubmitted: (_) => _loadData(),
+        style: GoogleFonts.inter(fontSize: 13),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBulkActionBar(bool isDark, CandidatesController controller) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: Responsive.paddingH, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.getCard(isDark) : const Color(0xFFF4FBFA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? Colors.white10 : const Color(0xFFD9ECE5),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              '${_selectedCandidateIds.length} Selected',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : const Color(0xFF0D8A90),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: _clearSelection,
+            style: TextButton.styleFrom(
+              visualDensity: VisualDensity.compact,
+              foregroundColor: isDark ? Colors.grey[400] : Colors.grey[700],
+            ),
+            child: const Text('Clear'),
+          ),
+          const SizedBox(width: 4),
+          ElevatedButton.icon(
+            onPressed: () => _showBulkInviteDialog(controller, isDark),
+            icon: const Icon(Icons.person_add_alt_1_rounded, size: 14),
+            label: const Text('Invite'),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              visualDensity: VisualDensity.compact,
+              backgroundColor: AppColors.getPrimary(isDark),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              textStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton.icon(
+            onPressed: () => _showBulkEmailDialog(controller, isDark),
+            icon: const Icon(Icons.mail_outline_rounded, size: 14),
+            label: const Text('Email'),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              visualDensity: VisualDensity.compact,
+              backgroundColor: Colors.transparent,
+              foregroundColor: AppColors.getPrimary(isDark),
+              side: BorderSide(color: AppColors.getPrimary(isDark)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              textStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildTabBar(bool isDark) {
@@ -421,16 +672,58 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
 
     return RefreshIndicator(
       onRefresh: () async => _loadData(),
-      child: ListView.builder(
-        padding: EdgeInsets.symmetric(
-          horizontal: Responsive.paddingH,
-          vertical: 10,
-        ),
-        itemCount: list.length,
-        itemBuilder: (context, index) {
-          final candidate = list[index];
-          return _buildCandidateCard(candidate, isAi, isDark);
-        },
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: Responsive.paddingH, vertical: 8),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: list.isNotEmpty && list.every((c) => _selectedCandidateIds.contains(c.id)),
+                    onChanged: (val) => _selectAllCandidates(list),
+                    activeColor: AppColors.getPrimary(isDark),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Select All',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.grey[300] : Colors.blueGrey[800],
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${list.length} Candidates',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: isDark ? Colors.grey[500] : Colors.blueGrey[400],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(
+              left: Responsive.paddingH,
+              right: Responsive.paddingH,
+              bottom: 20,
+            ),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final candidate = list[index];
+                  return _buildCandidateCard(candidate, isAi, isDark);
+                },
+                childCount: list.length,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -458,6 +751,15 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Checkbox(
+                value: _selectedCandidateIds.contains(candidate.id),
+                onChanged: (val) {
+                  _toggleCandidateSelection(candidate.id);
+                },
+                activeColor: AppColors.getPrimary(isDark),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                visualDensity: VisualDensity.compact,
+              ),
               FutureBuilder<String>(
                 future: ApiService().getImageUrl(candidate.profilePhoto),
                 builder: (context, snapshot) {
@@ -699,6 +1001,310 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
     );
   }
 
+  void _showBulkInviteDialog(CandidatesController controller, bool isDark) {
+    String selectedJobId = controller.recruiterJobs.isNotEmpty ? controller.recruiterJobs.first['id'].toString() : '';
+    final TextEditingController messageController = TextEditingController();
+    bool isSubmitting = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.getCard(isDark) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Bulk Invite (${_selectedCandidateIds.length})',
+                      style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    if (controller.recruiterJobs.isEmpty)
+                      const Text('No jobs available.')
+                    else ...[
+                      DropdownButtonFormField<String>(
+                        value: selectedJobId,
+                        decoration: InputDecoration(
+                          labelText: 'Select Job',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        items: controller.recruiterJobs.map((job) {
+                          return DropdownMenuItem<String>(
+                            value: job['id'].toString(),
+                            child: Text(job['title']),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setModalState(() => selectedJobId = val);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: messageController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          labelText: 'Optional Invite Note',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: isSubmitting || selectedJobId.isEmpty
+                              ? null
+                              : () async {
+                                  setModalState(() => isSubmitting = true);
+                                  final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter!.id;
+                                  final res = await controller.bulkInviteCandidates(
+                                    recruiterId: recruiterId,
+                                    candidateIds: _selectedCandidateIds.toList(),
+                                    jobId: selectedJobId,
+                                    message: messageController.text.trim(),
+                                  );
+                                  setModalState(() => isSubmitting = false);
+                                  if (mounted) {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(res['message'] ?? 'Invitations sent')),
+                                    );
+                                    if (res['success'] == true) _clearSelection();
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.getPrimary(isDark),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: isSubmitting
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
+                              : const Text('Send Invitations', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showBulkEmailDialog(CandidatesController controller, bool isDark) {
+    final TextEditingController subjectController = TextEditingController();
+    final TextEditingController bodyController = TextEditingController();
+    bool isSubmitting = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            void applyTemplate(String type) {
+              String jobTitle = 'the position';
+              if (_selectedJobId.isNotEmpty) {
+                final job = controller.recruiterJobs.firstWhere(
+                  (j) => j['id']?.toString() == _selectedJobId,
+                  orElse: () => {},
+                );
+                if (job.isNotEmpty && job['title'] != null) {
+                  jobTitle = job['title'];
+                }
+              }
+
+              String subject = '';
+              String body = '';
+              switch (type) {
+                case 'interview':
+                  subject = 'Interview Invitation - $jobTitle';
+                  body = 'Dear candidate,\n\nWe would like to invite you for an interview for the $jobTitle position.\n\nPlease let us know your availability.';
+                  break;
+                case 'followup':
+                  subject = 'Application Update - $jobTitle';
+                  body = 'Dear candidate,\n\nWe are currently reviewing your application for the $jobTitle position and will get back to you shortly.';
+                  break;
+                case 'rejection':
+                  subject = 'Update regarding your application';
+                  body = 'Dear candidate,\n\nThank you for applying for the $jobTitle position. Unfortunately, we have decided to move forward with other candidates at this time.';
+                  break;
+                case 'offer':
+                  subject = 'Offer Letter - $jobTitle';
+                  body = 'Dear candidate,\n\nWe are thrilled to offer you the position of $jobTitle. Please find the details attached.';
+                  break;
+              }
+              setModalState(() {
+                subjectController.text = subject;
+                bodyController.text = body;
+              });
+            }
+
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.getCard(isDark) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Bulk Email (${_selectedCandidateIds.length})',
+                      style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: subjectController,
+                      decoration: InputDecoration(
+                        labelText: 'Subject',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: bodyController,
+                      maxLines: 6,
+                      decoration: InputDecoration(
+                        labelText: 'Email Body',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Quick Templates:',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildTemplateChip(
+                          'Interview Invitation',
+                          () => applyTemplate('interview'),
+                          isDark,
+                        ),
+                        _buildTemplateChip(
+                          'Follow-up',
+                          () => applyTemplate('followup'),
+                          isDark,
+                        ),
+                        _buildTemplateChip(
+                          'Rejection Notice',
+                          () => applyTemplate('rejection'),
+                          isDark,
+                        ),
+                        _buildTemplateChip(
+                          'Offer Letter',
+                          () => applyTemplate('offer'),
+                          isDark,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: isSubmitting
+                            ? null
+                            : () async {
+                                if (subjectController.text.trim().isEmpty || bodyController.text.trim().isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Subject and Body are required')));
+                                  return;
+                                }
+                                setModalState(() => isSubmitting = true);
+                                final recruiterId = Provider.of<AuthController>(context, listen: false).currentRecruiter!.id;
+                                final res = await controller.bulkSendEmail(
+                                  recruiterId: recruiterId,
+                                  candidateIds: _selectedCandidateIds.toList(),
+                                  subject: subjectController.text.trim(),
+                                  body: bodyController.text.trim(),
+                                );
+                                setModalState(() => isSubmitting = false);
+                                if (mounted) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(res['message'] ?? 'Emails sent')),
+                                  );
+                                  if (res['success'] == true) _clearSelection();
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.getPrimary(isDark),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text('Send Email', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTemplateChip(String label, VoidCallback onTap, bool isDark) {
+    return ActionChip(
+      label: Text(label),
+      onPressed: onTap,
+      backgroundColor: isDark
+          ? Colors.white.withValues(alpha: 0.05)
+          : Colors.grey[100],
+      labelStyle: GoogleFonts.inter(
+        fontSize: 11,
+        color: AppColors.getPrimary(isDark),
+        fontWeight: FontWeight.w600,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6),
+        side: BorderSide(
+          color: AppColors.getPrimary(isDark).withValues(alpha: 0.3),
+        ),
+      ),
+    );
+  }
+
   Widget _buildErrorState(String error, bool isDark) {
     return Center(
       child: Column(
@@ -726,305 +1332,6 @@ class _CandidateManagementScreenState extends State<CandidateManagementScreen>
     );
   }
 
-  void _openFiltersBottomSheet(bool isDark) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            final controller = Provider.of<CandidatesController>(context);
-            return Container(
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.bgSoftDark : Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
-                ),
-              ),
-              padding: EdgeInsets.fromLTRB(
-                20,
-                20,
-                20,
-                MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 36,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: isDark ? Colors.white24 : Colors.grey[300],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Advanced Filters',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            _resetFilters();
-                          },
-                          child: Text(
-                            'Reset All',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _buildLabel('Skills (e.g. PHP, Java)', isDark),
-                    _buildInputField(_skillsController, 'e.g. PHP', isDark),
-                    const SizedBox(height: 12),
-                    _buildLabel('Location', isDark),
-                    _buildInputField(
-                      _locationController,
-                      'City / State',
-                      isDark,
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLabel('Exp Min (Years)', isDark),
-                              _buildInputField(
-                                _expMinController,
-                                'e.g. 1',
-                                isDark,
-                                keyboardType: TextInputType.number,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildLabel('Exp Max (Years)', isDark),
-                              _buildInputField(
-                                _expMaxController,
-                                'e.g. 5',
-                                isDark,
-                                keyboardType: TextInputType.number,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _buildLabel('Job Role Match', isDark),
-                    Container(
-                      height: 46,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.02)
-                            : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isDark ? Colors.white10 : Colors.grey[200]!,
-                        ),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: _selectedJobId.isEmpty ? null : _selectedJobId,
-                          hint: Text(
-                            'Select Job',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          dropdownColor: isDark
-                              ? AppColors.bgSoftDark
-                              : Colors.white,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: isDark ? Colors.white : Colors.black87,
-                          ),
-                          items: [
-                            DropdownMenuItem<String>(
-                              value: null,
-                              child: Text(
-                                'None (General search)',
-                                style: GoogleFonts.inter(fontSize: 13),
-                              ),
-                            ),
-                            ...controller.recruiterJobs.map((job) {
-                              return DropdownMenuItem<String>(
-                                value: job['id']?.toString() ?? '',
-                                child: Text(
-                                  job['title'] ?? '',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              );
-                            }),
-                          ],
-                          onChanged: (val) {
-                            setSheetState(() {
-                              _selectedJobId = val ?? '';
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildLabel('Resume Uploaded', isDark),
-                    Container(
-                      height: 46,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.02)
-                            : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isDark ? Colors.white10 : Colors.grey[200]!,
-                        ),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: _selectedResumeFilter,
-                          dropdownColor: isDark
-                              ? AppColors.bgSoftDark
-                              : Colors.white,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: isDark ? Colors.white : Colors.black87,
-                          ),
-                          items: [
-                            DropdownMenuItem(
-                              value: '',
-                              child: Text(
-                                'All Candidates',
-                                style: GoogleFonts.inter(fontSize: 13),
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: 'yes',
-                              child: Text(
-                                'With Resume',
-                                style: GoogleFonts.inter(fontSize: 13),
-                              ),
-                            ),
-                            DropdownMenuItem(
-                              value: 'no',
-                              child: Text(
-                                'Without Resume',
-                                style: GoogleFonts.inter(fontSize: 13),
-                              ),
-                            ),
-                          ],
-                          onChanged: (val) {
-                            setSheetState(() {
-                              _selectedResumeFilter = val ?? '';
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        _loadData();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.getPrimary(isDark),
-                        minimumSize: const Size(double.infinity, 44),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        'Apply Filters',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildLabel(String text, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6, left: 2),
-      child: Text(
-        text,
-        style: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: Colors.grey,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInputField(
-    TextEditingController controller,
-    String hint,
-    bool isDark, {
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.02)
-            : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.grey[200]!),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        style: GoogleFonts.inter(fontSize: 13),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: GoogleFonts.inter(fontSize: 13, color: Colors.grey),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 10,
-          ),
-        ),
-      ),
-    );
-  }
 
   void _viewCandidateProfile(Candidate candidate, bool isDark) {
     Navigator.push(
