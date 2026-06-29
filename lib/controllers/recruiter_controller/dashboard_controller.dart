@@ -13,6 +13,7 @@ class DashboardController extends ChangeNotifier {
   Map<String, dynamic> _conversionMetrics = {};
   bool _isLoading = true;
   int _notificationCount = 0;
+  DateTime _selectedCalendarDate = DateTime.now();
 
   Map<String, dynamic> get dashboardData => _dashboardData;
   List<dynamic> get upcomingInterviews => _upcomingInterviews;
@@ -22,6 +23,28 @@ class DashboardController extends ChangeNotifier {
   Map<String, dynamic> get conversionMetrics => _conversionMetrics;
   bool get isLoading => _isLoading;
   int get notificationCount => _notificationCount;
+  DateTime get selectedCalendarDate => _selectedCalendarDate;
+
+  void setSelectedCalendarDate(DateTime date) {
+    _selectedCalendarDate = date;
+    notifyListeners();
+  }
+
+  List<dynamic> get selectedDateInterviews {
+    return _upcomingInterviews.where((iv) {
+      final String? slotDateStr = iv['slot_date']?.toString();
+      if (slotDateStr == null || slotDateStr.isEmpty) return false;
+      try {
+        final slotDate = DateTime.parse(slotDateStr);
+        return slotDate.year == _selectedCalendarDate.year &&
+               slotDate.month == _selectedCalendarDate.month &&
+               slotDate.day == _selectedCalendarDate.day &&
+               iv['booking_status'] != 'cancelled';
+      } catch (_) {
+        return false;
+      }
+    }).toList();
+  }
 
   Future<void> fetchDashboard(
     String recruiterId, {

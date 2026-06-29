@@ -19,6 +19,7 @@ import 'jobs/post_job_screen.dart';
 import 'notifications/notifications_screen.dart';
 
 import 'package:hirematrix/views/screens/recruiter/widgets/hirematrix_logo.dart';
+import 'package:hirematrix/views/screens/recruiter/widgets/chatbot_bottom_sheet.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
 import 'dart:io';
@@ -129,6 +130,48 @@ class _MainScreenState extends State<MainScreen> {
       appBar: _buildDynamicAppBar(isDarkMode, themeProvider),
       drawer: const MainDrawer(),
       body: IndexedStack(index: _currentIndex, children: _screens),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: const ChatbotBottomSheet(),
+            ),
+          );
+        },
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        highlightElevation: 0,
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1FB7B5), Color(0xFF53B86C)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1FB7B5).withOpacity(0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.smart_toy_rounded,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: isDarkMode ? AppColors.bgCardDark : Colors.white,

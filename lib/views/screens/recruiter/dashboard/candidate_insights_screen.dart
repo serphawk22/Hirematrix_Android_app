@@ -8,6 +8,7 @@ import 'package:hirematrix/controllers/recruiter_controller/leaderboard_controll
 import 'package:hirematrix/controllers/recruiter_controller/applications_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart';
+import '../candidates/candidate_profile_view_screen.dart';
 
 class CandidateInsightsScreen extends StatefulWidget {
   final String? preselectedJobId;
@@ -678,8 +679,20 @@ class _CandidateInsightsScreenState extends State<CandidateInsightsScreen> {
           ),
           const SizedBox(height: 14),
           ElevatedButton(
-            onPressed: () =>
-                _openReviewBottomSheet(candidate, recruiterId, isDark),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CandidateProfileViewScreen(
+                    candidateId: candidate['candidate_id']?.toString() ?? '',
+                    applicationId: candidate['application_id']?.toString() ??
+                        candidate['id']?.toString(),
+                    jobId: candidate['job_id']?.toString(),
+                    candidateName: candidate['candidate_name'] ?? 'Candidate',
+                  ),
+                ),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: isDark
                   ? Colors.white.withValues(alpha: 0.05)

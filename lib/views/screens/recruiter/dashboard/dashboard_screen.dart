@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:hirematrix/views/screens/recruiter/utils/responsive_helper.dart';
@@ -136,6 +137,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   dashboard.dashboardData,
                   isDarkMode,
                 ),
+                SizedBox(height: Responsive.spacing(28)),
+                _buildCalendarSection(dashboard, isDarkMode),
                 SizedBox(height: Responsive.spacing(28)),
                 _buildRecentApplicationsCard(
                   dashboard.applications,
@@ -876,6 +879,235 @@ class _DashboardScreenState extends State<DashboardScreen> {
       height: 15,
       color: AppColors.getBorder(isDark),
     );
+  }
+
+  Widget _buildCalendarSection(DashboardController dashboard, bool isDark) {
+    final textColor = isDark ? Colors.white : const Color(0xFF16212B);
+    final cardColor = isDark ? AppColors.getCard(isDark) : Colors.white;
+
+    final List<dynamic> upcoming = dashboard.upcomingInterviews;
+    
+    // Map dates to events
+    final Map<DateTime, List<dynamic>> events = {};
+    for (var iv in upcoming) {
+      final slotDateStr = iv['slot_date']?.toString();
+      if (slotDateStr != null && slotDateStr.isNotEmpty) {
+        try {
+          final parsed = DateTime.parse(slotDateStr);
+          final dateKey = DateTime(parsed.year, parsed.month, parsed.day);
+          events.putIfAbsent(dateKey, () => []).add(iv);
+        } catch (_) {}
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('Interviews Calendar', isDark, null),
+        SizedBox(height: Responsive.spacing(12)),
+        Container(
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[200]!.withValues(alpha: 0.5),
+            ),
+            boxShadow: [
+              if (!isDark)
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+            ],
+          ),
+          child: Column(
+            children: [
+              TableCalendar(
+                firstDay: DateTime.now().subtract(const Duration(days: 30)),
+                lastDay: DateTime.now().add(const Duration(days: 90)),
+                focusedDay: dashboard.selectedCalendarDate,
+                currentDay: DateTime.now(),
+                selectedDayPredicate: (day) => isSameDay(dashboard.selectedCalendarDate, day),
+                onDaySelected: (selectedDay, focusedDay) {
+                  dashboard.setSelectedCalendarDate(selectedDay);
+                },
+                eventLoader: (day) {
+                  final dateKey = DateTime(day.year, day.month, day.day);
+                  return events[dateKey] ?? [];
+                },
+                calendarStyle: CalendarStyle(
+                  markerDecoration: BoxDecoration(
+                    color: AppColors.getPrimary(isDark),
+                    shape: BoxShape.circle,
+                  ),
+                  selectedDecoration: BoxDecoration(
+                    color: AppColors.getPrimary(isDark).withValues(alpha: 0.8),
+                    shape: BoxShape.circle,
+                  ),
+                  todayDecoration: BoxDecoration(
+                    color: AppColors.getSecondary(isDark).withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  defaultTextStyle: GoogleFonts.inter(color: textColor),
+                  weekendTextStyle: GoogleFonts.inter(color: textColor.withValues(alpha: 0.7)),
+                  outsideTextStyle: GoogleFonts.inter(color: textColor.withValues(alpha: 0.3)),
+                ),
+                headerStyle: HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                  titleTextStyle: GoogleFonts.inter(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  leftChevronIcon: Icon(Icons.chevron_left, color: textColor),
+                  rightChevronIcon: Icon(Icons.chevron_right, color: textColor),
+                ),
+              ),
+              
+              // Selected Day Interviews
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.black12 : Colors.grey[50],
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isSameDay(dashboard.selectedCalendarDate, DateTime.now()) 
+                          ? "Today's Interviews" 
+                          : DateFormat('MMM d, yyyy').format(dashboard.selectedCalendarDate),
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ..._buildSelectedDayInterviewsList(dashboard.selectedDateInterviews, isDark),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _buildSelectedDayInterviewsList(List<dynamic> interviews, bool isDark) {
+    if (interviews.isEmpty) {
+      return [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Center(
+            child: Column(
+              children: [
+                Icon(Icons.event_available, color: AppColors.getSecondary(isDark), size: 32),
+                const SizedBox(height: 8),
+                Text(
+                  'No interviews scheduled',
+                  style: GoogleFonts.inter(
+                    color: AppColors.getTextMuted(isDark),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ];
+    }
+
+    return interviews.map((iv) {
+      final String timeStr = iv['slot_time']?.toString() ?? '';
+      String formattedTime = timeStr;
+      if (timeStr.isNotEmpty) {
+        try {
+          final parsed = DateFormat('HH:mm:ss').parse(timeStr);
+          formattedTime = DateFormat('h:mm a').format(parsed);
+        } catch (_) {}
+      }
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? Colors.transparent : Colors.grey[200]!,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.getSecondary(isDark).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                formattedTime,
+                style: GoogleFonts.inter(
+                  color: AppColors.getSecondary(isDark),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    iv['candidate_name']?.toString() ?? 'Unknown',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: AppColors.getText(isDark),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    iv['job_title']?.toString() ?? 'Interview',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: AppColors.getTextMuted(isDark),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.chevron_right,
+                color: AppColors.getTextMuted(isDark),
+                size: 20,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const InterviewSlotsScreen(),
+                  ),
+                ).then((_) => _loadData());
+              },
+            ),
+          ],
+        ),
+      );
+    }).toList();
   }
 
   // Recent Applications

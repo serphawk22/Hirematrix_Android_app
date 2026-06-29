@@ -781,7 +781,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    dashboardController.currentIndex.value = 2;
+                  },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: isDark
                         ? Colors.white

@@ -51,6 +51,21 @@ class JobsController extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateJobStatus(
+      String jobId, String recruiterId, String status) async {
+    try {
+      final response =
+          await _apiService.updateJobStatus(jobId, recruiterId, status);
+      if (response['success'] == true) {
+        await fetchJobs(recruiterId);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   void refreshJobs(String recruiterId) {
     fetchJobs(recruiterId);
   }

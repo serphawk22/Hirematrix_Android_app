@@ -11,6 +11,7 @@ import 'package:hirematrix/views/screens/candidate/my_interview_bookings_screen.
 import 'package:hirematrix/views/screens/candidate/applications_screens.dart';
 import 'package:hirematrix/views/screens/candidate/messages_screen.dart';
 import 'package:hirematrix/views/screens/candidate/job_details_screen.dart';
+import 'package:hirematrix/views/screens/candidate/book_interview_slot.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -516,9 +517,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
       case 'interview_scheduled':
       case 'interview_rescheduled':
       case 'interview_reviewed':
-      case 'slot_not_booked':
       case 'reschedule_required':
         Get.to(() => const MyInterviewBookingsScreen());
+        return;
+      case 'slot_not_booked':
+        _goToBookSlot(actionLink, notifData);
         return;
 
       // ── Application status changed → Applications screen ────────────────
@@ -572,10 +575,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final path = uri.path;
 
     if (path.contains('/candidate/my-bookings') ||
-        path.contains('/candidate/book-slot') ||
         path.contains('/candidate/reschedule-slot') ||
         path.contains('/candidate/interview')) {
       Get.to(() => const MyInterviewBookingsScreen());
+    } else if (path.contains('/candidate/book-slot')) {
+      _goToBookSlot(actionLink, notifData);
     } else if (path.contains('/candidate/applications')) {
       _goToApplications();
     } else if (path.contains('/candidate/messages/')) {
@@ -604,6 +608,29 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   // ── Helper navigation methods ────────────────────────────────────────────
+
+  void _goToBookSlot(String? actionLink, dynamic notifData) {
+    int applicationId = 0;
+    if (actionLink != null && actionLink.isNotEmpty) {
+      final uri = Uri.tryParse(actionLink);
+      if (uri != null) {
+        final segments = uri.pathSegments;
+        int idx = segments.indexOf('book-slot');
+        if (idx != -1 && idx + 1 < segments.length) {
+          applicationId = int.tryParse(segments[idx + 1]) ?? 0;
+        }
+      }
+    }
+    if (applicationId == 0 && notifData != null) {
+      applicationId = int.tryParse(notifData['application_id']?.toString() ?? '0') ?? 0;
+    }
+
+    if (applicationId > 0) {
+      Get.to(() => BookInterviewSlotScreen(applicationId: applicationId));
+    } else {
+      Get.to(() => const MyInterviewBookingsScreen());
+    }
+  }
 
   void _goToApplications() {
     try {

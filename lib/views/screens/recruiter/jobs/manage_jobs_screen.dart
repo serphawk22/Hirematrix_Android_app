@@ -8,6 +8,8 @@ import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart
 import 'package:hirematrix/controllers/recruiter_controller/models/job.dart';
 import 'job_detail_responses_screen.dart';
 import 'edit_job_screen.dart';
+import 'preview_job_screen.dart';
+import '../dashboard/candidate_insights_screen.dart';
 
 class ManageJobsScreen extends StatefulWidget {
   const ManageJobsScreen({super.key});
@@ -662,121 +664,248 @@ class _ManageJobsScreenState extends State<ManageJobsScreen>
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+            child: Column(
               children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 40,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.push(
+                // Row 1: Edit + Pipeline
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildActionBtn(
+                        label: 'Edit',
+                        icon: Icons.edit_outlined,
+                        isDark: isDark,
+                        onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EditJobScreen(job: job),
+                            builder: (_) => EditJobScreen(job: job),
                           ),
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? Colors.white.withValues(alpha: 0.02)
-                            : Colors.white,
-                        foregroundColor: AppColors.getPrimary(isDark),
-                        side: BorderSide(
-                          color: isDark
-                              ? AppColors.getPrimary(
-                                  isDark,
-                                ).withValues(alpha: 0.3)
-                              : AppColors.getPrimary(
-                                  isDark,
-                                ).withValues(alpha: 0.4),
-                          width: 1.2,
                         ),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.edit_outlined,
-                            size: 14,
-                            color: AppColors.getPrimary(isDark),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Edit',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildActionBtn(
+                        label: 'Pipeline',
+                        icon: Icons.account_tree_outlined,
+                        isDark: isDark,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => JobDetailResponsesScreen(job: job),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SizedBox(
-                    height: 40,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.push(
+                const SizedBox(height: 8),
+                // Row 2: Preview + Leaderboard
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildActionBtn(
+                        label: 'Preview',
+                        icon: Icons.visibility_outlined,
+                        isDark: isDark,
+                        onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                JobDetailResponsesScreen(job: job),
+                            builder: (_) => PreviewJobScreen(job: job),
                           ),
-                        );
-                      },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: isDark
-                            ? Colors.white.withValues(alpha: 0.02)
-                            : Colors.white,
-                        foregroundColor: AppColors.getPrimary(isDark),
-                        side: BorderSide(
-                          color: isDark
-                              ? AppColors.getPrimary(
-                                  isDark,
-                                ).withValues(alpha: 0.3)
-                              : AppColors.getPrimary(
-                                  isDark,
-                                ).withValues(alpha: 0.4),
-                          width: 1.2,
                         ),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Pipeline',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            size: 10,
-                            color: AppColors.getPrimary(isDark),
-                          ),
-                        ],
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildActionBtn(
+                        label: 'Leaderboard',
+                        icon: Icons.leaderboard_rounded,
+                        isDark: isDark,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CandidateInsightsScreen(
+                              preselectedJobId: job.jobId,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Close / Reopen (full width)
+                Builder(
+                  builder: (ctx) {
+                    final isOpen = job.status.toLowerCase() == 'active';
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 40,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: Text(
+                                isOpen ? 'Close Job?' : 'Reopen Job?',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              content: Text(
+                                isOpen
+                                    ? 'Closing this job will prevent new applications.'
+                                    : 'Reopening will allow candidates to apply again.',
+                                style: GoogleFonts.inter(fontSize: 13),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: Text(
+                                    'Cancel',
+                                    style: GoogleFonts.inter(),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: isOpen
+                                        ? Colors.red
+                                        : Colors.green,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: Text(
+                                    isOpen ? 'Close' : 'Reopen',
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed == true && ctx.mounted) {
+                            final recruiterId = Provider.of<AuthController>(
+                              ctx,
+                              listen: false,
+                            ).currentRecruiter?.id;
+                            if (recruiterId != null) {
+                              final ok =
+                                  await Provider.of<JobsController>(
+                                    ctx,
+                                    listen: false,
+                                  ).updateJobStatus(
+                                    job.jobId,
+                                    recruiterId,
+                                    isOpen ? 'closed' : 'open',
+                                  );
+                              if (ctx.mounted) {
+                                ScaffoldMessenger.of(ctx).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      ok
+                                          ? (isOpen
+                                                ? 'Job closed successfully'
+                                                : 'Job reopened successfully')
+                                          : 'Failed to update job status',
+                                    ),
+                                    backgroundColor: ok
+                                        ? (isOpen
+                                              ? Colors.orange
+                                              : Colors.green)
+                                        : Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                        },
+                        icon: Icon(
+                          isOpen
+                              ? Icons.lock_outline_rounded
+                              : Icons.lock_open_rounded,
+                          size: 15,
+                          color: isOpen ? Colors.red : Colors.green,
+                        ),
+                        label: Text(
+                          isOpen ? 'Close Job' : 'Reopen Job',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isOpen ? Colors.red : Colors.green,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: isDark
+                              ? (isOpen
+                                    ? Colors.red.withValues(alpha: 0.05)
+                                    : Colors.green.withValues(alpha: 0.05))
+                              : (isOpen
+                                    ? Colors.red.withValues(alpha: 0.03)
+                                    : Colors.green.withValues(alpha: 0.03)),
+                          side: BorderSide(
+                            color: isOpen
+                                ? Colors.red.withValues(alpha: 0.4)
+                                : Colors.green.withValues(alpha: 0.4),
+                            width: 1.2,
+                          ),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActionBtn({
+    required String label,
+    required IconData icon,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      height: 40,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: isDark
+              ? Colors.white.withValues(alpha: 0.02)
+              : Colors.white,
+          foregroundColor: AppColors.getPrimary(isDark),
+          side: BorderSide(
+            color: isDark
+                ? AppColors.getPrimary(isDark).withValues(alpha: 0.3)
+                : AppColors.getPrimary(isDark).withValues(alpha: 0.4),
+            width: 1.2,
+          ),
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 14, color: AppColors.getPrimary(isDark)),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

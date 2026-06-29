@@ -29,4 +29,7 @@ class ApiConstants {
   static const String resendVerification = "resend_verification";
   static const String supportChat = "support/chat";
   static const String leaderboard = "dashboard/leaderboard";
+  static const String updateJobStatus = "jobs/update-status";
+  static const String chatbotAsk = "chatbot/ask";
+  static const String chatbotSuggestions = "chatbot/suggestions";
 }

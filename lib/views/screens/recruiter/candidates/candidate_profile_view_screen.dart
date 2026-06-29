@@ -722,42 +722,124 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
                         ),
                       ),
                     if (videoUrl.isNotEmpty) ...[
-                      InkWell(
-                        onTap: () async {
-                          final uri = Uri.parse(videoUrl);
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(
-                              uri,
-                              mode: LaunchMode.externalApplication,
-                            );
-                          }
-                        },
-                        child: Container(
-                          height: 160,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.black87,
-                            borderRadius: BorderRadius.circular(8),
-                            image: const DecorationImage(
-                              image: AssetImage(
-                                'assets/images/video_placeholder.png',
-                              ),
-                              fit: BoxFit.cover,
-                              opacity: 0.3,
-                            ),
-                          ),
-                          child: const Center(
-                            child: CircleAvatar(
-                              radius: 28,
-                              backgroundColor: Colors.white,
-                              child: Icon(
-                                Icons.play_arrow_rounded,
-                                size: 36,
-                                color: Colors.black87,
-                              ),
-                            ),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.grey[50]!,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isDark ? Colors.white12 : Colors.grey[200]!,
                           ),
                         ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.video_library,
+                              color: Colors.blue,
+                              size: 28,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    videoUrl.split('/').last,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'MP4/MOV/WebM Video',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                final uri = Uri.parse(videoUrl);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(
+                                    uri,
+                                    mode: LaunchMode.externalApplication,
+                                  );
+                                }
+                              },
+                              icon: const Icon(
+                                Icons.play_circle_outline,
+                                size: 18,
+                              ),
+                              label: const Text('Preview'),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color: isDark
+                                      ? Colors.grey[700]!
+                                      : Colors.grey[300]!,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                final uri = Uri.parse(videoUrl);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(
+                                    uri,
+                                    mode: LaunchMode.externalApplication,
+                                  );
+                                }
+                              },
+                              icon: const Icon(
+                                Icons.download_outlined,
+                                size: 18,
+                              ),
+                              label: const Text('Download'),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color: isDark
+                                      ? Colors.grey[700]!
+                                      : Colors.grey[300]!,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                     ],
@@ -1259,7 +1341,9 @@ class _CandidateProfileViewScreenState extends State<CandidateProfileViewScreen>
 
     // Extract saved tags for the display badges
     final rawRecruiterNote = _data?['recruiter_note'];
-    final Map? recruiterNoteData = (rawRecruiterNote is Map) ? rawRecruiterNote : null;
+    final Map? recruiterNoteData = (rawRecruiterNote is Map)
+        ? rawRecruiterNote
+        : null;
     final savedTagsRaw = recruiterNoteData?['tags']?.toString() ?? '';
     final List<String> existingTags = savedTagsRaw
         .split(',')
