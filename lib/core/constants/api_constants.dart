@@ -32,4 +32,6 @@ class ApiConstants {
     final base = baseUrl.replaceAll('/api', '');
     return '$base/$cleanPath';
   }
+  static const String chatbotAsk = 'chatbot/ask';
+  static const String chatbotSuggestions = 'chatbot/suggestions';
 }

@@ -18,6 +18,7 @@ import 'package:hirematrix/views/screens/candidate/blog_detail_screen.dart';
 import 'package:hirematrix/views/screens/candidate/applications_screens.dart';
 import 'package:hirematrix/views/screens/candidate/my_interview_bookings_screen.dart';
 import 'package:hirematrix/controllers/applications_controller.dart';
+import 'package:hirematrix/views/widgets/candidate_chatbot_bottom_sheet.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -67,6 +68,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const ProfileScreen(), // Profile Screen
             const SettingsScreen(), // Settings Screen
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const CandidateChatbotBottomSheet(),
+            );
+          },
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [Color(0xFF1FB7B5), Color(0xFF53B86C)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: const Icon(Icons.chat_outlined, color: Colors.white),
+          ),
         ),
         bottomNavigationBar: _buildBottomNav(isDark),
       );

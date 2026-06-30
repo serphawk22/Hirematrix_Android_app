@@ -1,29 +1,31 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:hirematrix/core/constants/app_colors.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
-import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
+import 'package:http/http.dart' as http;
+import 'package:hirematrix/controllers/auth_controller.dart';
+import 'package:hirematrix/core/constants/api_constants.dart';
+import 'package:hirematrix/core/constants/app_colors.dart';
 
-class ChatbotBottomSheet extends StatefulWidget {
-  const ChatbotBottomSheet({super.key});
+class CandidateChatbotBottomSheet extends StatefulWidget {
+  const CandidateChatbotBottomSheet({super.key});
 
   @override
-  State<ChatbotBottomSheet> createState() => _ChatbotBottomSheetState();
+  State<CandidateChatbotBottomSheet> createState() =>
+      _CandidateChatbotBottomSheetState();
 }
 
-class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
-  final ApiService _apiService = ApiService();
+class _CandidateChatbotBottomSheetState
+    extends State<CandidateChatbotBottomSheet> {
   final TextEditingController _inputController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
 
-  List<Map<String, String>> _messages = [];
-  List<Map<String, dynamic>> _suggestions = [];
+  final List<Map<String, String>> _messages = [];
+  List<String> _suggestions = [];
   bool _isLoading = false;
   bool _isTyping = false;
-  String? _recruiterId;
+  String? _candidateId;
 
   @override
   void initState() {
@@ -31,17 +33,14 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
     _messages.add({
       'role': 'bot',
       'text':
-          'Hi! I\'m HireMate, your AI recruitment assistant. Ask me anything about your jobs, applications, candidates, or interviews.',
+          'Hi! I\'m HireMate, your AI career assistant. Ask me anything about matching jobs, remote roles, or your profile.',
       'time': 'Just now',
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authController = Provider.of<AuthController>(
-        context,
-        listen: false,
-      );
-      _recruiterId = authController.currentRecruiter?.id;
-      if (_recruiterId != null) {
+      final authController = Get.find<AuthController>();
+      _candidateId = authController.currentUser.value['id']?.toString();
+      if (_candidateId != null) {
         _loadSuggestions();
       }
     });
@@ -49,15 +48,18 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
 
   Future<void> _loadSuggestions() async {
     try {
-      final data = await _apiService.getChatbotSuggestions(_recruiterId!);
-      if (data['success'] == true && data['suggestions'] != null) {
-        setState(() {
-          _suggestions = List<Map<String, dynamic>>.from(
-            (data['suggestions'] as List).map(
-              (x) => Map<String, dynamic>.from(x),
-            ),
-          );
-        });
+      final response = await http.get(
+        Uri.parse(
+          '${ApiConstants.baseUrl}/${ApiConstants.chatbotSuggestions}?candidate_id=$_candidateId',
+        ),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['suggestions'] != null) {
+          setState(() {
+            _suggestions = List<String>.from(data['suggestions']);
+          });
+        }
       }
     } catch (e) {
       debugPrint('Error loading suggestions: $e');
@@ -65,7 +67,7 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
   }
 
   Future<void> _sendMessage(String text) async {
-    if (text.trim().isEmpty || _isLoading || _recruiterId == null) return;
+    if (text.trim().isEmpty || _isLoading || _candidateId == null) return;
 
     _inputController.clear();
     FocusScope.of(context).unfocus();
@@ -83,19 +85,32 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
     _scrollToBottom();
 
     try {
-      final data = await _apiService.askChatbot(_recruiterId!, text.trim());
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/${ApiConstants.chatbotAsk}'),
+        body: {'candidate_id': _candidateId, 'question': text.trim()},
+      );
+
       setState(() {
         _isTyping = false;
-        if (data['success'] == true && data['answer'] != null) {
-          _messages.add({
-            'role': 'bot',
-            'text': data['answer'],
-            'time': DateFormat('hh:mm a').format(DateTime.now()),
-          });
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          if (data['success'] == true && data['answer'] != null) {
+            _messages.add({
+              'role': 'bot',
+              'text': data['answer'],
+              'time': DateFormat('hh:mm a').format(DateTime.now()),
+            });
+          } else {
+            _messages.add({
+              'role': 'bot',
+              'text': data['answer'] ?? 'Sorry, I couldn\'t process that.',
+              'time': DateFormat('hh:mm a').format(DateTime.now()),
+            });
+          }
         } else {
           _messages.add({
             'role': 'bot',
-            'text': data['answer'] ?? 'Sorry, I couldn\'t process that.',
+            'text': 'Server error. Please try again.',
             'time': DateFormat('hh:mm a').format(DateTime.now()),
           });
         }
@@ -131,7 +146,6 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
   @override
   void dispose() {
     _inputController.dispose();
-    _focusNode.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -170,7 +184,7 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.smart_toy_rounded,
+                    Icons.chat_outlined,
                     color: Colors.white,
                     size: 18,
                   ),
@@ -277,7 +291,7 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
             ),
           ),
 
-          // Suggestions
+          // Suggestions (always visible if not empty based on previous fix)
           if (_suggestions.isNotEmpty)
             Container(
               height: 40,
@@ -287,15 +301,11 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: _suggestions.length,
                 itemBuilder: (context, index) {
-                  final suggestion = _suggestions[index];
-                  final text = suggestion['text'] as String? ?? '';
-                  final mode = suggestion['mode'] as String? ?? 'send';
-
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ActionChip(
                       label: Text(
-                        text,
+                        _suggestions[index],
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -313,25 +323,12 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
                             : const Color(0xFFD9ECE5),
                       ),
                       onPressed: () {
-                        _inputController.text = text;
-                        if (mode == 'edit') {
-                          // Handle edit mode
-                          final idIndex = text.indexOf('#ID');
-                          if (idIndex != -1) {
-                            _inputController.selection = TextSelection(
-                              baseOffset: idIndex,
-                              extentOffset: idIndex + 3,
-                            );
-                          } else {
-                            _inputController.selection =
-                                TextSelection.fromPosition(
-                                  TextPosition(offset: text.length),
-                                );
-                          }
-                          _focusNode.requestFocus();
+                        // Handle 'Save job #ID' format by popping it into the textfield
+                        if (_suggestions[index].contains('#ID')) {
+                          _inputController.text = _suggestions[index];
+                          // Optional: focus the textfield or select '#ID'
                         } else {
-                          // Handle send mode
-                          _sendMessage(text);
+                          _sendMessage(_suggestions[index]);
                         }
                       },
                     ),
@@ -358,13 +355,12 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
                 Expanded(
                   child: TextField(
                     controller: _inputController,
-                    focusNode: _focusNode,
                     style: TextStyle(
                       color: isDark ? const Color(0xFFF8FAFC) : Colors.black,
                       fontSize: 13.5,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Ask about your hiring data...',
+                      hintText: 'Ask about matching jobs...',
                       hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
