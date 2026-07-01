@@ -406,6 +406,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Get.toNamed(AppRoutes.localCompanies);
                       },
                     ),
+                    _buildDrawerItem(
+                      icon: Icons.hub_outlined, // Replaces FontAwesome building
+                      title: 'Company Intelligence',
+                      isDark: isDark,
+                      isActive: false,
+                      onTap: () {
+                        Get.back();
+                        Get.toNamed(AppRoutes.companyDiscovery);
+                      },
+                    ),
 
                     Padding(
                       padding: const EdgeInsets.only(

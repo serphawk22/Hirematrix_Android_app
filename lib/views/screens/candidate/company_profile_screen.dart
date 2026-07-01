@@ -734,38 +734,147 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
 
   // --- TAB 3: OPEN JOBS ---
   Widget _buildOpenJobsTab(Color textColor, bool isDark) {
-    if (openJobs.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.work_off_outlined, size: 48, color: Colors.grey[400]),
+    final portalCount = openJobs.length;
+    final externalCount = companyData?['external_jobs_count'] ?? 0;
+    final lastChecked = companyData?['last_checked_label'] ?? 'Not checked yet';
+    final companyDesc = companyData?['short_description'] ?? 'Explore company details, hiring locations, and available jobs in one place.';
+
+    List<String> tags = [];
+    final industry = companyData?['industry']?.toString() ?? '';
+    final companyType = companyData?['company_type']?.toString() ?? '';
+    if (companyType.isNotEmpty) tags.add(companyType);
+    if (industry.isNotEmpty) tags.add(industry);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (openJobs.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32),
+                child: Column(
+                  children: [
+                    Icon(Icons.work_off_outlined, size: 48, color: Colors.grey[400]),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No active job listings right now.',
+                      style: GoogleFonts.inter(color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else ...[
+            _buildSectionHeader('HireMatrix Posted Jobs'),
             const SizedBox(height: 12),
-            Text(
-              'No active job listings right now.',
-              style: GoogleFonts.inter(color: Colors.grey[500]),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: openJobs.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final job = openJobs[index];
+                final title = job['title'] ?? 'Role';
+                final location = job['location'] ?? 'Not Specified';
+                final salary = job['salary_range']?.toString() ?? '';
+                final type = job['employment_type'] ?? 'Full-time';
+
+                return InkWell(
+                  onTap: () {
+                    Get.to(() => JobDetailsScreen(job: job));
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.getCard(isDark) : Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark ? Colors.grey[850]! : Colors.grey[200]!,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: textColor,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.location_on_outlined,
+                                    size: 13,
+                                    color: Colors.grey[500],
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    location,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.5,
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Icon(
+                                    Icons.work_outline,
+                                    size: 13,
+                                    color: Colors.grey[500],
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    (() {
+                                      final clean = type.replaceAll('-', ' ');
+                                      if (clean.isEmpty) return clean;
+                                      return clean[0].toUpperCase() +
+                                          clean.substring(1);
+                                    })(),
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12.5,
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (salary.isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  '$salary LPA',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.getPrimary(isDark),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 14,
+                          color: Colors.grey[400],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ],
-        ),
-      );
-    }
-
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: openJobs.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final job = openJobs[index];
-        final title = job['title'] ?? 'Role';
-        final location = job['location'] ?? 'Not Specified';
-        final salary = job['salary_range']?.toString() ?? '';
-        final type = job['employment_type'] ?? 'Full-time';
-
-        return InkWell(
-          onTap: () {
-            Get.to(() => JobDetailsScreen(job: job));
-          },
-          child: Container(
+          const SizedBox(height: 24),
+          _buildSectionHeader('Job Sources'),
+          const SizedBox(height: 12),
+          Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isDark ? AppColors.getCard(isDark) : Colors.white,
@@ -774,81 +883,90 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                 color: isDark ? Colors.grey[850]! : Colors.grey[200]!,
               ),
             ),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: textColor,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.location_on_outlined,
-                            size: 13,
-                            color: Colors.grey[500],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            location,
-                            style: GoogleFonts.inter(
-                              fontSize: 12.5,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Icon(
-                            Icons.work_outline,
-                            size: 13,
-                            color: Colors.grey[500],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            (() {
-                              final clean = type.replaceAll('-', ' ');
-                              if (clean.isEmpty) return clean;
-                              return clean[0].toUpperCase() +
-                                  clean.substring(1);
-                            })(),
-                            style: GoogleFonts.inter(
-                              fontSize: 12.5,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (salary.isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          '$salary LPA',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.getPrimary(isDark),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 14,
-                  color: Colors.grey[400],
-                ),
+                _buildInfoRow(Icons.business_center_outlined, 'Portal', '$portalCount roles', isDark),
+                const Divider(height: 20),
+                _buildInfoRow(Icons.radar, 'Discovered', '$externalCount roles', isDark),
+                const Divider(height: 20),
+                _buildInfoRow(Icons.check_circle_outline, 'Status', 'Active links only', isDark),
+                const Divider(height: 20),
+                _buildInfoRow(Icons.date_range_outlined, 'Window', 'Last 30 days', isDark),
+                _buildInfoRow(Icons.update, 'Last Checked', lastChecked.toString(), isDark),
               ],
             ),
           ),
-        );
-      },
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.getCard(isDark) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark ? Colors.grey[850]! : Colors.grey[200]!,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Before You Apply',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: textColor,
+                      ),
+                    ),
+                    OutlinedButton(
+                      onPressed: () {},
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        minimumSize: const Size(0, 32),
+                      ),
+                      child: Text('Refresh', style: GoogleFonts.inter(fontSize: 12)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  companyDesc,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    height: 1.5,
+                    color: isDark ? Colors.grey[300] : Colors.black87,
+                  ),
+                ),
+                if (tags.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: tags.map((tag) => Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.getPrimary(isDark).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.getPrimary(isDark).withOpacity(0.2)),
+                      ),
+                      child: Text(
+                        tag,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.getPrimary(isDark),
+                        ),
+                      ),
+                    )).toList(),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

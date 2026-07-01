@@ -11,6 +11,9 @@ import 'package:hirematrix/views/screens/recruiter/auth/recruiter_register_scree
 import 'package:hirematrix/views/screens/recruiter/auth/recruiter_verification_screen.dart';
 import 'package:hirematrix/views/screens/candidate/onboarding_screen.dart';
 import 'package:hirematrix/views/screens/candidate/smart_jobs_screen.dart';
+import 'package:hirematrix/views/screens/candidate/my_interview_bookings_screen.dart';
+import 'package:hirematrix/views/screens/candidate/company_discovery_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/dashboard/dashboard_screen.dart' as recruiter_dashboard;
 import 'package:hirematrix/views/screens/candidate/job_search_strategy_screen.dart';
 import 'package:hirematrix/views/screens/candidate/plans_screen.dart';
 import 'package:hirematrix/views/screens/candidate/local_companies_screen.dart';
@@ -45,6 +48,7 @@ class AppRoutes {
   static const String dashboard = '/candidate/dashboard';
   static const String onboarding = '/candidate/onboarding';
   static const String jobSearchStrategy = '/candidate/job-search-strategy';
+  static const String companyDiscovery = '/candidate/company-discovery';
   static const String plans = '/premium/plans';
   static const String localCompanies = '/localcompany';
   static const String forgotPassword = '/forgot-password';
@@ -105,6 +109,11 @@ class AppRoutes {
     GetPage(
       name: jobSearchStrategy,
       page: () => const JobSearchStrategyScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: companyDiscovery,
+      page: () => const CompanyDiscoveryScreen(),
       transition: Transition.fadeIn,
     ),
     GetPage(

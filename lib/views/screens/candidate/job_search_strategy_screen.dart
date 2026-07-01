@@ -25,7 +25,7 @@ class JobSearchStrategyScreen extends StatelessWidget {
           ? AppColors.getBackground(isDark)
           : AppColors.getBackground(isDark);
       final cardColor = isDark ? AppColors.getCard(isDark) : Colors.white;
-      final textColor = isDark ? Colors.white : AppColors.getBackground(isDark);
+      final textColor = isDark ? Colors.white : const Color(0xFF111827);
       final subtitleColor = isDark ? Colors.grey[400] : const Color(0xFF475569);
       final borderColor = isDark ? Colors.grey[800]! : Colors.grey[200]!;
 
