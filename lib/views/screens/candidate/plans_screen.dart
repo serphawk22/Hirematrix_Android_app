@@ -116,7 +116,7 @@ class _PlansScreenState extends State<PlansScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Unlock Career Transition AI, Resume Studio, and AI Career Mentor from one shared plan.',
+                      'Unlock Career Transition AI and Resume Studio from one shared plan.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 14,
@@ -182,7 +182,7 @@ class _PlansScreenState extends State<PlansScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Your subscription works across Career Transition AI, Resume Studio, and AI Career Mentor.',
+                      'Your subscription works across Career Transition AI and Resume Studio.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 12,
@@ -355,21 +355,7 @@ class _PlansScreenState extends State<PlansScreen> {
           ],
           isDark: isDark,
         ),
-        const SizedBox(height: 16),
-        _buildServiceInfoCard(
-          icon: Icons.smart_toy,
-          title: 'AI Career Mentor',
-          accentColor: const Color(0xFF0EA5E9),
-          summary:
-              'Chat with a career mentor for interview prep, strategy, and next-step guidance.',
-          points: [
-            'Unlimited mentor chats',
-            'Interview preparation',
-            'Resume review guidance',
-            'Job search strategy',
-          ],
-          isDark: isDark,
-        ),
+
       ],
     );
   }

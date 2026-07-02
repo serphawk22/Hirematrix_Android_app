@@ -36,4 +36,5 @@ class ApiConstants {
   static const String chatbotAsk = 'chatbot/ask';
   static const String chatbotSuggestions = 'chatbot/suggestions';
   static const String companyDiscovery = 'company-discovery';
+  static const String premiumMentorChat = 'premium-mentor/chat';
 }

@@ -26,6 +26,42 @@ class _CandidateChatbotBottomSheetState
   bool _isLoading = false;
   bool _isTyping = false;
   String? _candidateId;
+  String? _chatSessionId;
+
+  bool _isMentorTopic(String text) {
+    final lower = text.toLowerCase();
+    const mentorKeywords = [
+      'career plan',
+      'career path',
+      'career goal',
+      'become a',
+      'career growth',
+      'career advice',
+      'career roadmap',
+      'skill gap',
+      'skill development',
+      'upskill',
+      'learn skill',
+      'improve my skill',
+      'course recommendation',
+      'certification',
+      'interview',
+      'mock interview',
+      'interview question',
+      'interview tips',
+      'resume',
+      'cv review',
+      'optimize my resume',
+      'resume feedback',
+      'resume tips',
+      'salary',
+      'negotiat',
+      'compensation',
+      'pay raise',
+      'offer negotiation',
+    ];
+    return mentorKeywords.any((kw) => lower.contains(kw));
+  }
 
   @override
   void initState() {
@@ -66,7 +102,7 @@ class _CandidateChatbotBottomSheetState
     }
   }
 
-  Future<void> _sendMessage(String text) async {
+  Future<void> _sendMessage(String text, {bool forceMentor = false}) async {
     if (text.trim().isEmpty || _isLoading || _candidateId == null) return;
 
     _inputController.clear();
@@ -85,27 +121,73 @@ class _CandidateChatbotBottomSheetState
     _scrollToBottom();
 
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/${ApiConstants.chatbotAsk}'),
-        body: {'candidate_id': _candidateId, 'question': text.trim()},
-      );
+      final useMentor = forceMentor || _isMentorTopic(text);
+      final url = useMentor
+          ? '${ApiConstants.baseUrl}/${ApiConstants.premiumMentorChat}'
+          : '${ApiConstants.baseUrl}/${ApiConstants.chatbotAsk}';
+
+      final body = useMentor
+          ? {
+              'candidate_id': _candidateId!,
+              'message': text.trim(),
+              if (_chatSessionId != null) 'session_id': _chatSessionId!,
+            }
+          : {'candidate_id': _candidateId!, 'question': text.trim()};
+
+      final response = await http.post(Uri.parse(url), body: body);
 
       setState(() {
         _isTyping = false;
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
-          if (data['success'] == true && data['answer'] != null) {
-            _messages.add({
-              'role': 'bot',
-              'text': data['answer'],
-              'time': DateFormat('hh:mm a').format(DateTime.now()),
-            });
+          if (useMentor) {
+            if (data['status'] == 'success' || data['message'] != null) {
+              if (data['session_id'] != null) {
+                _chatSessionId = data['session_id'];
+              }
+              _messages.add({
+                'role': 'bot',
+                'text': data['message'] ?? '...',
+                'time': DateFormat('hh:mm a').format(DateTime.now()),
+                'features': data['premium_features'] != null
+                    ? jsonEncode(data['premium_features'])
+                    : '',
+              });
+              if (data['progress_tracking'] != null &&
+                  data['progress_tracking']['last_nudge'] != null) {
+                _messages.add({
+                  'role': 'bot',
+                  'text': '💡 ${data['progress_tracking']['last_nudge']}',
+                  'time': DateFormat('hh:mm a').format(DateTime.now()),
+                });
+              }
+            } else if (data['error'] != null) {
+              _messages.add({
+                'role': 'bot',
+                'text': data['error'],
+                'time': DateFormat('hh:mm a').format(DateTime.now()),
+              });
+            } else {
+              _messages.add({
+                'role': 'bot',
+                'text': 'Sorry, I couldn\'t process that right now.',
+                'time': DateFormat('hh:mm a').format(DateTime.now()),
+              });
+            }
           } else {
-            _messages.add({
-              'role': 'bot',
-              'text': data['answer'] ?? 'Sorry, I couldn\'t process that.',
-              'time': DateFormat('hh:mm a').format(DateTime.now()),
-            });
+            if (data['success'] == true && data['answer'] != null) {
+              _messages.add({
+                'role': 'bot',
+                'text': data['answer'],
+                'time': DateFormat('hh:mm a').format(DateTime.now()),
+              });
+            } else {
+              _messages.add({
+                'role': 'bot',
+                'text': data['answer'] ?? 'Sorry, I couldn\'t process that.',
+                'time': DateFormat('hh:mm a').format(DateTime.now()),
+              });
+            }
           }
         } else {
           _messages.add({
@@ -274,6 +356,7 @@ class _CandidateChatbotBottomSheetState
                           ),
                         ),
                         const SizedBox(height: 3),
+                        const SizedBox(height: 3),
                         Text(
                           msg['time'] ?? '',
                           style: GoogleFonts.inter(
@@ -283,11 +366,62 @@ class _CandidateChatbotBottomSheetState
                                 : const Color(0xFF94A3B8),
                           ),
                         ),
+                        if (msg['features'] != null &&
+                            msg['features']!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: (jsonDecode(msg['features']!) as List)
+                                  .map<Widget>(
+                                    (feature) => Chip(
+                                      label: Text(
+                                        feature is String
+                                            ? feature
+                                            : (feature['name']?.toString() ??
+                                                  ''),
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11,
+                                          color: isBot
+                                              ? (isDark
+                                                    ? Colors.black
+                                                    : Colors.white)
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                      backgroundColor: isBot
+                                          ? (isDark
+                                                ? const Color(0xFF1FB7B5)
+                                                : const Color(0xFF1FB7B5))
+                                          : Colors.grey[200],
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
                       ],
                     ),
                   ),
                 );
               },
+            ),
+          ),
+
+          // Quick Actions
+          Container(
+            height: 40,
+            margin: const EdgeInsets.only(bottom: 10),
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                _buildQuickAction('Career Plan', isDark),
+                _buildQuickAction('Skill Gap', isDark),
+                _buildQuickAction('Interview Prep', isDark),
+                _buildQuickAction('Resume Review', isDark),
+                _buildQuickAction('Salary Tips', isDark),
+              ],
             ),
           ),
 
@@ -446,6 +580,28 @@ class _CandidateChatbotBottomSheetState
             _TypingDot(delay: 400),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildQuickAction(String title, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ActionChip(
+        label: Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.white : Colors.white,
+          ),
+        ),
+        backgroundColor: AppColors.getPrimary(
+          isDark,
+        ), // Purple for premium/strategy
+        onPressed: () {
+          _sendMessage(title, forceMentor: true);
+        },
       ),
     );
   }

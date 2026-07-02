@@ -21,7 +21,6 @@ import 'package:hirematrix/views/screens/candidate/forgot_password_screen.dart';
 import 'package:hirematrix/views/screens/candidate/reset_password_screen.dart';
 import 'package:hirematrix/views/screens/candidate/career_transition_screen.dart';
 import 'package:hirematrix/views/screens/candidate/resume_studio_screen.dart';
-import 'package:hirematrix/views/screens/candidate/premium_mentor_screen.dart';
 import 'package:hirematrix/views/screens/candidate/notification_screen.dart';
 import 'package:hirematrix/views/screens/candidate/messages_screen.dart';
 
@@ -54,7 +53,6 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
   static const String resumeStudio = '/candidate/resume-studio';
-  static const String premiumMentor = '/candidate/premium-mentor';
   static const String notifications = '/candidate/notifications';
   static const String messages = '/candidate/messages';
   static const String recruiterDashboard = '/recruiter/dashboard';
@@ -146,11 +144,7 @@ class AppRoutes {
       page: () => const ResumeStudioScreen(),
       transition: Transition.fadeIn,
     ),
-    GetPage(
-      name: premiumMentor,
-      page: () => const PremiumMentorScreen(),
-      transition: Transition.fadeIn,
-    ),
+
     GetPage(
       name: notifications,
       page: () => const NotificationScreen(),

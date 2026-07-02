@@ -465,17 +465,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     _buildDrawerItem(
                       icon: Icons.psychology_outlined,
-                      title: 'AI Career Mentor',
+                      title: 'Job Search Strategy',
                       isDark: isDark,
                       onTap: () {
                         Get.back();
-                        if (dashboardController
-                            .currentSubscription
-                            .isNotEmpty) {
-                          Get.toNamed(AppRoutes.premiumMentor);
-                        } else {
-                          Get.toNamed(AppRoutes.plans);
-                        }
+                        Get.toNamed(AppRoutes.jobSearchStrategy);
                       },
                     ),
 
@@ -1934,18 +1928,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 16),
 
-          // AI Career Mentor Card
-          _buildProAdService(
-            icon: Icons.smart_toy,
-            title: 'AI Career Mentor',
-            features: [
-              'Unlimited mentor chats',
-              'Interview preparation',
-              'Resume review guidance',
-              'Job search strategy',
-            ],
-          ),
-          const SizedBox(height: 24),
+
 
           SizedBox(
             width: double.infinity,
