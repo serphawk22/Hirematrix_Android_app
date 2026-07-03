@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
 
 class ChatbotBottomSheet extends StatefulWidget {
   const ChatbotBottomSheet({super.key});
@@ -13,7 +15,8 @@ class ChatbotBottomSheet extends StatefulWidget {
   State<ChatbotBottomSheet> createState() => _ChatbotBottomSheetState();
 }
 
-class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
+class _ChatbotBottomSheetState extends State<ChatbotBottomSheet>
+    with SingleTickerProviderStateMixin {
   final ApiService _apiService = ApiService();
   final TextEditingController _inputController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
@@ -25,9 +28,25 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
   bool _isTyping = false;
   String? _recruiterId;
 
+  // Voice Chat
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  late FlutterTts _flutterTts;
+  bool _isSpeaking = false;
+  late AnimationController _pulseController;
+
   @override
   void initState() {
     super.initState();
+    _speech = stt.SpeechToText();
+    _flutterTts = FlutterTts();
+    _initTts();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
     _messages.add({
       'role': 'bot',
       'text':
@@ -43,6 +62,42 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
       _recruiterId = authController.currentRecruiter?.id;
       if (_recruiterId != null) {
         _loadSuggestions();
+      }
+    });
+  }
+
+  Future<void> _initTts() async {
+    await _flutterTts.setLanguage("en-US");
+    await _flutterTts.setSpeechRate(0.5);
+    await _flutterTts.setVolume(1.0);
+    await _flutterTts.setPitch(1.0);
+
+    _flutterTts.setStartHandler(() {
+      if (mounted) {
+        setState(() {
+          _isSpeaking = true;
+          _pulseController.repeat(reverse: true);
+        });
+      }
+    });
+
+    _flutterTts.setCompletionHandler(() {
+      if (mounted) {
+        setState(() {
+          _isSpeaking = false;
+          _pulseController.stop();
+          _pulseController.reset();
+        });
+      }
+    });
+
+    _flutterTts.setErrorHandler((msg) {
+      if (mounted) {
+        setState(() {
+          _isSpeaking = false;
+          _pulseController.stop();
+          _pulseController.reset();
+        });
       }
     });
   }
@@ -64,8 +119,78 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
     }
   }
 
+  void _listen() async {
+    if (_isSpeaking) {
+      await _flutterTts.stop();
+      setState(() {
+        _isSpeaking = false;
+        _pulseController.stop();
+        _pulseController.reset();
+      });
+      return;
+    }
+
+    if (!_isListening) {
+      bool available = await _speech.initialize(
+        onStatus: (val) {
+          if (val == 'done' || val == 'notListening') {
+            if (mounted) {
+              setState(() {
+                _isListening = false;
+                _pulseController.stop();
+                _pulseController.reset();
+              });
+              if (_inputController.text.isNotEmpty) {
+                _sendMessage(_inputController.text);
+              }
+            }
+          }
+        },
+        onError: (val) {
+          if (mounted) {
+            setState(() {
+              _isListening = false;
+              _pulseController.stop();
+              _pulseController.reset();
+            });
+          }
+        },
+      );
+      if (available) {
+        setState(() {
+          _isListening = true;
+          _pulseController.repeat(reverse: true);
+        });
+        _speech.listen(
+          onResult: (val) => setState(() {
+            _inputController.text = val.recognizedWords;
+          }),
+        );
+      }
+    } else {
+      setState(() {
+        _isListening = false;
+        _pulseController.stop();
+        _pulseController.reset();
+      });
+      _speech.stop();
+    }
+  }
+
+  void _speak(String text) async {
+    await _flutterTts.speak(text.replaceAll(RegExp(r'<[^>]*>|💡'), '').trim());
+  }
+
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty || _isLoading || _recruiterId == null) return;
+
+    if (_isSpeaking) {
+      await _flutterTts.stop();
+      setState(() {
+        _isSpeaking = false;
+        _pulseController.stop();
+      });
+    }
 
     _inputController.clear();
     FocusScope.of(context).unfocus();
@@ -87,17 +212,21 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
       setState(() {
         _isTyping = false;
         if (data['success'] == true && data['answer'] != null) {
+          final ans = data['answer'];
           _messages.add({
             'role': 'bot',
-            'text': data['answer'],
+            'text': ans,
             'time': DateFormat('hh:mm a').format(DateTime.now()),
           });
+          _speak(ans);
         } else {
+          final ans = data['answer'] ?? 'Sorry, I couldn\'t process that.';
           _messages.add({
             'role': 'bot',
-            'text': data['answer'] ?? 'Sorry, I couldn\'t process that.',
+            'text': ans,
             'time': DateFormat('hh:mm a').format(DateTime.now()),
           });
+          _speak(ans);
         }
         _isLoading = false;
       });
@@ -110,6 +239,7 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
           'text': 'Connection error. Make sure you are logged in.',
           'time': DateFormat('hh:mm a').format(DateTime.now()),
         });
+        _speak('Connection error. Make sure you are logged in.');
       });
     }
 
@@ -133,6 +263,9 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
     _inputController.dispose();
     _focusNode.dispose();
     _scrollController.dispose();
+    _pulseController.dispose();
+    _flutterTts.stop();
+    _speech.stop();
     super.dispose();
   }
 
@@ -315,7 +448,6 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
                       onPressed: () {
                         _inputController.text = text;
                         if (mode == 'edit') {
-                          // Handle edit mode
                           final idIndex = text.indexOf('#ID');
                           if (idIndex != -1) {
                             _inputController.selection = TextSelection(
@@ -330,7 +462,6 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
                           }
                           _focusNode.requestFocus();
                         } else {
-                          // Handle send mode
                           _sendMessage(text);
                         }
                       },
@@ -364,8 +495,10 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
                       fontSize: 13.5,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Ask about your hiring data...',
-                      hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                      hintText: _isListening ? 'Listening...' : 'Ask about your hiring data...',
+                      hintStyle: TextStyle(
+                        color: _isListening ? Colors.redAccent : const Color(0xFF94A3B8)
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 10,
@@ -397,6 +530,43 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet> {
                     ),
                     onSubmitted: _sendMessage,
                   ),
+                ),
+                const SizedBox(width: 8),
+                // Voice / Stop Audio Button
+                AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    final scale = 1.0 + (_pulseController.value * 0.15);
+                    final isStopping = _isListening || _isSpeaking;
+                    return Transform.scale(
+                      scale: isStopping ? scale : 1.0,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: isStopping
+                              ? Colors.redAccent
+                              : (isDark ? const Color(0xFF162327) : const Color(0xFFE8F9F8)),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isStopping
+                                ? Colors.redAccent
+                                : const Color(0xFF1FB7B5).withOpacity(0.3),
+                          ),
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            isStopping ? Icons.stop_rounded : Icons.mic_rounded,
+                            color: isStopping
+                                ? Colors.white
+                                : (isDark ? const Color(0xFF1FB7B5) : const Color(0xFF0D8A90)),
+                            size: 20,
+                          ),
+                          onPressed: _listen,
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 8),
                 Container(

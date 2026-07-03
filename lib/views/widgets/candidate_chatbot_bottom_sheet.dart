@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:hirematrix/controllers/auth_controller.dart';
 import 'package:hirematrix/core/constants/api_constants.dart';
 import 'package:hirematrix/core/constants/app_colors.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
 
 class CandidateChatbotBottomSheet extends StatefulWidget {
   const CandidateChatbotBottomSheet({super.key});
@@ -17,7 +19,8 @@ class CandidateChatbotBottomSheet extends StatefulWidget {
 }
 
 class _CandidateChatbotBottomSheetState
-    extends State<CandidateChatbotBottomSheet> {
+    extends State<CandidateChatbotBottomSheet>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _inputController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -27,6 +30,13 @@ class _CandidateChatbotBottomSheetState
   bool _isTyping = false;
   String? _candidateId;
   String? _chatSessionId;
+
+  // Voice Chat
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  late FlutterTts _flutterTts;
+  bool _isSpeaking = false;
+  late AnimationController _pulseController;
 
   bool _isMentorTopic(String text) {
     final lower = text.toLowerCase();
@@ -66,6 +76,15 @@ class _CandidateChatbotBottomSheetState
   @override
   void initState() {
     super.initState();
+    _speech = stt.SpeechToText();
+    _flutterTts = FlutterTts();
+    _initTts();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
     _messages.add({
       'role': 'bot',
       'text':
@@ -78,6 +97,42 @@ class _CandidateChatbotBottomSheetState
       _candidateId = authController.currentUser.value['id']?.toString();
       if (_candidateId != null) {
         _loadSuggestions();
+      }
+    });
+  }
+
+  Future<void> _initTts() async {
+    await _flutterTts.setLanguage("en-US");
+    await _flutterTts.setSpeechRate(0.5);
+    await _flutterTts.setVolume(1.0);
+    await _flutterTts.setPitch(1.0);
+
+    _flutterTts.setStartHandler(() {
+      if (mounted) {
+        setState(() {
+          _isSpeaking = true;
+          _pulseController.repeat(reverse: true);
+        });
+      }
+    });
+
+    _flutterTts.setCompletionHandler(() {
+      if (mounted) {
+        setState(() {
+          _isSpeaking = false;
+          _pulseController.stop();
+          _pulseController.reset();
+        });
+      }
+    });
+
+    _flutterTts.setErrorHandler((msg) {
+      if (mounted) {
+        setState(() {
+          _isSpeaking = false;
+          _pulseController.stop();
+          _pulseController.reset();
+        });
       }
     });
   }
@@ -102,8 +157,79 @@ class _CandidateChatbotBottomSheetState
     }
   }
 
+  void _listen() async {
+    if (_isSpeaking) {
+      await _flutterTts.stop();
+      setState(() {
+        _isSpeaking = false;
+        _pulseController.stop();
+        _pulseController.reset();
+      });
+      return;
+    }
+
+    if (!_isListening) {
+      bool available = await _speech.initialize(
+        onStatus: (val) {
+          if (val == 'done' || val == 'notListening') {
+            if (mounted) {
+              setState(() {
+                _isListening = false;
+                _pulseController.stop();
+                _pulseController.reset();
+              });
+              if (_inputController.text.isNotEmpty) {
+                _sendMessage(_inputController.text);
+              }
+            }
+          }
+        },
+        onError: (val) {
+          if (mounted) {
+            setState(() {
+              _isListening = false;
+              _pulseController.stop();
+              _pulseController.reset();
+            });
+          }
+        },
+      );
+      if (available) {
+        setState(() {
+          _isListening = true;
+          _pulseController.repeat(reverse: true);
+        });
+        _speech.listen(
+          onResult: (val) => setState(() {
+            _inputController.text = val.recognizedWords;
+          }),
+        );
+      }
+    } else {
+      setState(() {
+        _isListening = false;
+        _pulseController.stop();
+        _pulseController.reset();
+      });
+      _speech.stop();
+    }
+  }
+
+  void _speak(String text) async {
+    // Strip emojis or special chars if needed, but basic TTS handles it OK
+    await _flutterTts.speak(text.replaceAll(RegExp(r'<[^>]*>|💡'), '').trim());
+  }
+
   Future<void> _sendMessage(String text, {bool forceMentor = false}) async {
     if (text.trim().isEmpty || _isLoading || _candidateId == null) return;
+
+    if (_isSpeaking) {
+      await _flutterTts.stop();
+      setState(() {
+        _isSpeaking = false;
+        _pulseController.stop();
+      });
+    }
 
     _inputController.clear();
     FocusScope.of(context).unfocus();
@@ -145,48 +271,64 @@ class _CandidateChatbotBottomSheetState
               if (data['session_id'] != null) {
                 _chatSessionId = data['session_id'];
               }
+              final replyText = data['message'] ?? '...';
               _messages.add({
                 'role': 'bot',
-                'text': data['message'] ?? '...',
+                'text': replyText,
                 'time': DateFormat('hh:mm a').format(DateTime.now()),
                 'features': data['premium_features'] != null
                     ? jsonEncode(data['premium_features'])
                     : '',
               });
+              
+              String fullSpeakText = replyText;
+
               if (data['progress_tracking'] != null &&
                   data['progress_tracking']['last_nudge'] != null) {
+                final nudge = data['progress_tracking']['last_nudge'];
                 _messages.add({
                   'role': 'bot',
-                  'text': '💡 ${data['progress_tracking']['last_nudge']}',
+                  'text': '💡 $nudge',
                   'time': DateFormat('hh:mm a').format(DateTime.now()),
                 });
+                fullSpeakText += '. $nudge';
               }
+              
+              _speak(fullSpeakText);
+
             } else if (data['error'] != null) {
+              final err = data['error'];
               _messages.add({
                 'role': 'bot',
-                'text': data['error'],
+                'text': err,
                 'time': DateFormat('hh:mm a').format(DateTime.now()),
               });
+              _speak(err);
             } else {
               _messages.add({
                 'role': 'bot',
                 'text': 'Sorry, I couldn\'t process that right now.',
                 'time': DateFormat('hh:mm a').format(DateTime.now()),
               });
+              _speak('Sorry, I couldn\'t process that right now.');
             }
           } else {
             if (data['success'] == true && data['answer'] != null) {
+              final ans = data['answer'];
               _messages.add({
                 'role': 'bot',
-                'text': data['answer'],
+                'text': ans,
                 'time': DateFormat('hh:mm a').format(DateTime.now()),
               });
+              _speak(ans);
             } else {
+              final ans = data['answer'] ?? 'Sorry, I couldn\'t process that.';
               _messages.add({
                 'role': 'bot',
-                'text': data['answer'] ?? 'Sorry, I couldn\'t process that.',
+                'text': ans,
                 'time': DateFormat('hh:mm a').format(DateTime.now()),
               });
+              _speak(ans);
             }
           }
         } else {
@@ -195,6 +337,7 @@ class _CandidateChatbotBottomSheetState
             'text': 'Server error. Please try again.',
             'time': DateFormat('hh:mm a').format(DateTime.now()),
           });
+          _speak('Server error. Please try again.');
         }
         _isLoading = false;
       });
@@ -207,6 +350,7 @@ class _CandidateChatbotBottomSheetState
           'text': 'Connection error. Make sure you are logged in.',
           'time': DateFormat('hh:mm a').format(DateTime.now()),
         });
+        _speak('Connection error. Make sure you are logged in.');
       });
     }
 
@@ -229,6 +373,9 @@ class _CandidateChatbotBottomSheetState
   void dispose() {
     _inputController.dispose();
     _scrollController.dispose();
+    _pulseController.dispose();
+    _flutterTts.stop();
+    _speech.stop();
     super.dispose();
   }
 
@@ -307,18 +454,15 @@ class _CandidateChatbotBottomSheetState
                 final isBot = msg['role'] == 'bot';
 
                 return Align(
-                  alignment: isBot
-                      ? Alignment.centerLeft
-                      : Alignment.centerRight,
+                  alignment: isBot ? Alignment.centerLeft : Alignment.centerRight,
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.8,
                     ),
                     child: Column(
-                      crossAxisAlignment: isBot
-                          ? CrossAxisAlignment.start
-                          : CrossAxisAlignment.end,
+                      crossAxisAlignment:
+                          isBot ? CrossAxisAlignment.start : CrossAxisAlignment.end,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -327,9 +471,7 @@ class _CandidateChatbotBottomSheetState
                           ),
                           decoration: BoxDecoration(
                             color: isBot
-                                ? (isDark
-                                      ? const Color(0xFF162327)
-                                      : const Color(0xFFE8F9F8))
+                                ? (isDark ? const Color(0xFF162327) : const Color(0xFFE8F9F8))
                                 : primaryColor,
                             borderRadius: BorderRadius.only(
                               topLeft: const Radius.circular(14),
@@ -346,9 +488,7 @@ class _CandidateChatbotBottomSheetState
                             msg['text'] ?? '',
                             style: GoogleFonts.inter(
                               color: isBot
-                                  ? (isDark
-                                        ? const Color(0xFFF8FAFC)
-                                        : const Color(0xFF16212B))
+                                  ? (isDark ? const Color(0xFFF8FAFC) : const Color(0xFF16212B))
                                   : Colors.white,
                               fontSize: 13.5,
                               height: 1.5,
@@ -356,18 +496,14 @@ class _CandidateChatbotBottomSheetState
                           ),
                         ),
                         const SizedBox(height: 3),
-                        const SizedBox(height: 3),
                         Text(
                           msg['time'] ?? '',
                           style: GoogleFonts.inter(
                             fontSize: 10,
-                            color: isDark
-                                ? const Color(0xFF7A8B96)
-                                : const Color(0xFF94A3B8),
+                            color: isDark ? const Color(0xFF7A8B96) : const Color(0xFF94A3B8),
                           ),
                         ),
-                        if (msg['features'] != null &&
-                            msg['features']!.isNotEmpty)
+                        if (msg['features'] != null && msg['features']!.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Wrap(
@@ -379,21 +515,18 @@ class _CandidateChatbotBottomSheetState
                                       label: Text(
                                         feature is String
                                             ? feature
-                                            : (feature['name']?.toString() ??
-                                                  ''),
+                                            : (feature['name']?.toString() ?? ''),
                                         style: GoogleFonts.inter(
                                           fontSize: 11,
                                           color: isBot
-                                              ? (isDark
-                                                    ? Colors.black
-                                                    : Colors.white)
+                                              ? (isDark ? Colors.black : Colors.white)
                                               : Colors.black,
                                         ),
                                       ),
                                       backgroundColor: isBot
                                           ? (isDark
-                                                ? const Color(0xFF1FB7B5)
-                                                : const Color(0xFF1FB7B5))
+                                              ? const Color(0xFF1FB7B5)
+                                              : const Color(0xFF1FB7B5))
                                           : Colors.grey[200],
                                     ),
                                   )
@@ -425,7 +558,7 @@ class _CandidateChatbotBottomSheetState
             ),
           ),
 
-          // Suggestions (always visible if not empty based on previous fix)
+          // Suggestions
           if (_suggestions.isNotEmpty)
             Container(
               height: 40,
@@ -443,24 +576,16 @@ class _CandidateChatbotBottomSheetState
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? const Color(0xFF1FB7B5)
-                              : const Color(0xFF0D8A90),
+                          color: isDark ? const Color(0xFF1FB7B5) : const Color(0xFF0D8A90),
                         ),
                       ),
-                      backgroundColor: isDark
-                          ? const Color(0xFF162327)
-                          : const Color(0xFFE8F9F8),
+                      backgroundColor: isDark ? const Color(0xFF162327) : const Color(0xFFE8F9F8),
                       side: BorderSide(
-                        color: isDark
-                            ? const Color(0xFF23343A)
-                            : const Color(0xFFD9ECE5),
+                        color: isDark ? const Color(0xFF23343A) : const Color(0xFFD9ECE5),
                       ),
                       onPressed: () {
-                        // Handle 'Save job #ID' format by popping it into the textfield
                         if (_suggestions[index].contains('#ID')) {
                           _inputController.text = _suggestions[index];
-                          // Optional: focus the textfield or select '#ID'
                         } else {
                           _sendMessage(_suggestions[index]);
                         }
@@ -478,9 +603,7 @@ class _CandidateChatbotBottomSheetState
               color: isDark ? Colors.black : Colors.white,
               border: Border(
                 top: BorderSide(
-                  color: isDark
-                      ? const Color(0xFF23343A)
-                      : const Color(0xFFD9ECE5),
+                  color: isDark ? const Color(0xFF23343A) : const Color(0xFFD9ECE5),
                 ),
               ),
             ),
@@ -494,30 +617,26 @@ class _CandidateChatbotBottomSheetState
                       fontSize: 13.5,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Ask about matching jobs...',
-                      hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                      hintText: _isListening ? 'Listening...' : 'Ask about matching jobs...',
+                      hintStyle: TextStyle(
+                        color: _isListening ? Colors.redAccent : const Color(0xFF94A3B8)
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 10,
                       ),
-                      fillColor: isDark
-                          ? const Color(0xFF0A0D0F)
-                          : const Color(0xFFF8FCFA),
+                      fillColor: isDark ? const Color(0xFF0A0D0F) : const Color(0xFFF8FCFA),
                       filled: true,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF23343A)
-                              : const Color(0xFFD9ECE5),
+                          color: isDark ? const Color(0xFF23343A) : const Color(0xFFD9ECE5),
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide(
-                          color: isDark
-                              ? const Color(0xFF23343A)
-                              : const Color(0xFFD9ECE5),
+                          color: isDark ? const Color(0xFF23343A) : const Color(0xFFD9ECE5),
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
@@ -529,6 +648,44 @@ class _CandidateChatbotBottomSheetState
                   ),
                 ),
                 const SizedBox(width: 8),
+                // Voice / Stop Audio Button
+                AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    final scale = 1.0 + (_pulseController.value * 0.15);
+                    final isStopping = _isListening || _isSpeaking;
+                    return Transform.scale(
+                      scale: isStopping ? scale : 1.0,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: isStopping
+                              ? Colors.redAccent
+                              : (isDark ? const Color(0xFF162327) : const Color(0xFFE8F9F8)),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isStopping
+                                ? Colors.redAccent
+                                : const Color(0xFF1FB7B5).withOpacity(0.3),
+                          ),
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            isStopping ? Icons.stop_rounded : Icons.mic_rounded,
+                            color: isStopping
+                                ? Colors.white
+                                : (isDark ? const Color(0xFF1FB7B5) : const Color(0xFF0D8A90)),
+                            size: 20,
+                          ),
+                          onPressed: _listen,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: 8),
+                // Send Button
                 Container(
                   width: 40,
                   height: 40,
@@ -593,12 +750,10 @@ class _CandidateChatbotBottomSheetState
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white : Colors.white,
+            color: Colors.white,
           ),
         ),
-        backgroundColor: AppColors.getPrimary(
-          isDark,
-        ), // Purple for premium/strategy
+        backgroundColor: AppColors.getPrimary(isDark),
         onPressed: () {
           _sendMessage(title, forceMentor: true);
         },
