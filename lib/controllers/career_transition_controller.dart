@@ -132,6 +132,37 @@ class CareerTransitionController extends GetxController {
     }
   }
 
+  Future<void> completeLesson(dynamic lessonId) async {
+    try {
+      final parsedId = int.tryParse(lessonId?.toString() ?? '') ?? 0;
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/career-transition/complete-lesson/$parsedId'),
+        headers: {'Accept': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == 'success') {
+          // Instantly update local list
+          for (var i = 0; i < lessonsList.length; i++) {
+            if (lessonsList[i]['id'].toString() == parsedId.toString()) {
+              final updated = Map<String, dynamic>.from(lessonsList[i]);
+              updated['is_completed'] = 1;
+              lessonsList[i] = updated;
+              break;
+            }
+          }
+          Get.snackbar('Success', 'Lesson marked complete!',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.green,
+              colorText: Colors.white);
+        }
+      }
+    } catch (e) {
+      // quiet fail
+    }
+  }
+
   Future<bool> resetTransition() async {
     isActionLoading.value = true;
     try {
@@ -152,7 +183,7 @@ class CareerTransitionController extends GetxController {
         if (data['status'] == 'success') {
           transition.clear();
           tasks.clear();
-          Get.snackbar('Reset Success', 'Saved to history! You can start a new path.',
+          Get.snackbar('Reset Success', data['message'] ?? 'Saved to history! You can start a new path.',
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: Colors.green,
               colorText: Colors.white);
@@ -213,7 +244,7 @@ class CareerTransitionController extends GetxController {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['status'] == 'success') {
-          Get.snackbar('Success', 'Path reactivated successfully!',
+          Get.snackbar('Success', data['message'] ?? 'Path reactivated successfully!',
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: Colors.green,
               colorText: Colors.white);
