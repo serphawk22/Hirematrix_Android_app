@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hirematrix/controllers/theme_controller.dart';
 import 'package:hirematrix/routes/app_routes.dart';
+import 'package:hirematrix/views/screens/candidate/job_details_screen.dart';
 import 'package:hirematrix/views/widgets/job_card.dart';
 import 'package:hirematrix/controllers/auth_controller.dart';
 import 'package:hirematrix/views/screens/candidate/profile_screen.dart';
@@ -19,6 +20,7 @@ import 'package:hirematrix/views/screens/candidate/applications_screens.dart';
 import 'package:hirematrix/views/screens/candidate/my_interview_bookings_screen.dart';
 import 'package:hirematrix/controllers/applications_controller.dart';
 import 'package:hirematrix/views/widgets/candidate_chatbot_bottom_sheet.dart';
+import 'package:hirematrix/views/widgets/external_job_bottom_sheet.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -1462,6 +1464,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           final matchScore = scoreDouble > 0
               ? (scoreDouble.round()).clamp(10, 100)
               : 80;
+          final isVisited =
+              job['visited_flag'] == 1 || job['visited_flag'] == '1';
 
           return SizedBox(
             width: 280,
@@ -1472,6 +1476,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
               postedAt: postedAt,
               matchScore: matchScore,
               isDark: isDark,
+              isVisited: isVisited,
+              onTap: () {
+                final isExternal = (job['posted_for']?.toString() == 'client' ||
+                    job['external_apply_url'] != null);
+
+                job['visited_flag'] = 1;
+                dashboardController.topSuggestedJobs.refresh();
+                
+                if (!isExternal) {
+                  Get.to(() => JobDetailsScreen(job: job));
+                } else {
+                  final cardColor = isDark ? AppColors.getCard(isDark) : Colors.white;
+                  final textColor = isDark ? Colors.white : const Color(0xFF111827);
+                  final subtitleColor = isDark ? Colors.grey[400] : const Color(0xFF475569);
+                  ExternalJobBottomSheet.show(
+                    job,
+                    isDark,
+                    cardColor,
+                    textColor,
+                    subtitleColor,
+                  );
+                }
+              },
             ),
           );
         },
@@ -1927,8 +1954,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           const SizedBox(height: 16),
-
-
 
           SizedBox(
             width: double.infinity,

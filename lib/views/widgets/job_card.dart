@@ -9,6 +9,7 @@ class JobCard extends StatelessWidget {
   final String postedAt;
   final int matchScore;
   final bool isDark;
+  final bool isVisited;
   final VoidCallback? onTap;
 
   const JobCard({
@@ -19,6 +20,7 @@ class JobCard extends StatelessWidget {
     required this.postedAt,
     required this.matchScore,
     required this.isDark,
+    this.isVisited = false,
     this.onTap,
   });
 
@@ -236,23 +238,52 @@ class JobCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // View Details Link
+                // View Details Link & Visited Tag
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'View Details',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.getPrimary(isDark),
-                      ),
+                    // Viewed / Not viewed tag
+                    Row(
+                      children: [
+                        Icon(
+                          isVisited ? Icons.visibility : Icons.visibility_off,
+                          size: 14,
+                          color: isVisited
+                              ? AppColors.getPrimary(isDark)
+                              : (isDark ? Colors.grey[500] : const Color(0xFF9CA3AF)),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isVisited ? 'Viewed' : 'Not viewed',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: isVisited
+                                ? AppColors.getPrimary(isDark)
+                                : (isDark ? Colors.grey[500] : const Color(0xFF9CA3AF)),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.arrow_forward,
-                      size: 14,
-                      color: AppColors.getPrimary(isDark),
+                    
+                    // View details
+                    Row(
+                      children: [
+                        Text(
+                          'View Details',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.getPrimary(isDark),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.arrow_forward,
+                          size: 14,
+                          color: AppColors.getPrimary(isDark),
+                        ),
+                      ],
                     ),
                   ],
                 ),

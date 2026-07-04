@@ -8,6 +8,7 @@ import 'package:hirematrix/controllers/jobs_controller.dart';
 import 'package:hirematrix/controllers/theme_controller.dart';
 import 'package:hirematrix/core/constants/api_constants.dart';
 import 'package:hirematrix/views/screens/candidate/job_details_screen.dart';
+import 'package:hirematrix/views/widgets/external_job_bottom_sheet.dart';
 
 class SmartJobsScreen extends StatefulWidget {
   final bool showBackButton;
@@ -1167,6 +1168,7 @@ class _SmartJobsScreenState extends State<SmartJobsScreen>
     final matchScore = (scoreDouble.round()).clamp(10, 100);
     final logoUrl = job['company_logo'] ?? '';
     final hasLogo = logoUrl.toString().isNotEmpty;
+    final isVisited = job['visited_flag'] == 1 || job['visited_flag'] == '1';
 
     final jobIdInt = int.tryParse(job['id']?.toString() ?? '') ?? 0;
 
@@ -1390,8 +1392,34 @@ class _SmartJobsScreenState extends State<SmartJobsScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // AI Tools trigger
-              PopupMenuButton<String>(
+              Row(
+                children: [
+                  // Viewed Tag
+                  Row(
+                    children: [
+                      Icon(
+                        isVisited ? Icons.visibility : Icons.visibility_off,
+                        size: 14,
+                        color: isVisited
+                            ? AppColors.getPrimary(isDark)
+                            : (isDark ? Colors.grey[500] : const Color(0xFF9CA3AF)),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        isVisited ? 'Viewed' : 'Not viewed',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isVisited
+                              ? AppColors.getPrimary(isDark)
+                              : (isDark ? Colors.grey[500] : const Color(0xFF9CA3AF)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+                  // AI Tools trigger
+                  PopupMenuButton<String>(
                 onSelected: (val) {
                   final id = int.tryParse(job['id']?.toString() ?? '0') ?? 0;
                   if (id <= 0) return;
@@ -1466,6 +1494,8 @@ class _SmartJobsScreenState extends State<SmartJobsScreen>
                     ],
                   ),
                 ),
+                  ),
+                ],
               ),
 
               // View Details trigger
@@ -1474,10 +1504,21 @@ class _SmartJobsScreenState extends State<SmartJobsScreen>
                   final isExternal =
                       (job['posted_for']?.toString() == 'client' ||
                       job['external_apply_url'] != null);
+                  
+                  job['visited_flag'] = 1;
+                  jobsController.browseJobs.refresh();
+                  jobsController.recSkillsJobs.refresh();
+                  jobsController.recAppliesJobs.refresh();
+                  jobsController.recPreferencesJobs.refresh();
+                  jobsController.recAiJobs.refresh();
+                  
                   if (!isExternal) {
-                    Get.to(() => JobDetailsScreen(job: job));
+                    Get.to(() => JobDetailsScreen(job: job))?.then((_) {
+                       // Force UI rebuild when returning
+                       // Not easily doable without the exact list name, let's just use Get.forceAppUpdate() or similar if needed.
+                    });
                   } else {
-                    _showJobDetailsBottomSheet(
+                    ExternalJobBottomSheet.show(
                       job,
                       isDark,
                       cardColor,

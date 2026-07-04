@@ -312,6 +312,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
         job['is_external'] == '1';
     final logoUrl = job['company_logo'] ?? '';
     final initial = company.isNotEmpty ? company[0].toUpperCase() : 'J';
+    final isVisited = job['visited_flag'] == 1 || job['visited_flag'] == '1';
 
     final postedDate = job['created_at'] != null
         ? job['created_at'].toString()
@@ -462,23 +463,55 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
           // Tags & View detail row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // Tags
-              Row(
-                children: [
-                  _buildTagBadge(
-                    job['employment_type']?.toString() ??
-                        (isExternal ? 'External' : 'Full Time'),
-                    AppColors.getPrimary(isDark),
-                    isDark,
-                  ),
-                  const SizedBox(width: 6),
-                  _buildTagBadge(
-                    isExternal ? 'MNC Discovery' : 'Local Job',
-                    const Color(0xFF10B981),
-                    isDark,
-                  ),
-                ],
+              // Tags & Visited
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _buildTagBadge(
+                          job['employment_type']?.toString() ??
+                              (isExternal ? 'External' : 'Full Time'),
+                          AppColors.getPrimary(isDark),
+                          isDark,
+                        ),
+                        _buildTagBadge(
+                          isExternal ? 'MNC Discovery' : 'Local Job',
+                          const Color(0xFF10B981),
+                          isDark,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Icon(
+                          isVisited ? Icons.visibility : Icons.visibility_off,
+                          size: 14,
+                          color: isVisited
+                              ? AppColors.getPrimary(isDark)
+                              : (isDark ? Colors.grey[500] : const Color(0xFF9CA3AF)),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isVisited ? 'Viewed' : 'Not viewed',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: isVisited
+                                ? AppColors.getPrimary(isDark)
+                                : (isDark ? Colors.grey[500] : const Color(0xFF9CA3AF)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
 
               // Action view details link
@@ -491,6 +524,8 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                         '';
                     _launchURL(applyUrl);
                   } else {
+                    job['visited_flag'] = 1;
+                    _savedJobsController.savedJobsList.refresh();
                     Get.to(() => JobDetailsScreen(job: job));
                   }
                 },
