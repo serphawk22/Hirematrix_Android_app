@@ -2583,6 +2583,34 @@ class _SmartJobsScreenState extends State<SmartJobsScreen>
     Color textColor,
     Color? subtitleColor,
   ) {
+    const List<String> kSearchSuggestions = [
+      'PHP',
+      'PHP Developer',
+      'PHP Development',
+      'PHP And Web Developer',
+      'PHP Laravel',
+      'PHP Fresher',
+      'Laravel Developer',
+      'WordPress Developer',
+      'React Developer',
+      'Frontend Developer',
+      'JavaScript Developer',
+      'Full Stack Developer',
+      'Backend Developer',
+      'Node.js Developer',
+      'Python Developer',
+      'Java Developer',
+      'Data Analyst',
+      'Data Scientist',
+      'DevOps Engineer',
+      'UI UX Designer',
+      'Software Developer',
+      'Web Developer',
+      'MySQL',
+      'MongoDB',
+      'Remote Developer'
+    ];
+
     return Column(
       children: [
         Container(
@@ -2609,47 +2637,127 @@ class _SmartJobsScreenState extends State<SmartJobsScreen>
                         child: Icon(Icons.search, color: Colors.grey, size: 20),
                       ),
                       Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          style: GoogleFonts.inter(
-                            color: textColor,
-                            fontSize: 14,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Search title, company, skills...',
-                            hintStyle: GoogleFonts.inter(
-                              color: Colors.grey,
-                              fontSize: 13,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                            ),
-                            suffixIcon: Obx(() {
-                              if (jobsController.searchQuery.value.isNotEmpty) {
-                                return IconButton(
-                                  icon: Icon(
-                                    Icons.clear,
-                                    size: 18,
-                                    color: Colors.grey,
-                                  ),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    jobsController.searchQuery.value = '';
-                                    jobsController.currentPage.value = 1;
-                                    jobsController.fetchJobs();
-                                  },
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            }),
-                          ),
-                          onChanged: (val) {
-                            jobsController.searchQuery.value = val;
+                        child: Autocomplete<String>(
+                          initialValue: TextEditingValue(text: jobsController.searchQuery.value),
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text.isEmpty) {
+                              return const Iterable<String>.empty();
+                            }
+                            final query = textEditingValue.text.toLowerCase();
+                            return kSearchSuggestions.where((option) {
+                              return option.toLowerCase().contains(query);
+                            });
                           },
-                          onSubmitted: (val) {
+                          onSelected: (String selection) {
+                            jobsController.searchQuery.value = selection;
                             jobsController.currentPage.value = 1;
                             jobsController.fetchJobs();
+                            // Optional: focus unfocus handled by optionsView selection usually
+                            FocusScope.of(context).unfocus();
+                          },
+                          fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                            // Link controllers: update the provided textEditingController to our _searchController value
+                            // or just use the provided textEditingController and listen to changes.
+                            // Actually, Autocomplete manages its own controller, but we can sync them.
+                            // Let's use the provided textEditingController.
+                            return TextField(
+                              controller: textEditingController,
+                              focusNode: focusNode,
+                              style: GoogleFonts.inter(
+                                color: textColor,
+                                fontSize: 14,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Search title, company, skills...',
+                                hintStyle: GoogleFonts.inter(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                suffixIcon: Obx(() {
+                                  if (jobsController.searchQuery.value.isEmpty && textEditingController.text.isNotEmpty) {
+                                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                                      textEditingController.clear();
+                                    });
+                                  }
+                                  
+                                  if (jobsController.searchQuery.value.isNotEmpty) {
+                                    return IconButton(
+                                      icon: Icon(
+                                        Icons.clear,
+                                        size: 18,
+                                        color: Colors.grey,
+                                      ),
+                                      onPressed: () {
+                                        textEditingController.clear();
+                                        jobsController.searchQuery.value = '';
+                                        jobsController.currentPage.value = 1;
+                                        jobsController.fetchJobs();
+                                      },
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                }),
+                              ),
+                              onChanged: (val) {
+                                jobsController.searchQuery.value = val;
+                              },
+                              onSubmitted: (val) {
+                                jobsController.currentPage.value = 1;
+                                jobsController.fetchJobs();
+                                onFieldSubmitted();
+                              },
+                            );
+                          },
+                          optionsViewBuilder: (context, onSelected, options) {
+                            return Align(
+                              alignment: Alignment.topLeft,
+                              child: Material(
+                                elevation: 4.0,
+                                borderRadius: BorderRadius.circular(8),
+                                color: isDark ? const Color(0xFF141414) : Colors.white,
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width - 32, // Match input width approx
+                                  constraints: const BoxConstraints(maxHeight: 250),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: isDark ? const Color(0xFF272727) : Colors.grey[200]!,
+                                    ),
+                                  ),
+                                  child: ListView.builder(
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    shrinkWrap: true,
+                                    itemCount: options.length,
+                                    itemBuilder: (BuildContext context, int index) {
+                                      final String option = options.elementAt(index);
+                                      return InkWell(
+                                        onTap: () {
+                                          onSelected(option);
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
+                                          ),
+                                          child: Text(
+                                            option,
+                                            style: GoogleFonts.inter(
+                                              color: isDark ? Colors.grey[200] : const Color(0xFF142033),
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
                           },
                         ),
                       ),
