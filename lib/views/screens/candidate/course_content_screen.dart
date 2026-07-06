@@ -132,9 +132,23 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: cardColor,
+        gradient: LinearGradient(
+          colors: isDark
+              ? [
+                  AppColors.getPrimary(isDark).withValues(alpha: 0.15),
+                  AppColors.getCard(isDark),
+                ]
+              : [
+                  AppColors.getPrimary(isDark).withValues(alpha: 0.05),
+                  Colors.white,
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor),
+        border: Border.all(
+          color: AppColors.getPrimary(isDark).withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,15 +164,15 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.getPrimary(isDark).withOpacity(0.1),
+                        color: AppColors.getPrimary(isDark),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'Module ${widget.module['module_number']}',
+                        'Module ${widget.module['module_number'] ?? '1'}',
                         style: GoogleFonts.inter(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.getPrimary(isDark),
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -208,17 +222,19 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
                 child: Column(
                   children: [
                     Text(
-                      '$completedLessons/$totalLessons',
+                      '$completedLessons / ${totalLessons > 0 ? totalLessons : (widget.module['lesson_count'] ?? '?')}',
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: textColor,
+                        color: AppColors.getPrimary(isDark),
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       'completed',
                       style: GoogleFonts.inter(
                         fontSize: 11,
+                        fontWeight: FontWeight.w600,
                         color: subtitleColor,
                       ),
                     ),
@@ -333,10 +349,10 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
-                      child: isCompleted
+                        child: isCompleted
                           ? const Icon(Icons.check, color: Colors.white, size: 20)
                           : Text(
-                              '${lesson['lesson_number']}',
+                              '${lesson['lesson_number'] ?? (index + 1)}',
                               style: GoogleFonts.inter(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -575,10 +591,16 @@ class _CourseContentScreenState extends State<CourseContentScreen> {
     );
   }
   Widget _buildRichText(String text, Color textColor, bool isDark, {Color? boldColor, double fontSize = 13.5}) {
-    // Pre-process: if numbering is immediately before bold text, move it inside the bold markers.
+    // Pre-process: if numbering or bullet is immediately before bold text, move it inside the bold markers.
     text = text.replaceAllMapped(
-      RegExp(r'(^|\n)(\s*)(\d+\.\s+)\*\*(.*?)\*\*'),
+      RegExp(r'(^|\n)(\s*)([\d]+\.[\s]*|[-*•]\s+)\*\*(.*?)\*\*'),
       (match) => '${match.group(1)}${match.group(2)}**${match.group(3)}${match.group(4)}**',
+    );
+    
+    // Also catch numbering that is NOT before bold text but at start of line, and bold the numbering itself
+    text = text.replaceAllMapped(
+      RegExp(r'(^|\n)(\s*)([\d]+\.)(\s+)(?!\*\*)'),
+      (match) => '${match.group(1)}${match.group(2)}**${match.group(3)}**${match.group(4)}',
     );
 
     final List<TextSpan> spans = [];

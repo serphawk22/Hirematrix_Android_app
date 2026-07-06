@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:hirematrix/controllers/auth_controller.dart';
@@ -10,6 +8,7 @@ import 'package:hirematrix/controllers/theme_controller.dart';
 import 'package:hirematrix/controllers/company_profile_controller.dart';
 import 'package:hirematrix/core/constants/api_constants.dart';
 import 'package:hirematrix/views/screens/candidate/job_details_screen.dart';
+import 'package:hirematrix/views/widgets/external_job_bottom_sheet.dart';
 
 class CompanyProfileScreen extends StatefulWidget {
   final int companyId;
@@ -750,7 +749,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (openJobs.isEmpty)
+          if (openJobs.isEmpty && _controller.discoveredJobs.isEmpty)
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 32),
@@ -767,8 +766,9 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
               ),
             )
           else ...[
-            _buildSectionHeader('HireMatrix Posted Jobs'),
-            const SizedBox(height: 12),
+            if (openJobs.isNotEmpty) ...[
+              _buildSectionHeader('HireMatrix Posted Jobs'),
+              const SizedBox(height: 12),
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -870,6 +870,85 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                 );
               },
             ),
+            ],
+            if (_controller.discoveredJobs.isNotEmpty) ...[
+              if (openJobs.isNotEmpty) const SizedBox(height: 24),
+              _buildSectionHeader('Discovered External Jobs'),
+              const SizedBox(height: 12),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _controller.discoveredJobs.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final job = _controller.discoveredJobs[index];
+                  final title = job['title'] ?? 'Role';
+                  final location = job['location'] ?? 'Remote/Multiple';
+                  final source = job['source_platform'] ?? 'External source';
+                  final postedAt = job['posted_at_raw'] ?? 'Recently';
+
+                  return InkWell(
+                    onTap: () {
+                      ExternalJobBottomSheet.show(job, isDark, isDark ? AppColors.getCard(isDark) : Colors.white, textColor, Colors.grey[500]);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.getCard(isDark) : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark ? Colors.grey[850]! : Colors.grey[200]!,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: textColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(Icons.location_on_outlined, size: 13, color: Colors.grey[500]),
+                                    const SizedBox(width: 4),
+                                    Text(location, style: GoogleFonts.inter(fontSize: 12.5, color: Colors.grey[500])),
+                                    const SizedBox(width: 12),
+                                    Icon(Icons.layers_outlined, size: 13, color: Colors.grey[500]),
+                                    const SizedBox(width: 4),
+                                    Text(source, style: GoogleFonts.inter(fontSize: 12.5, color: Colors.grey[500])),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(Icons.access_time_outlined, size: 13, color: Colors.grey[500]),
+                                    const SizedBox(width: 4),
+                                    Text(postedAt, style: GoogleFonts.inter(fontSize: 12.5, color: Colors.grey[500])),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.open_in_new,
+                            size: 14,
+                            color: Colors.grey[400],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ],
           const SizedBox(height: 24),
           _buildSectionHeader('Job Sources'),

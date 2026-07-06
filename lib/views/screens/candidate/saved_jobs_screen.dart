@@ -8,6 +8,7 @@ import 'package:hirematrix/controllers/theme_controller.dart';
 import 'package:hirematrix/controllers/saved_jobs_controller.dart';
 import 'package:hirematrix/views/screens/candidate/job_details_screen.dart';
 import 'package:hirematrix/core/constants/api_constants.dart';
+import 'package:hirematrix/views/widgets/external_job_bottom_sheet.dart';
 
 class SavedJobsScreen extends StatefulWidget {
   const SavedJobsScreen({super.key});
@@ -309,7 +310,9 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
     final isExternal =
         job['is_external'] == true ||
         job['is_external'] == 1 ||
-        job['is_external'] == '1';
+        job['is_external'] == '1' ||
+        job['posted_for']?.toString() == 'client' ||
+        (job['external_apply_url'] != null && job['external_apply_url'].toString().isNotEmpty);
     final logoUrl = job['company_logo'] ?? '';
     final initial = company.isNotEmpty ? company[0].toUpperCase() : 'J';
     final isVisited = job['visited_flag'] == 1 || job['visited_flag'] == '1';
@@ -328,8 +331,25 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
 
     final jobIdInt = int.tryParse(job['id']?.toString() ?? '') ?? 0;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
+    return InkWell(
+      onTap: () {
+        if (isExternal) {
+          ExternalJobBottomSheet.show(
+            job,
+            isDark,
+            cardColor,
+            textColor,
+            subtitleColor,
+          );
+        } else {
+          job['visited_flag'] = 1;
+          _savedJobsController.savedJobsList.refresh();
+          Get.to(() => JobDetailsScreen(job: job));
+        }
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
@@ -518,11 +538,13 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
               TextButton(
                 onPressed: () {
                   if (isExternal) {
-                    final applyUrl =
-                        job['apply_url']?.toString() ??
-                        job['details_url']?.toString() ??
-                        '';
-                    _launchURL(applyUrl);
+                    ExternalJobBottomSheet.show(
+                      job,
+                      isDark,
+                      cardColor,
+                      textColor,
+                      subtitleColor,
+                    );
                   } else {
                     job['visited_flag'] = 1;
                     _savedJobsController.savedJobsList.refresh();
@@ -532,7 +554,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
                 child: Row(
                   children: [
                     Text(
-                      isExternal ? 'Apply Now' : 'View Details',
+                      'View Details',
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
@@ -552,7 +574,7 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildMetaTile(IconData icon, String text, bool isDark) {

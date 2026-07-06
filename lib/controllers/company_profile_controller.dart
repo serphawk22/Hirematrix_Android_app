@@ -13,6 +13,7 @@ class CompanyProfileController extends GetxController {
 
   final companyData = Rxn<Map<String, dynamic>>();
   final openJobs = <dynamic>[].obs;
+  final discoveredJobs = <dynamic>[].obs;
   final reviewSummary = <String, dynamic>{
     'total_reviews': 0,
     'average_rating': 0.0,
@@ -43,6 +44,7 @@ class CompanyProfileController extends GetxController {
         if (data['success'] == true) {
           companyData.value = data['company'];
           openJobs.assignAll(data['open_jobs'] ?? []);
+          discoveredJobs.assignAll(data['discovered_jobs'] ?? []);
           reviewSummary.value = data['review_summary'] ?? {
             'total_reviews': 0,
             'average_rating': 0.0,

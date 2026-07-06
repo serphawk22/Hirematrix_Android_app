@@ -116,7 +116,7 @@ class _PlansScreenState extends State<PlansScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Unlock Career Transition AI and Resume Studio from one shared plan.',
+                      'Unlock Career Transition AI, Resume Studio, and AI Career Mentor from one shared plan.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 14,
@@ -182,7 +182,7 @@ class _PlansScreenState extends State<PlansScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Your subscription works across Career Transition AI and Resume Studio.',
+                      'Your subscription works across Career Transition AI, Resume Studio, and AI Career Mentor.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 12,
@@ -197,110 +197,131 @@ class _PlansScreenState extends State<PlansScreen> {
 
               // dynamic carousel of plans
               if (_plansController.plansList.isNotEmpty) ...[
-                SizedBox(
-                  height: 560,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: _plansController.plansList.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentPlanPage = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      final plan = _plansController.plansList[index];
-                      final planId =
-                          int.tryParse(plan['id']?.toString() ?? '') ?? 0;
-                      final planName = plan['name'] ?? 'Premium Plan';
-                      final priceStr = plan['price']?.toString() ?? '0';
-                      final price = double.tryParse(priceStr) ?? 0.0;
-                      final durationDays =
-                          int.tryParse(
-                            plan['duration_days']?.toString() ?? '',
-                          ) ??
-                          30;
-                      final desc = plan['description'] ?? '';
-
-                      final featuresData = plan['features'];
-                      List<dynamic> features = [];
-                      if (featuresData != null) {
-                        if (featuresData is String) {
-                          try {
-                            features = jsonDecode(featuresData);
-                          } catch (_) {
-                            features = [featuresData];
-                          }
-                        } else if (featuresData is List) {
-                          features = featuresData;
+                Builder(
+                  builder: (context) {
+                    final plans = List<dynamic>.from(_plansController.plansList);
+                    final showTrial = !hasSub && _plansController.trialDays.value > 0 && !_plansController.hasUsedTrial.value;
+                    
+                    int trialBasePlanId = 0;
+                    if (showTrial) {
+                      for (var p in plans) {
+                        final price = double.tryParse(p['price']?.toString() ?? '0') ?? 0;
+                        if (price > 0) {
+                          trialBasePlanId = int.tryParse(p['id']?.toString() ?? '0') ?? 0;
+                          break;
                         }
                       }
+                      
+                      plans.insert(0, {
+                        'id': trialBasePlanId,
+                        'name': '7-Day Free Trial',
+                        'price': 0.0,
+                        'duration_days': _plansController.trialDays.value,
+                        'description': 'Experience every premium feature including AI Mentor and Resume Studio before you commit.',
+                        'features': [
+                          'All AI Services',
+                          'No payment needed',
+                          'Cancel anytime',
+                        ],
+                        'is_trial': true,
+                      });
+                    }
 
-                      final isPopular = planName
-                          .toString()
-                          .toLowerCase()
-                          .contains('pro monthly');
-                      final isCurrentActive =
-                          hasSub &&
-                          _plansController.currentSubscription['plan_id']
-                                  ?.toString() ==
-                              planId.toString();
+                    return Column(
+                      children: [
+                        SizedBox(
+                          height: 560,
+                          child: PageView.builder(
+                            controller: _pageController,
+                            itemCount: plans.length,
+                            onPageChanged: (index) {
+                              setState(() {
+                                _currentPlanPage = index;
+                              });
+                            },
+                            itemBuilder: (context, index) {
+                              final plan = plans[index];
+                              final planId = int.tryParse(plan['id']?.toString() ?? '') ?? 0;
+                              final planName = plan['name'] ?? 'Premium Plan';
+                              final priceStr = plan['price']?.toString() ?? '0';
+                              final price = double.tryParse(priceStr) ?? 0.0;
+                              final durationDays = int.tryParse(plan['duration_days']?.toString() ?? '') ?? 30;
+                              final desc = plan['description'] ?? '';
+                              final isTrial = plan['is_trial'] == true;
 
-                      return AnimatedBuilder(
-                        animation: _pageController,
-                        builder: (context, child) {
-                          double value = 1.0;
-                          if (_pageController.position.haveDimensions) {
-                            value = _pageController.page! - index;
-                            value = (1 - (value.abs() * 0.05)).clamp(0.0, 1.0);
-                          }
-                          return Center(
-                            child: SizedBox(
-                              height: Curves.easeOut.transform(value) * 540,
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0,
-                            vertical: 8.0,
-                          ),
-                          child: _buildPlanCard(
-                            planId: planId,
-                            name: planName,
-                            price: price,
-                            durationDays: durationDays,
-                            description: desc,
-                            features: features,
-                            isPopular: isPopular,
-                            isActive: isCurrentActive,
-                            isDark: isDark,
+                              final featuresData = plan['features'];
+                              List<dynamic> features = [];
+                              if (featuresData != null) {
+                                if (featuresData is String) {
+                                  try {
+                                    features = jsonDecode(featuresData);
+                                  } catch (_) {
+                                    features = [featuresData];
+                                  }
+                                } else if (featuresData is List) {
+                                  features = featuresData;
+                                }
+                              }
+
+                              final isPopular = planName.toString().toLowerCase().contains('pro monthly');
+                              final isCurrentActive = hasSub && _plansController.currentSubscription['plan_id']?.toString() == planId.toString();
+
+                              return AnimatedBuilder(
+                                animation: _pageController,
+                                builder: (context, child) {
+                                  double value = 1.0;
+                                  if (_pageController.position.haveDimensions) {
+                                    value = _pageController.page! - index;
+                                    value = (1 - (value.abs() * 0.05)).clamp(0.0, 1.0);
+                                  }
+                                  return Center(
+                                    child: SizedBox(
+                                      height: Curves.easeOut.transform(value) * 540,
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                                  child: _buildPlanCard(
+                                    planId: planId,
+                                    name: planName,
+                                    price: price,
+                                    durationDays: durationDays,
+                                    description: desc,
+                                    features: features,
+                                    isPopular: isPopular,
+                                    isActive: isCurrentActive,
+                                    isDark: isDark,
+                                    isTrial: isTrial,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(_plansController.plansList.length, (
-                    index,
-                  ) {
-                    final isActive = _currentPlanPage == index;
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: isActive ? 20 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? AppColors.getPrimary(isDark)
-                            : (isDark ? Colors.grey[700] : Colors.grey[300]),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(plans.length, (index) {
+                            final isActive = _currentPlanPage == index;
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              width: isActive ? 20 : 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: isActive
+                                    ? AppColors.getPrimary(isDark)
+                                    : (isDark ? Colors.grey[700] : Colors.grey[300]),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
                     );
-                  }),
+                  }
                 ),
               ],
 
@@ -355,7 +376,21 @@ class _PlansScreenState extends State<PlansScreen> {
           ],
           isDark: isDark,
         ),
-
+        const SizedBox(height: 16),
+        _buildServiceInfoCard(
+          icon: Icons.chat,
+          title: 'AI Career Mentor',
+          accentColor: const Color(0xFF3B82F6),
+          summary: 'This works inside the chatbot. Open chat and ask for interview prep, strategy, or next-step guidance.',
+          points: [
+            'Use it from the chat button',
+            'Unlimited mentor chats',
+            'Interview preparation',
+            'Resume review guidance',
+            'Job search strategy',
+          ],
+          isDark: isDark,
+        ),
       ],
     );
   }
@@ -448,6 +483,7 @@ class _PlansScreenState extends State<PlansScreen> {
     required bool isPopular,
     required bool isActive,
     required bool isDark,
+    bool isTrial = false,
   }) {
     final popularBorderColor = AppColors.getPrimary(isDark);
     final isFree = price <= 0.0;
@@ -518,6 +554,35 @@ class _PlansScreenState extends State<PlansScreen> {
                   fontSize: 11,
                   letterSpacing: 0.5,
                 ),
+              ),
+            )
+          else if (isTrial)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.getPrimary(isDark),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(14),
+                  topRight: Radius.circular(14),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.card_giftcard, size: 14, color: Colors.white),
+                  const SizedBox(width: 4),
+                  Text(
+                    'LIMITED TIME OFFER',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
             ),
           Padding(
@@ -617,7 +682,9 @@ class _PlansScreenState extends State<PlansScreen> {
                     onPressed: isActive
                         ? null
                         : () {
-                            if (isFree) {
+                            if (isTrial) {
+                              _plansController.startTrial(planId);
+                            } else if (isFree) {
                               Get.back();
                             } else {
                               _plansController.startPaymentFlow(planId, name);
@@ -626,16 +693,16 @@ class _PlansScreenState extends State<PlansScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isActive
                           ? Colors.grey
-                          : (isPopular
+                          : ((isPopular || isTrial)
                                 ? AppColors.getPrimary(isDark)
                                 : Colors.transparent),
                       foregroundColor: isActive
                           ? Colors.white
-                          : (isPopular
+                          : ((isPopular || isTrial)
                                 ? Colors.white
                                 : AppColors.getPrimary(isDark)),
                       elevation: 0,
-                      side: (isActive || isPopular)
+                      side: (isActive || isPopular || isTrial)
                           ? null
                           : BorderSide(
                               color: AppColors.getPrimary(isDark),
@@ -648,9 +715,11 @@ class _PlansScreenState extends State<PlansScreen> {
                     child: Text(
                       isActive
                           ? 'Active Plan'
-                          : (isFree
-                                ? 'Get Started Free'
-                                : 'Subscribe ₹${price.toStringAsFixed(0)}'),
+                          : (isTrial 
+                                ? 'Start Free Trial' 
+                                : (isFree
+                                      ? 'Get Started Free'
+                                      : 'Subscribe ₹${price.toStringAsFixed(0)}')),
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,

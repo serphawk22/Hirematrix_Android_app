@@ -13,6 +13,8 @@ class PlansController extends GetxController {
   final isLoading = false.obs;
   final plansList = <dynamic>[].obs;
   final currentSubscription = <String, dynamic>{}.obs;
+  final trialDays = 0.obs;
+  final hasUsedTrial = false.obs;
 
   late Razorpay _razorpay;
   String? _pendingPlanName;
@@ -54,6 +56,8 @@ class PlansController extends GetxController {
           final resData = data['data'];
           plansList.assignAll(resData['plans'] ?? []);
           currentSubscription.value = resData['currentSubscription'] ?? {};
+          trialDays.value = resData['trial_days'] ?? 0;
+          hasUsedTrial.value = resData['has_used_trial'] ?? false;
         }
       }
     } catch (_) {
@@ -113,6 +117,41 @@ class PlansController extends GetxController {
       }
     } catch (e) {
       Get.snackbar('Error', 'Connection failed to start payment.');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> startTrial(int planId) async {
+    final authController = Get.find<AuthController>();
+    final userId = authController.currentUser['id'];
+    if (userId == null) return;
+
+    isLoading.value = true;
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/plans/start-trial'),
+        headers: {'Accept': 'application/json'},
+        body: {'candidate_id': userId.toString(), 'plan_id': planId.toString()},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == 'success') {
+          showSuccessDialog('7-Day Free Trial');
+          await fetchPlansData();
+          try {
+            final dashCtrl = Get.find<DashboardController>();
+            await dashCtrl.fetchDashboardData();
+          } catch (_) {}
+        } else {
+          Get.snackbar('Error', data['message'] ?? 'Failed to start free trial.');
+        }
+      } else {
+        Get.snackbar('Error', 'Server error. Please try again.');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Connection failed.');
     } finally {
       isLoading.value = false;
     }

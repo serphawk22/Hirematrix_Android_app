@@ -652,11 +652,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSummaryCard(isDark),
-              const SizedBox(height: 24),
-              _buildMetricGrid(isDark),
+              _buildProBanner(context, isDark),
               const SizedBox(height: 32),
-
+              // _buildSummaryCard(isDark),
+              // const SizedBox(height: 24),
+              // _buildMetricGrid(isDark),
+              const SizedBox(height: 32),
+              _buildSectionHeader(
+                'Jobs Matching Your Profile',
+                'Based on your skills and preferences',
+                isDark,
+                onSeeAll: () {
+                  try {
+                    final jobsController = Get.find<JobsController>();
+                    if (jobsController.animateToTab != null) {
+                      jobsController.animateToTab!(0); // 0 = Matching Profile
+                    }
+                    if (jobsController.setSubTab != null) {
+                      jobsController.setSubTab!(1); // 1 = Based on Skills
+                    }
+                  } catch (_) {}
+                  dashboardController.currentIndex.value = 1;
+                },
+              ),
+              const SizedBox(height: 16),
+              Obx(() => _buildJobsHorizontalList(isDark)),
+              const SizedBox(height: 32),
               // Explore by Role
               if (dashboardController.jobCategories.isNotEmpty) ...[
                 _buildSectionHeader(
@@ -681,30 +702,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 32),
               ],
 
-              _buildSectionHeader(
-                'Jobs Matching Your Profile',
-                'Based on your skills and preferences',
-                isDark,
-                onSeeAll: () {
-                  try {
-                    final jobsController = Get.find<JobsController>();
-                    if (jobsController.animateToTab != null) {
-                      jobsController.animateToTab!(0); // 0 = Matching Profile
-                    }
-                    if (jobsController.setSubTab != null) {
-                      jobsController.setSubTab!(1); // 1 = Based on Skills
-                    }
-                  } catch (_) {}
-                  dashboardController.currentIndex.value = 1;
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildJobsHorizontalList(isDark),
-              const SizedBox(height: 32),
-              _buildStrategyBanner(isDark),
-              const SizedBox(height: 32),
-              _buildProBanner(isDark),
-              const SizedBox(height: 32),
+              // _buildStrategyBanner(isDark),
+              // const SizedBox(height: 32),
               const SizedBox(height: 32),
               _buildBlogSection(isDark),
               _buildSectionHeader(
@@ -1478,18 +1477,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
               isDark: isDark,
               isVisited: isVisited,
               onTap: () {
-                final isExternal = (job['posted_for']?.toString() == 'client' ||
+                final isExternal =
+                    (job['posted_for']?.toString() == 'client' ||
                     job['external_apply_url'] != null);
 
                 job['visited_flag'] = 1;
                 dashboardController.topSuggestedJobs.refresh();
-                
+
                 if (!isExternal) {
                   Get.to(() => JobDetailsScreen(job: job));
                 } else {
-                  final cardColor = isDark ? AppColors.getCard(isDark) : Colors.white;
-                  final textColor = isDark ? Colors.white : const Color(0xFF111827);
-                  final subtitleColor = isDark ? Colors.grey[400] : const Color(0xFF475569);
+                  final cardColor = isDark
+                      ? AppColors.getCard(isDark)
+                      : Colors.white;
+                  final textColor = isDark
+                      ? Colors.white
+                      : const Color(0xFF111827);
+                  final subtitleColor = isDark
+                      ? Colors.grey[400]
+                      : const Color(0xFF475569);
                   ExternalJobBottomSheet.show(
                     job,
                     isDark,
@@ -1878,166 +1884,329 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  Widget _buildProBanner(bool isDark) {
+  Widget _buildProBanner(BuildContext context, bool isDark) {
+    if (dashboardController.currentSubscription.isNotEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final proFeatureSlides = [
+      {
+        'eyebrow': 'AI Interview Practice',
+        'title': 'Practice with the AI Interview',
+        'rows': [
+          'Role-specific mock interview rounds',
+          'Structured answer frameworks',
+          'Instant post-round feedback',
+        ],
+        'cta_label': 'Start practising',
+        'icon': Icons.video_call,
+      },
+      {
+        'eyebrow': 'Career Transition AI',
+        'title': 'Plan Your Next Career Move',
+        'rows': [
+          'Personalised role-change roadmap',
+          'Skill gap analysis vs target role',
+          'Certification & learning path guide',
+        ],
+        'cta_label': 'Generate my roadmap',
+        'icon': Icons.route,
+      },
+      {
+        'eyebrow': 'Resume Studio',
+        'title': 'Build a Resume That Gets Noticed',
+        'rows': [
+          'Role-targeted resume per job',
+          'ATS-friendly formatting checks',
+          'AI rewrite & positioning tips',
+        ],
+        'cta_label': 'Build my resume',
+        'icon': Icons.description,
+      },
+      {
+        'eyebrow': 'Job Search Strategy Coach',
+        'title': 'Search Smarter, Not Harder',
+        'rows': [
+          'Weekly application priorities',
+          'Post-application follow-up plan',
+          'Traction-focused role targeting',
+        ],
+        'cta_label': 'Open Full Strategy',
+        'icon': Icons.psychology,
+      },
+      {
+        'eyebrow': 'AI Career Mentor',
+        'title': 'Get Guidance, Anytime You Need It',
+        'rows': [
+          'Unlimited mentor chat sessions',
+          'Personalised career guidance',
+          'Interview & negotiation tips',
+        ],
+        'cta_label': 'Chat with mentor',
+        'icon': Icons.chat,
+      },
+    ];
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.getPrimary(isDark), // Primary theme color
-            AppColors.getPrimaryDark(isDark), // Darker shade of primary
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        color: isDark ? const Color(0xFF111827) : const Color(0xFFF4FBFA),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark ? Colors.grey[800]! : const Color(0xFFE2E8F0),
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E1B4B).withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.diamond, color: Color(0xFFFBBF24), size: 24),
-              const SizedBox(width: 8),
-              Text(
-                'HireMatrix Pro',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFFFBBF24),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.getPrimary(isDark),
+                  AppColors.getPrimaryDark(isDark),
+                ],
               ),
-            ],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.workspace_premium,
+                  color: Colors.white,
+                  size: 14,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'PRO TOOLS',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Text(
-            'One subscription unlocks all three AI services',
+            'Unlock more with PRO',
             style: GoogleFonts.inter(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 22,
-              height: 1.2,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              foreground: Paint()
+                ..shader = const LinearGradient(
+                  colors: [
+                    Color(0xFF1FB7B5),
+                    Color(0xFF53B86C),
+                    Color(0xFFB5D84E),
+                  ],
+                ).createShader(const Rect.fromLTWH(0.0, 0.0, 250.0, 70.0)),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'AI-powered tools to help you land your next role faster.',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
           const SizedBox(height: 20),
-
-          // Career Transition AI Card
-          _buildProAdService(
-            icon: Icons.route,
-            title: 'Career Transition AI',
-            features: [
-              'Personalized roadmap',
-              'Daily actionable tasks',
-              'Skill gap analysis',
-              'Course modules and exercises',
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Resume Studio Card
-          _buildProAdService(
-            icon: Icons.description,
-            title: 'Resume Studio',
-            features: [
-              'ATS-friendly resumes',
-              'Job-specific versions',
-              'Career transition resumes',
-              'Unlimited updates',
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: () => Get.toNamed(AppRoutes.plans),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: AppColors.getPrimaryDark(isDark),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+          ElevatedButton(
+            onPressed: () => Get.toNamed(AppRoutes.plans),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              backgroundColor: AppColors.getPrimary(isDark),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(99),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'View Plans',
-                    style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward, size: 16),
-                ],
-              ),
+              elevation: 4,
+            ),
+            child: Text(
+              'Become a Pro',
+              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProAdService({
-    required IconData icon,
-    required String title,
-    required List<String> features,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: Colors.white, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Column(
-            children: features.map((feat) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.check, color: Color(0xFF10B981), size: 14),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        feat,
-                        style: GoogleFonts.inter(
-                          color: Colors.grey[300],
-                          fontSize: 12,
+          const SizedBox(height: 32),
+          SizedBox(
+            height: 320,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
+              itemCount: proFeatureSlides.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 16),
+              itemBuilder: (context, index) {
+                final slide = proFeatureSlides[index];
+                return GestureDetector(
+                  onTap: () => Get.toNamed(AppRoutes.plans),
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.75,
+                    padding: const EdgeInsets.all(
+                      1.5,
+                    ), // Gradient ring thickness
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF1FB7B5),
+                          Color(0xFF53B86C),
+                          Color(0xFFB5D84E),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                            0xFF1FB7B5,
+                          ).withValues(alpha: 0.15),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
+                      ],
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14.5),
+                        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      ),
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: AppColors.getPrimary(
+                                    isDark,
+                                  ).withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  slide['icon'] as IconData,
+                                  color: AppColors.getPrimary(isDark),
+                                ),
+                              ),
+                              Icon(
+                                Icons.lock_outline,
+                                size: 18,
+                                color: isDark
+                                    ? Colors.grey[500]
+                                    : Colors.grey[400],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.grey[800]
+                                  : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.grey[700]!
+                                    : Colors.grey[200]!,
+                              ),
+                            ),
+                            child: Text(
+                              slide['eyebrow'] as String,
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                                color: AppColors.getPrimary(isDark),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            slide['title'] as String,
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF111827),
+                              height: 1.3,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: Column(
+                              children: (slide['rows'] as List<String>).map((
+                                row,
+                              ) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(
+                                        Icons.check_circle,
+                                        size: 14,
+                                        color: Color(0xFF10B981),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          row,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12.5,
+                                            color: isDark
+                                                ? Colors.grey[400]
+                                                : Colors.grey[600],
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Text(
+                                slide['cta_label'] as String,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.getPrimary(isDark),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Icon(
+                                Icons.arrow_forward,
+                                size: 14,
+                                color: AppColors.getPrimary(isDark),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              );
-            }).toList(),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

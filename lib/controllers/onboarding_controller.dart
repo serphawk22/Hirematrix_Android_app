@@ -4,6 +4,7 @@ import 'package:hirematrix/controllers/auth_controller.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:hirematrix/core/constants/api_constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
 
 class OnboardingController extends GetxController {
@@ -665,7 +666,16 @@ class OnboardingController extends GetxController {
     return false;
   }
 
-  void skipToDashboard() {
+  void skipToDashboard() async {
+    final authController = Get.find<AuthController>();
+    final currentUser = authController.currentUser;
+    if (currentUser.isNotEmpty) {
+      currentUser['onboarding_completed'] = 1;
+      authController.currentUser.value = Map<String, dynamic>.from(currentUser);
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('currentUser', jsonEncode(currentUser));
+    }
     Get.offAllNamed('/candidate/dashboard');
   }
 }
