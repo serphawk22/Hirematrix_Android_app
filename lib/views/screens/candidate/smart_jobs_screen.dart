@@ -914,10 +914,9 @@ class _SmartJobsScreenState extends State<SmartJobsScreen>
                       'Posted Within',
                       tempPostedWithin,
                       {
-                        '1': 'Past 24 Hours',
-                        '3': 'Past 3 Days',
-                        '7': 'Past 7 Days',
-                        '14': 'Past 14 Days',
+                        '1': 'Today',
+                        '7': 'This week',
+                        '30': 'Last one month',
                       }.obs,
                       textColor,
                     ),

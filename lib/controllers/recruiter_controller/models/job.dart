@@ -15,6 +15,12 @@ class Job {
   final int? applicationsCount;
   final int? shortlistedCount;
   final DateTime createdAt;
+  final String attentionLevel;
+  final int attentionScore;
+  final List<String> attentionFacts;
+  final List<Map<String, dynamic>> suggestedActions;
+  final int averageAtsScore;
+  final int jobAgeDays;
 
   // Additional fields for editing
   final String? category;
@@ -46,6 +52,12 @@ class Job {
     this.applicationsCount = 0,
     this.shortlistedCount = 0,
     required this.createdAt,
+    this.attentionLevel = 'quiet',
+    this.attentionScore = 0,
+    this.attentionFacts = const [],
+    this.suggestedActions = const [],
+    this.averageAtsScore = 0,
+    this.jobAgeDays = 0,
     this.category,
     this.requiredSkills,
     this.postedFor,
@@ -88,6 +100,12 @@ class Job {
       applicationsCount: int.tryParse(json['applications_count']?.toString() ?? '') ?? 0,
       shortlistedCount: int.tryParse(json['shortlisted_count']?.toString() ?? '') ?? 0,
       createdAt: DateTime.parse(json['created_at']),
+      attentionLevel: json['attention_level']?.toString() ?? 'quiet',
+      attentionScore: int.tryParse(json['attention_score']?.toString() ?? '') ?? 0,
+      attentionFacts: (json['attention_facts'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      suggestedActions: (json['suggested_actions'] as List?)?.map((e) => e as Map<String, dynamic>).toList() ?? [],
+      averageAtsScore: int.tryParse(json['average_ats_score']?.toString() ?? '') ?? 0,
+      jobAgeDays: int.tryParse(json['job_age_days']?.toString() ?? '') ?? 0,
       category: json['category'],
       requiredSkills: json['required_skills'],
       postedFor: json['posted_for'],

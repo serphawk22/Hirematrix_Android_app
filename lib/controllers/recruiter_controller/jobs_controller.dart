@@ -8,6 +8,8 @@ class JobsController extends ChangeNotifier {
   bool _isLoading = false;
 
   List<Job> get jobs => _jobs;
+  List<Map<String, dynamic>> _recruiterAlerts = [];
+  List<Map<String, dynamic>> get recruiterAlerts => _recruiterAlerts;
   bool get isLoading => _isLoading;
 
   Future<void> fetchJobs(String recruiterId, {String? query}) async {
@@ -15,8 +17,11 @@ class JobsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final List<dynamic> data = await _apiService.fetchJobs(recruiterId, query: query);
-      _jobs = data.map((json) => Job.fromJson(json)).toList();
+      final Map<String, dynamic> data = await _apiService.fetchJobs(recruiterId, query: query);
+      final List<dynamic> jobsList = data['jobs'] ?? [];
+      _jobs = jobsList.map((json) => Job.fromJson(json)).toList();
+      final List<dynamic> alertsList = data['recruiter_alerts'] ?? [];
+      _recruiterAlerts = alertsList.map((e) => e as Map<String, dynamic>).toList();
     } catch (e) {
       debugPrint("Error fetching jobs: $e");
     } finally {

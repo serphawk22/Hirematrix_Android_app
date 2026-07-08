@@ -18,8 +18,9 @@ class ApplicationsController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final List<dynamic> data =
+      final Map<String, dynamic> response =
           await _apiService.fetchApplications(recruiterId, jobId: jobId, query: query);
+      final List<dynamic> data = response['applications'] as List<dynamic>? ?? [];
       _applications = data.map((json) => Application.fromJson(json)).toList();
     } catch (e) {
       _errorMessage = e.toString();

@@ -64,10 +64,10 @@ class _RecruitmentPipelineScreenState extends State<RecruitmentPipelineScreen>
     });
 
     try {
-      final apps = await _apiService.fetchApplications(recruiterId);
+      final response = await _apiService.fetchApplications(recruiterId);
       if (mounted) {
         setState(() {
-          _allApplications = apps;
+          _allApplications = response['applications'] as List<dynamic>? ?? [];
           _isLoading = false;
         });
       }

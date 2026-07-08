@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -22,8 +23,10 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet>
   final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
 
-  List<Map<String, String>> _messages = [];
+  List<Map<String, dynamic>> _messages = [];
   List<Map<String, dynamic>> _suggestions = [];
+  Map<String, dynamic> _chatContext = {};
+  Map<String, String>? _pendingDraft;
   bool _isLoading = false;
   bool _isTyping = false;
   String? _recruiterId;
@@ -61,6 +64,7 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet>
       );
       _recruiterId = authController.currentRecruiter?.id;
       if (_recruiterId != null) {
+        _loadBrief();
         _loadSuggestions();
       }
     });
@@ -100,6 +104,30 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet>
         });
       }
     });
+  }
+
+  Future<void> _loadBrief() async {
+    try {
+      final data = await _apiService.getChatbotBrief(_recruiterId!);
+      if (data['success'] == true && data['answer'] != null) {
+        if (mounted) {
+          setState(() {
+            _messages.clear(); // Replace the default welcome message
+            _messages.add({
+              'role': 'bot',
+              'text': data['answer'],
+              'time': DateFormat('hh:mm a').format(DateTime.now()),
+              'actions': data['actions'] ?? [],
+            });
+            if (data['meta'] != null) {
+              _chatContext.addAll(Map<String, dynamic>.from(data['meta'] ?? {}));
+            }
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading brief: $e');
+    }
   }
 
   Future<void> _loadSuggestions() async {
@@ -181,8 +209,20 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet>
     await _flutterTts.speak(text.replaceAll(RegExp(r'<[^>]*>|💡'), '').trim());
   }
 
+  bool _looksLikeInternalCommand(String value) {
+    return RegExp(r'^(confirm\s+)?(send|message|shortlist|reject)\b', caseSensitive: false).hasMatch(value);
+  }
+
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty || _isLoading || _recruiterId == null) return;
+
+    String textToSend = text.trim();
+    if (_pendingDraft != null) {
+      if (!_looksLikeInternalCommand(textToSend)) {
+        textToSend = (_pendingDraft!['commandPrefix'] ?? '') + textToSend;
+      }
+      _pendingDraft = null;
+    }
 
     if (_isSpeaking) {
       await _flutterTts.stop();
@@ -198,7 +238,7 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet>
     setState(() {
       _messages.add({
         'role': 'user',
-        'text': text.trim(),
+        'text': textToSend,
         'time': DateFormat('hh:mm a').format(DateTime.now()),
       });
       _isLoading = true;
@@ -208,15 +248,23 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet>
     _scrollToBottom();
 
     try {
-      final data = await _apiService.askChatbot(_recruiterId!, text.trim());
+      final data = await _apiService.askChatbot(_recruiterId!, textToSend, chatContext: _chatContext);
       setState(() {
         _isTyping = false;
         if (data['success'] == true && data['answer'] != null) {
           final ans = data['answer'];
+          final actions = data['actions'] ?? [];
+          final meta = data['meta'];
+          
+          if (meta != null) {
+            _chatContext.addAll(Map<String, dynamic>.from(meta ?? {}));
+          }
+
           _messages.add({
             'role': 'bot',
             'text': ans,
             'time': DateFormat('hh:mm a').format(DateTime.now()),
+            'actions': actions,
           });
           _speak(ans);
         } else {
@@ -225,6 +273,7 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet>
             'role': 'bot',
             'text': ans,
             'time': DateFormat('hh:mm a').format(DateTime.now()),
+            'actions': [],
           });
           _speak(ans);
         }
@@ -357,41 +406,9 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet>
                           ? CrossAxisAlignment.start
                           : CrossAxisAlignment.end,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isBot
-                                ? (isDark
-                                      ? const Color(0xFF162327)
-                                      : const Color(0xFFE8F9F8))
-                                : primaryColor,
-                            borderRadius: BorderRadius.only(
-                              topLeft: const Radius.circular(14),
-                              topRight: const Radius.circular(14),
-                              bottomLeft: isBot
-                                  ? const Radius.circular(4)
-                                  : const Radius.circular(14),
-                              bottomRight: isBot
-                                  ? const Radius.circular(14)
-                                  : const Radius.circular(4),
-                            ),
-                          ),
-                          child: Text(
-                            msg['text'] ?? '',
-                            style: GoogleFonts.inter(
-                              color: isBot
-                                  ? (isDark
-                                        ? const Color(0xFFF8FAFC)
-                                        : const Color(0xFF16212B))
-                                  : Colors.white,
-                              fontSize: 13.5,
-                              height: 1.5,
-                            ),
-                          ),
-                        ),
+                        _buildMessageBubble(msg, isBot, isDark, primaryColor),
+                        if (msg['actions'] != null && (msg['actions'] as List).isNotEmpty)
+                          _buildActions(msg['actions'] as List, isDark),
                         const SizedBox(height: 3),
                         Text(
                           msg['time'] ?? '',
@@ -592,6 +609,204 @@ class _ChatbotBottomSheetState extends State<ChatbotBottomSheet>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMessageBubble(Map<String, dynamic> msg, bool isBot, bool isDark, Color primaryColor) {
+    final text = msg['text']?.toString() ?? '';
+    if (text.isEmpty) return const SizedBox.shrink();
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 10,
+      ),
+      decoration: BoxDecoration(
+        color: isBot
+            ? (isDark
+                  ? const Color(0xFF162327)
+                  : const Color(0xFFE8F9F8))
+            : primaryColor,
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(14),
+          topRight: const Radius.circular(14),
+          bottomLeft: isBot
+              ? const Radius.circular(4)
+              : const Radius.circular(14),
+          bottomRight: isBot
+              ? const Radius.circular(14)
+              : const Radius.circular(4),
+        ),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.inter(
+          color: isBot
+              ? (isDark
+                    ? const Color(0xFFF8FAFC)
+                    : const Color(0xFF16212B))
+              : Colors.white,
+          fontSize: 13.5,
+          height: 1.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActions(List<dynamic> actions, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: actions.map((action) {
+        if (action is! Map<String, dynamic>) return const SizedBox.shrink();
+        
+        final title = action['title']?.toString() ?? '';
+        final meta = action['meta']?.toString() ?? '';
+        final detail = action['detail']?.toString() ?? '';
+        final buttons = action['buttons'] as List<dynamic>? ?? [];
+
+        return Container(
+          margin: const EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF0A0D0F) : Colors.white,
+            border: Border.all(
+              color: isDark ? const Color(0xFF23343A) : const Color(0xFFD9ECE5),
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (title.isNotEmpty)
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF16212B),
+                  ),
+                ),
+              if (meta.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    meta,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    ),
+                  ),
+                ),
+              if (detail.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text(
+                    detail,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                    ),
+                  ),
+                ),
+              if (buttons.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: buttons.map((btn) {
+                      if (btn is! Map<String, dynamic>) return const SizedBox.shrink();
+                      final label = btn['label']?.toString() ?? '';
+                      final kind = btn['kind']?.toString() ?? 'secondary';
+                      final command = btn['command']?.toString();
+                      
+                      Color bgColor = isDark ? const Color(0xFF162327) : const Color(0xFFF8FCFA);
+                      Color textColor = isDark ? const Color(0xFF1FB7B5) : const Color(0xFF0D8A90);
+                      
+                      if (kind == 'primary') {
+                        bgColor = const Color(0xFF1FB7B5);
+                        textColor = Colors.white;
+                      } else if (kind == 'danger') {
+                        textColor = Colors.red;
+                      }
+
+                      return InkWell(
+                        onTap: () async {
+                          if (kind == 'copy' || btn['copy_text'] != null) {
+                            final copyText = btn['copy_text']?.toString() ?? command ?? '';
+                            if (copyText.isNotEmpty) {
+                              await Clipboard.setData(ClipboardData(text: copyText));
+                              if (mounted) {
+                                setState(() {
+                                  _messages.add({
+                                    'role': 'bot',
+                                    'text': 'Copied.',
+                                    'time': DateFormat('hh:mm a').format(DateTime.now()),
+                                    'actions': [],
+                                  });
+                                });
+                                _scrollToBottom();
+                              }
+                            }
+                            return;
+                          }
+                          
+                          if (kind == 'draft' && command != null) {
+                            String draftText = btn['draft_text']?.toString() ?? '';
+                            if (draftText.isEmpty) {
+                              final colon = command.indexOf(':');
+                              draftText = colon >= 0 ? command.substring(colon + 1).trim() : command;
+                            }
+                            String commandPrefix = btn['command_prefix']?.toString() ?? '';
+                            if (commandPrefix.isEmpty) {
+                              final colon = command.indexOf(':');
+                              commandPrefix = colon >= 0 ? command.substring(0, colon + 1) + ' ' : command + ' ';
+                            }
+                            
+                            setState(() {
+                              _pendingDraft = {
+                                'commandPrefix': commandPrefix,
+                                'originalCommand': command,
+                              };
+                            });
+                            
+                            _inputController.text = draftText;
+                            FocusScope.of(context).requestFocus(_focusNode);
+                            return;
+                          }
+
+                          if (command != null && command.isNotEmpty) {
+                            _inputController.text = command;
+                            _sendMessage(command);
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: bgColor,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: kind == 'primary' ? Colors.transparent : (isDark ? const Color(0xFF23343A) : const Color(0xFFD9ECE5)),
+                            ),
+                          ),
+                          child: Text(
+                            label,
+                            style: GoogleFonts.inter(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 

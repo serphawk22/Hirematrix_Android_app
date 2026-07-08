@@ -73,11 +73,11 @@ class DashboardController extends ChangeNotifier {
         }),
         _apiService.fetchApplications(recruiterId).catchError((e) {
           debugPrint("fetchApplications failed: $e");
-          return <dynamic>[];
+          return <String, dynamic>{'applications': []};
         }),
         _apiService.fetchJobs(recruiterId).catchError((e) {
           debugPrint("fetchJobs failed: $e");
-          return <dynamic>[];
+          return <String, dynamic>{'jobs': []};
         }),
         _apiService.fetchNotifications(recruiterId).catchError((e) {
           debugPrint("fetchNotifications failed: $e");
@@ -88,8 +88,13 @@ class DashboardController extends ChangeNotifier {
       final dashboardResponse = results[0] as Map;
       _upcomingInterviews = results[1] as List<dynamic>;
       _recruiterActivity = results[2] as List<dynamic>;
-      final applications = results[3] as List<dynamic>;
-      final jobs = results[4] as List<dynamic>;
+      
+      final applicationsMap = results[3] as Map<String, dynamic>;
+      final applications = applicationsMap['applications'] as List<dynamic>? ?? [];
+      
+      final jobsMap = results[4] as Map<String, dynamic>;
+      final jobs = jobsMap['jobs'] as List<dynamic>? ?? [];
+      
       _notifications = results[5] as List<dynamic>;
 
       // Check for invalid session (e.g. database reset)

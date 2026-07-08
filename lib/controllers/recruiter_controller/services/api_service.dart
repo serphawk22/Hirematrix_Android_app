@@ -166,7 +166,7 @@ class ApiService {
     );
   }
 
-  Future<List<dynamic>> fetchApplications(
+  Future<Map<String, dynamic>> fetchApplications(
     String recruiterId, {
     String? jobId,
     String? query,
@@ -177,7 +177,7 @@ class ApiService {
 
     final data = await _performGet(ApiConstants.applications, params);
     if (data['success'] == true && data['applications'] != null) {
-      return data['applications'];
+      return data;
     }
     throw ApiException(
       data['message']?.toString() ?? 'Unable to load applications',
@@ -212,13 +212,13 @@ class ApiService {
     );
   }
 
-  Future<List<dynamic>> fetchJobs(String recruiterId, {String? query}) async {
+  Future<Map<String, dynamic>> fetchJobs(String recruiterId, {String? query}) async {
     final Map<String, String> params = {'recruiter_id': recruiterId};
     if (query != null) params['q'] = query;
 
     final data = await _performGet(ApiConstants.jobs, params);
     if (data['success'] == true && data['jobs'] != null) {
-      return data['jobs'];
+      return data;
     }
     throw ApiException(data['message']?.toString() ?? 'Unable to load jobs');
   }
@@ -746,11 +746,24 @@ class ApiService {
 
   Future<Map<String, dynamic>> askChatbot(
     String recruiterId,
-    String question,
-  ) async {
-    final data = await _performPost(ApiConstants.chatbotAsk, {
+    String question, {
+    Map<String, dynamic>? chatContext,
+  }) async {
+    final Map<String, dynamic> body = {
       'recruiter_id': recruiterId,
       'question': question,
+    };
+    if (chatContext != null) {
+      body['context'] = json.encode(chatContext);
+    }
+    final data = await _performPost(ApiConstants.chatbotAsk, body);
+    return data;
+  }
+
+  Future<Map<String, dynamic>> getChatbotBrief(String recruiterId) async {
+    // We assume getChatbotBrief is mapped to ApiConstants.chatbotBrief, or we can use the endpoint directly
+    final data = await _performGet("recruiter/chatbot/brief", {
+      'recruiter_id': recruiterId,
     });
     return data;
   }

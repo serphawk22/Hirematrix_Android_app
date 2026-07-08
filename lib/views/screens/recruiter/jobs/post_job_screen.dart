@@ -11,7 +11,8 @@ import 'package:hirematrix/controllers/recruiter_controller/jobs_controller.dart
 import 'package:hirematrix/controllers/recruiter_controller/dashboard_controller.dart';
 
 class PostJobScreen extends StatefulWidget {
-  const PostJobScreen({super.key});
+  final Map<String, dynamic>? prefillData;
+  const PostJobScreen({super.key, this.prefillData});
 
   @override
   State<PostJobScreen> createState() => _PostJobScreenState();
@@ -55,6 +56,21 @@ class _PostJobScreenState extends State<PostJobScreen> {
     super.initState();
     // Default deadline 30 days from now
     _deadline = DateTime.now().add(const Duration(days: 30));
+    
+    if (widget.prefillData != null) {
+      _titleController.text = widget.prefillData!['title'] ?? '';
+      _locationController.text = widget.prefillData!['location'] ?? '';
+      _salaryController.text = widget.prefillData!['salary_range'] ?? '';
+      _skillsController.text = widget.prefillData!['required_skills'] ?? '';
+      _descriptionController.text = widget.prefillData!['description'] ?? '';
+      _experienceController.text = widget.prefillData!['experience_level'] ?? '';
+      if (widget.prefillData!['category'] != null && widget.prefillData!['category'].toString().isNotEmpty) {
+        _category = widget.prefillData!['category'];
+      }
+      if (widget.prefillData!['employment_type'] != null && widget.prefillData!['employment_type'].toString().isNotEmpty) {
+        _employmentType = widget.prefillData!['employment_type'];
+      }
+    }
   }
 
   void _postJob() async {
