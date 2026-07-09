@@ -1086,6 +1086,7 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
       children: [
         _buildJobMetadataBanner(isDark),
         _buildSearchRow(isDark),
+        _buildHiringFunnelStrip(isDark),
         _buildStagesScroller(isDark),
         Expanded(
           child: _isLoadingApps
@@ -1692,6 +1693,135 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
     );
   }
 
+  Widget _buildHiringFunnelStrip(bool isDark) {
+    final Map<String, dynamic> pipeline = widget.job.pipeline ?? {};
+    final steps = [
+      {
+        'label': 'APPLIED',
+        'count': widget.job.applicationsCount ?? 0,
+        'is_leak': false,
+      },
+      {
+        'label': 'SHORTLISTED',
+        'count': widget.job.shortlistedCount ?? 0,
+        'is_leak': false,
+      },
+      {
+        'label': 'INTERVIEWED',
+        'count': int.tryParse(pipeline['Interview']?.toString() ?? '0') ?? 0,
+        'is_leak': false,
+      },
+      {
+        'label': 'OFFERED',
+        'count': int.tryParse(pipeline['Offer']?.toString() ?? '0') ?? 0,
+        'is_leak': false,
+      },
+      {
+        'label': 'HIRED',
+        'count': int.tryParse(pipeline['Hired']?.toString() ?? '0') ?? 0,
+        'is_leak': false,
+      },
+    ];
+
+    return Container(
+      height: 70,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.getCard(isDark) : Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? AppColors.getBorder(isDark) : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+        ],
+      ),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: steps.length,
+        separatorBuilder: (_, __) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Center(
+            child: Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 10,
+              color: Colors.grey[400],
+            ),
+          ),
+        ),
+        itemBuilder: (context, i) {
+          final step = steps[i];
+          final prevCount = i == 0
+              ? (step['count'] as int)
+              : (steps[i - 1]['count'] as int);
+          final count = step['count'] as int;
+          int conv = prevCount > 0 ? ((count / prevCount) * 100).round() : 0;
+          if (i == 0) conv = 100;
+          final bool isLeak = count == 0 && prevCount > 0 && i > 0;
+
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                step['label'] as String,
+                style: GoogleFonts.inter(
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.grey[400] : const Color(0xFF64748B),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Text(
+                    count.toString(),
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.getText(isDark),
+                    ),
+                  ),
+                  if (i > 0) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      '$conv% →',
+                      style: GoogleFonts.inter(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        color: isLeak
+                            ? Colors.amber[700]
+                            : (isDark ? Colors.grey[500] : Colors.grey[400]),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 4),
+              Container(
+                width: 40,
+                height: 2,
+                decoration: BoxDecoration(
+                  color: isLeak
+                      ? Colors.amber[400]
+                      : AppColors.getPrimary(isDark),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildStagesScroller(bool isDark) {
     return Container(
       height: 38,
@@ -1770,7 +1900,6 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
     final email = app['candidate_email'] ?? '';
     final matchScore =
         double.tryParse(app['match_score']?.toString() ?? '0') ?? 0;
-    // 'status_key' is the raw normalized key used for dropdown and stage pill matching
     final statusKey =
         app['status_key']?.toString() ??
         app['status']?.toString().toLowerCase() ??
@@ -1782,31 +1911,16 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
           ).format(DateTime.tryParse(app['applied_at']) ?? DateTime.now())
         : '-';
 
-    // Skills
-    final rawSkills = app['skills'];
-    List<String> skills = [];
-    if (rawSkills is List) {
-      skills = rawSkills.map((s) => s.toString()).toList();
-    } else if (rawSkills is String && rawSkills.isNotEmpty) {
-      skills = rawSkills
-          .split(',')
-          .map((s) => s.trim())
-          .where((s) => s.isNotEmpty)
-          .toList();
-    }
-
     final isSelected = _selectedAppIds.contains(appId);
+    final isRecommended = matchScore >= 70;
 
-    // ATS score colour
-    Color scoreTextColor = const Color(0xFF991B1B);
-    Color scoreBarColor = Colors.red;
-    if (matchScore >= 75) {
-      scoreTextColor = const Color(0xFF065F46);
-      scoreBarColor = const Color(0xFF1FB7B5);
-    } else if (matchScore >= 50) {
-      scoreTextColor = const Color(0xFF92400E);
-      scoreBarColor = Colors.orange;
-    }
+    // Skills
+    List<String> matchedSkills =
+        (app['matched_skills'] as List?)?.map((e) => e.toString()).toList() ??
+        [];
+    List<String> missingSkills =
+        (app['missing_skills'] as List?)?.map((e) => e.toString()).toList() ??
+        [];
 
     final cardBg = isDark ? AppColors.getCard(isDark) : Colors.white;
     final borderColor = isSelected
@@ -1829,8 +1943,9 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: checkbox + #ID + name/email + stage pill
+          // Header Row
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 10, 12, 8),
             child: Row(
@@ -1841,9 +1956,6 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                   activeColor: AppColors.getPrimary(isDark),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.compact,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
                   onChanged: (val) {
                     setState(() {
                       if (val == true) {
@@ -1856,63 +1968,114 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                     });
                   },
                 ),
+                // Avatar
+                Container(
+                  width: 42,
+                  height: 42,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      name.isNotEmpty ? name[0].toUpperCase() : 'C',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.getPrimary(isDark),
+                      ),
+                    ),
+                  ),
+                ),
+                // Name & Meta
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // #AppID badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            margin: const EdgeInsets.only(right: 6),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? Colors.white10
-                                  : const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              '#$appId',
-                              style: GoogleFonts.inter(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: subtext,
-                              ),
-                            ),
-                          ),
                           Expanded(
                             child: Text(
                               name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
                                 color: isDark
                                     ? Colors.white
                                     : const Color(0xFF16212B),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 6),
                           _buildStagePill(statusKey, isDark),
                         ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        email,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 11.5,
-                          color: subtext,
-                        ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        children: [
+                          if (experience.isNotEmpty) ...[
+                            Icon(Icons.work_outline, size: 12, color: subtext),
+                            Text(
+                              experience,
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: subtext,
+                              ),
+                            ),
+                          ],
+                          Text(
+                            '•',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: subtext,
+                            ),
+                          ),
+                          Text(
+                            'Applied $appliedAt',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: subtext,
+                            ),
+                          ),
+                        ],
                       ),
+                      if (isRecommended) ...[
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF3C7),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: const Color(0xFFFBBF24)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.star_rounded,
+                                size: 10,
+                                color: Color(0xFFD97706),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Recommended',
+                                style: GoogleFonts.inter(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFFB45309),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -1920,251 +2083,974 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
             ),
           ),
 
-          // Metadata strip: Experience / ATS score / Applied date
-          Container(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.03)
-                : const Color(0xFFF8FAFC),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          Divider(
+            height: 1,
+            color: isDark ? Colors.white10 : const Color(0xFFF1F5F9),
+          ),
+
+          // Body Grid: Left Skills, Right Sidebar
+          IntrinsicHeight(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (experience.isNotEmpty) ...[
-                  Icon(Icons.work_outline, size: 12, color: subtext),
-                  const SizedBox(width: 4),
-                  Text(
-                    experience,
-                    style: GoogleFonts.inter(fontSize: 11, color: subtext),
+                // Left Skills Panel
+                Expanded(
+                  flex: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: _buildActivitySection(app, isDark),
                   ),
-                  const SizedBox(width: 14),
-                ],
-                // ATS score + bar
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${matchScore.round()}%',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: scoreTextColor,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(2),
-                      child: SizedBox(
-                        width: 58,
-                        height: 4,
-                        child: LinearProgressIndicator(
-                          value: matchScore.clamp(0, 100) / 100,
-                          backgroundColor: isDark
-                              ? const Color(0xFF23343A)
-                              : const Color(0xFFD9ECE5),
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            scoreBarColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'ATS Match',
-                      style: GoogleFonts.inter(fontSize: 9, color: subtext),
-                    ),
-                  ],
                 ),
-                const Spacer(),
-                // Applied date
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Applied',
-                      style: GoogleFonts.inter(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w700,
-                        color: subtext,
-                        letterSpacing: 0.4,
-                      ),
+                VerticalDivider(
+                  width: 1,
+                  color: isDark ? Colors.white10 : const Color(0xFFF1F5F9),
+                ),
+                // Right Sidebar
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.02)
+                        : const Color(0xFFF8FAFC),
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ATS Score
+                        _buildAtsScoreBar(matchScore, isDark),
+                        const SizedBox(height: 12),
+                        // Communication Stack
+                        _buildCommunicationStack(app, isDark),
+                      ],
                     ),
-                    Text(
-                      appliedAt,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: isDark
-                            ? Colors.white70
-                            : const Color(0xFF16212B),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
           ),
 
-          // Skills chips row
-          if (skills.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Row(
-                children: [
-                  Icon(Icons.code_rounded, size: 12, color: subtext),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      children: [
-                        ...skills
-                            .take(4)
-                            .map(
-                              (skill) => Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 7,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(0xFF1B2A2F)
-                                      : const Color(0xFFEDF8F5),
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(
-                                    color: isDark
-                                        ? const Color(0xFF23343A)
-                                        : const Color(0xFFD9ECE5),
-                                  ),
-                                ),
-                                child: Text(
-                                  skill,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                    color: isDark
-                                        ? const Color(0xFF1FB7B5)
-                                        : const Color(0xFF0D8A90),
-                                  ),
-                                ),
-                              ),
-                            ),
-                        if (skills.length > 4)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? Colors.white10
-                                  : const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              '+${skills.length - 4}',
-                              style: GoogleFonts.inter(
-                                fontSize: 10,
-                                color: subtext,
-                              ),
-                            ),
-                          ),
-                      ],
+          Divider(
+            height: 1,
+            color: isDark ? Colors.white10 : const Color(0xFFF1F5F9),
+          ),
+
+          // Action Icon Bar
+          _buildActionIconBar(app, isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivitySection(Map<String, dynamic> app, bool isDark) {
+    int profileViews = 1;
+    int resumeDownloads = 1;
+    String lastActive = "Jun 17, 2026";
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Activity Snapshot',
+          style: GoogleFonts.inter(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: AppColors.getPrimary(isDark),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Icon(
+              Icons.visibility_outlined,
+              size: 14,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '$profileViews profile views',
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                color: isDark ? Colors.grey[300] : Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(
+              Icons.download_outlined,
+              size: 14,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '$resumeDownloads resume downloads',
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                color: isDark ? Colors.grey[300] : Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(
+              Icons.access_time,
+              size: 14,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Last active $lastActive',
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                color: isDark ? Colors.grey[300] : Colors.grey[800],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSkillMatchPanel(
+    List<String> matched,
+    List<String> missing,
+    bool isDark,
+  ) {
+    if (matched.isEmpty && missing.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Matched Skills',
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: AppColors.getPrimary(isDark),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'No required skills matched',
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontStyle: FontStyle.italic,
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Matched Skills',
+          style: GoogleFonts.inter(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: AppColors.getPrimary(isDark),
+          ),
+        ),
+        const SizedBox(height: 6),
+        if (matched.isNotEmpty) ...[
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: matched
+                .map(
+                  (skill) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF1B2A2F)
+                          : const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF23343A)
+                            : const Color(0xFFA7F3D0),
+                      ),
+                    ),
+                    child: Text(
+                      skill,
+                      style: GoogleFonts.inter(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? const Color(0xFF1FB7B5)
+                            : const Color(0xFF059669),
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 10),
+        ] else ...[
+          Text(
+            'No required skills matched',
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontStyle: FontStyle.italic,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
+        if (missing.isNotEmpty) ...[
+          Text(
+            'Missing Skills',
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.red[300] : Colors.red[700],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: missing
+                .map(
+                  (skill) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.red.withValues(alpha: 0.1)
+                          : const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.red.withValues(alpha: 0.2)
+                            : const Color(0xFFFECACA),
+                      ),
+                    ),
+                    child: Text(
+                      skill,
+                      style: GoogleFonts.inter(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.red[300] : Colors.red[700],
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildAtsScoreBar(double matchScore, bool isDark) {
+    Color scoreColor = Colors.red;
+    if (matchScore >= 75)
+      scoreColor = const Color(0xFF1FB7B5);
+    else if (matchScore >= 50)
+      scoreColor = Colors.orange;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'ATS Match',
+                style: GoogleFonts.inter(
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 4),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: LinearProgressIndicator(
+                  value: matchScore.clamp(0, 100) / 100,
+                  backgroundColor: isDark ? Colors.white10 : Colors.grey[200],
+                  valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
+                  minHeight: 4,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '${matchScore.round()}%',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: scoreColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCommunicationStack(Map<String, dynamic> app, bool isDark) {
+    final comm = app['communication'] as Map<String, dynamic>? ?? {};
+    final emailCount = comm['email_count'] as int? ?? 0;
+    final msgCount = comm['message_count'] as int? ?? 0;
+    final latestPreview = comm['latest_preview']?.toString() ?? '';
+
+    return GestureDetector(
+      onTap: () => _showCandidateReviewDrawer(app, isDark),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isDark ? Colors.white10 : Colors.grey[300]!,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (emailCount > 0) ...[
+                  Icon(Icons.email_outlined, size: 10, color: Colors.blue[400]),
+                  const SizedBox(width: 2),
+                  Text(
+                    '$emailCount',
+                    style: GoogleFonts.inter(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue[400],
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                if (msgCount > 0) ...[
+                  Icon(
+                    Icons.chat_bubble_outline,
+                    size: 10,
+                    color: Colors.green[400],
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    '$msgCount',
+                    style: GoogleFonts.inter(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green[400],
                     ),
                   ),
                 ],
+                if (emailCount == 0 && msgCount == 0)
+                  Text(
+                    'No activity',
+                    style: GoogleFonts.inter(fontSize: 9, color: Colors.grey),
+                  ),
+              ],
+            ),
+            if (latestPreview.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                latestPreview,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 9,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionIconBar(
+    Map<String, dynamic> app,
+    bool isDark,
+  ) {
+    final appId = app['application_id']?.toString() ?? '';
+    final candidateId = app['candidate_id']?.toString() ?? '';
+    final statusKey = app['status_key']?.toString() ?? app['status']?.toString().toLowerCase() ?? 'applied';
+    final name = app['candidate_name']?.toString() ?? 'Candidate';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _iconAction(
+            Icons.check_circle_outline,
+            'Shortlist',
+            Colors.green,
+            () => _updateStatus(appId, 'shortlisted'),
+            isDark,
+          ),
+          _iconAction(
+            Icons.calendar_today_outlined,
+            'Schedule',
+            Colors.orange,
+            () => _showScheduleInterviewModal(app, isDark),
+            isDark,
+          ),
+          _iconAction(
+            Icons.pause_circle_outline,
+            'Hold',
+            Colors.amber,
+            () => _updateStatus(appId, 'hold'),
+            isDark,
+          ),
+          _iconAction(
+            Icons.cancel_outlined,
+            'Reject',
+            Colors.red,
+            () => _updateStatus(appId, 'rejected'),
+            isDark,
+          ),
+          Container(
+            width: 1,
+            height: 20,
+            color: isDark ? Colors.white10 : Colors.grey[300],
+          ),
+          _iconAction(
+            Icons.person_outline,
+            'Profile',
+            AppColors.getPrimary(isDark),
+            () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CandidateProfileViewScreen(
+                    candidateId: candidateId,
+                    applicationId: appId,
+                    jobId: widget.job.jobId,
+                    candidateName: name,
+                  ),
+                ),
+              ).then((_) => _loadApplications());
+            },
+            isDark,
+          ),
+          _iconAction(
+            Icons.description_outlined,
+            'Resume',
+            AppColors.getPrimary(isDark),
+            () => _downloadResume(candidateId, appId),
+            isDark,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _iconAction(
+    IconData icon,
+    String label,
+    Color color,
+    VoidCallback onTap,
+    bool isDark,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 8.5,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.grey[300] : Colors.grey[700],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
 
-          const SizedBox(height: 8),
-          Divider(
-            height: 1,
-            color: isDark ? Colors.white10 : const Color(0xFFD9ECE5),
-          ),
+  void _showScheduleInterviewModal(Map<String, dynamic> app, bool isDark) {
+    final appId = app['application_id']?.toString() ?? '';
+    final candidateName = app['candidate_name']?.toString() ?? 'Candidate';
 
-          // Actions: Status dropdown + Resume + View
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                _buildStatusDropdown(appId, statusKey, isDark),
-                const Spacer(),
-                // Resume
-                OutlinedButton.icon(
-                  onPressed: () => _downloadResume(candidateId, appId),
-                  icon: Icon(
-                    Icons.description_outlined,
-                    size: 13,
-                    color: AppColors.getPrimary(isDark),
-                  ),
-                  label: Text(
-                    'Resume',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.getPrimary(isDark),
+    DateTime? selectedDate;
+    TimeOfDay? selectedTime;
+    String duration = '60';
+    String mode = 'online';
+    TextEditingController locationController = TextEditingController();
+    TextEditingController messageController = TextEditingController();
+    bool sendEmail = true;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+            return Container(
+              padding: EdgeInsets.only(bottom: bottomPadding),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.bgDark : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Schedule Interview',
+                              style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                            ),
+                            const SizedBox(height: 4),
+                            Text('with $candidateName', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+                          ],
+                        ),
+                        IconButton(icon: Icon(Icons.close, color: isDark ? Colors.white70 : Colors.black54), onPressed: () => Navigator.pop(context)),
+                      ],
                     ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
+                    const Divider(height: 32),
+                    Row(
+                      children: [
+                        Expanded(child: _buildModalField('Date', InkWell(onTap: () async { final date = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime.now().add(const Duration(days: 365))); if (date != null) setState(() => selectedDate = date); }, child: _buildInputBox(selectedDate != null ? DateFormat('MMM dd, yyyy').format(selectedDate!) : 'Select date', isDark)), isDark)),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildModalField('Time', InkWell(onTap: () async { final time = await showTimePicker(context: context, initialTime: TimeOfDay.now()); if (time != null) setState(() => selectedTime = time); }, child: _buildInputBox(selectedTime != null ? selectedTime!.format(context) : 'Select time', isDark)), isDark)),
+                      ],
                     ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    side: BorderSide(
-                      color: AppColors.getPrimary(isDark),
-                      width: 1.2,
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(child: _buildModalField('Duration', DropdownButtonFormField<String>(value: duration, dropdownColor: isDark ? const Color(0xFF16212B) : Colors.white, style: GoogleFonts.inter(fontSize: 14, color: isDark ? Colors.white : Colors.black), decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey[300]!), borderRadius: BorderRadius.circular(8))), items: ['30', '45', '60', '90'].map((e) => DropdownMenuItem(value: e, child: Text('$e minutes'))).toList(), onChanged: (v) => setState(() => duration = v!)), isDark)),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildModalField('Mode', DropdownButtonFormField<String>(value: mode, dropdownColor: isDark ? const Color(0xFF16212B) : Colors.white, style: GoogleFonts.inter(fontSize: 14, color: isDark ? Colors.white : Colors.black), decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey[300]!), borderRadius: BorderRadius.circular(8))), items: const [DropdownMenuItem(value: 'online', child: Text('Online')), DropdownMenuItem(value: 'phone', child: Text('Phone')), DropdownMenuItem(value: 'in_person', child: Text('In person'))], onChanged: (v) => setState(() => mode = v!)), isDark)),
+                      ],
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                    const SizedBox(height: 16),
+                    _buildModalField('Meeting link or location', TextField(controller: locationController, style: GoogleFonts.inter(fontSize: 14, color: isDark ? Colors.white : Colors.black), decoration: InputDecoration(hintText: 'Google Meet link, office address, etc.', hintStyle: GoogleFonts.inter(fontSize: 14, color: Colors.grey), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey[300]!), borderRadius: BorderRadius.circular(8)))), isDark),
+                    const SizedBox(height: 16),
+                    _buildModalField('Message to candidate', TextField(controller: messageController, maxLines: 3, style: GoogleFonts.inter(fontSize: 14, color: isDark ? Colors.white : Colors.black), decoration: InputDecoration(hintText: 'Add context, preparation notes, etc.', hintStyle: GoogleFonts.inter(fontSize: 14, color: Colors.grey), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey[300]!), borderRadius: BorderRadius.circular(8)))), isDark),
+                    const SizedBox(height: 16),
+                    CheckboxListTile(title: Text('Send email invitation to candidate', style: GoogleFonts.inter(fontSize: 14, color: isDark ? Colors.white : Colors.black)), value: sendEmail, onChanged: (v) => setState(() => sendEmail = v ?? true), controlAffinity: ListTileControlAffinity.leading, contentPadding: EdgeInsets.zero, activeColor: const Color(0xFF1FB7B5)),
+                    const SizedBox(height: 24),
+                    SizedBox(width: double.infinity, height: 48, child: ElevatedButton.icon(icon: const Icon(Icons.send, size: 18), label: Text('Send Invitation', style: GoogleFonts.inter(fontWeight: FontWeight.bold)), style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1FB7B5), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), onPressed: () { Navigator.pop(context); _updateStatus(appId, 'interview_slot_booked'); })),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildModalField(String label, Widget input, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? Colors.grey[400] : Colors.grey[700])),
+        const SizedBox(height: 6),
+        input,
+      ],
+    );
+  }
+
+  Widget _buildInputBox(String text, bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(border: Border.all(color: isDark ? Colors.white10 : Colors.grey[300]!), borderRadius: BorderRadius.circular(8)),
+      child: Text(text, style: GoogleFonts.inter(fontSize: 14, color: text.startsWith('Select') ? Colors.grey : (isDark ? Colors.white : Colors.black))),
+    );
+  }
+
+  void _showCandidateReviewDrawer(Map<String, dynamic> app, bool isDark) {
+    final name = app['candidate_name'] ?? 'Candidate';
+    final statusKey =
+        app['status_key']?.toString() ??
+        app['status']?.toString().toLowerCase() ??
+        'applied';
+    final matchScore =
+        double.tryParse(app['match_score']?.toString() ?? '0') ?? 0;
+    final experience = app['experience']?.toString() ?? '';
+    final location = app['location']?.toString() ?? '';
+    final appliedAt = app['applied_at'] != null
+        ? DateFormat(
+            'dd MMM, yyyy',
+          ).format(DateTime.tryParse(app['applied_at']) ?? DateTime.now())
+        : '-';
+
+    // Skills
+    final rawSkills = app['skills'];
+    List<String> candidateSkills = [];
+    if (rawSkills is List) {
+      candidateSkills = rawSkills.map((s) => s.toString()).toList();
+    } else if (rawSkills is String && rawSkills.isNotEmpty) {
+      candidateSkills = rawSkills
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+    }
+
+    List<String> matchedSkills =
+        (app['matched_skills'] as List?)?.map((e) => e.toString()).toList() ??
+        [];
+    List<String> missingSkills =
+        (app['missing_skills'] as List?)?.map((e) => e.toString()).toList() ??
+        [];
+
+    final comm = app['communication'] as Map<String, dynamic>? ?? {};
+    final items = comm['items'] as List<dynamic>? ?? [];
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.black.withValues(alpha: 0.5),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        bool isLoadingContact = false;
+        bool contactVisible = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Align(
+              alignment: Alignment.centerRight,
+              child: Material(
+                elevation: 16,
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.85,
+                  height: double.infinity,
+                  color: isDark ? AppColors.bgDark : Colors.white,
+                  child: SafeArea(
+                    left: false,
+                    child: Column(
+                      children: [
+                        // Header
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.getCard(isDark) : const Color(0xFFF8FAFC),
+                            border: Border(bottom: BorderSide(color: isDark ? Colors.white10 : Colors.grey[300]!)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(name, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                                    const SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        _buildStagePill(statusKey, isDark),
+                                        const SizedBox(width: 8),
+                                        if (location.isNotEmpty) ...[
+                                          Icon(Icons.location_on_outlined, size: 12, color: Colors.grey[500]),
+                                          const SizedBox(width: 2),
+                                          Expanded(child: Text(location, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey[600]))),
+                                        ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                            ],
+                          ),
+                        ),
+                        // Body
+                        Expanded(
+                          child: ListView(
+                            padding: const EdgeInsets.all(16),
+                            children: [
+                              // Stats Row
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                children: [
+                                  _buildDrawerStat('${matchScore.round()}%', 'ATS Match', isDark),
+                                  _buildDrawerStat(experience.isEmpty ? '-' : experience, 'Experience', isDark),
+                                  _buildDrawerStat(appliedAt, 'Applied', isDark),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              // Skills Section
+                              Text('Matched Requirements', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                              const SizedBox(height: 12),
+                              if (candidateSkills.isNotEmpty) ...[
+                                Text('Key Skills', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                const SizedBox(height: 6),
+                                Wrap(
+                                  spacing: 4,
+                                  runSpacing: 4,
+                                  children: candidateSkills.map((s) => Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                    decoration: BoxDecoration(color: isDark ? Colors.white10 : Colors.grey[200], borderRadius: BorderRadius.circular(4)),
+                                    child: Text(s, style: GoogleFonts.inter(fontSize: 9.5, color: isDark ? Colors.white70 : Colors.black87)),
+                                  )).toList(),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+                              _buildSkillMatchPanel(matchedSkills, missingSkills, isDark),
+                              const SizedBox(height: 24),
+                              // Timeline
+                              Text('Communication Timeline', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black)),
+                              const SizedBox(height: 12),
+                              if (items.isEmpty)
+                                Text('No communication history yet.', style: GoogleFonts.inter(color: Colors.grey, fontStyle: FontStyle.italic))
+                              else
+                                ...items.map((item) => _buildTimelineItem(item, isDark)),
+                            ],
+                          ),
+                        ),
+                        // Bottom View Contact Action
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.getCard(isDark) : Colors.white,
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4))],
+                          ),
+                          child: contactVisible
+                              ? Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? Colors.white10 : Colors.blue.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.email_outlined, color: Colors.blue, size: 16),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              app['candidate_email']?.toString() ?? 'No email provided',
+                                              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.phone_outlined, color: Colors.green, size: 16),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              (app['candidate_phone']?.toString() ?? '').isNotEmpty ? app['candidate_phone'].toString() : 'No phone provided',
+                                              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : SizedBox(
+                                  width: double.infinity,
+                                  height: 48,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF1FB7B5),
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    onPressed: isLoadingContact
+                                        ? null
+                                        : () async {
+                                            setState(() => isLoadingContact = true);
+                                            await Future.delayed(const Duration(seconds: 1)); // Mock loading
+                                            setState(() {
+                                              isLoadingContact = false;
+                                              contactVisible = true;
+                                            });
+                                          },
+                                    child: isLoadingContact
+                                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                        : Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(Icons.remove_red_eye_outlined, size: 18),
+                                              const SizedBox(width: 8),
+                                              Text('View Contact', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                                            ],
+                                          ),
+                                  ),
+                                ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                // View Profile
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CandidateProfileViewScreen(
-                          candidateId: candidateId,
-                          applicationId: appId,
-                          jobId: widget.job.jobId,
-                          candidateName: name,
-                        ),
+              ),
+            );
+          },
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return SlideTransition(
+          position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+              .animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+              ),
+          child: child,
+        );
+      },
+    );
+  }
+
+  Widget _buildDrawerStat(String value, String label, bool isDark) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(label, style: GoogleFonts.inter(fontSize: 10, color: Colors.grey)),
+      ],
+    );
+  }
+
+
+  Widget _buildTimelineItem(Map<String, dynamic> item, bool isDark) {
+    final isIncoming = item['direction'] == 'incoming';
+    final type = item['type']?.toString() ?? 'message';
+    final icon = type == 'email'
+        ? Icons.email_outlined
+        : Icons.chat_bubble_outline;
+    final color = type == 'email' ? Colors.blue : Colors.green;
+    final at = item['at'] != null
+        ? DateFormat(
+            'MMM dd, hh:mm a',
+          ).format(DateTime.tryParse(item['at'].toString()) ?? DateTime.now())
+        : '';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 14, color: color),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      isIncoming ? 'Received from Candidate' : 'Sent by You',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black,
                       ),
-                    ).then((_) => _loadApplications());
-                  },
-                  icon: const Icon(
-                    Icons.person_outline,
-                    size: 13,
-                    color: Colors.white,
-                  ),
-                  label: Text(
-                    'View',
+                    ),
+                    Text(
+                      at,
+                      style: GoogleFonts.inter(fontSize: 9, color: Colors.grey),
+                    ),
+                  ],
+                ),
+                if (item['subject'] != null &&
+                    item['subject'].toString().isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    item['subject'],
                     style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.grey[300] : Colors.grey[800],
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.getPrimary(isDark),
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
+                ],
+                const SizedBox(height: 4),
+                Text(
+                  item['preview']?.toString() ?? '',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
                   ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _drawerActionButton(
+    IconData icon,
+    String label,
+    Color color,
+    VoidCallback onTap,
+    bool isDark,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -2716,17 +3602,21 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
                                   height: 36,
                                   child: ElevatedButton.icon(
                                     onPressed: () async {
-                                      final recruiterId = Provider.of<AuthController>(
-                                        context,
-                                        listen: false,
-                                      ).currentRecruiter?.id;
+                                      final recruiterId =
+                                          Provider.of<AuthController>(
+                                            context,
+                                            listen: false,
+                                          ).currentRecruiter?.id;
                                       final result = await Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => RecruiterRescheduleInterviewScreen(
-                                            bookingId: id,
-                                            recruiterId: recruiterId?.toString() ?? '',
-                                          ),
+                                          builder: (context) =>
+                                              RecruiterRescheduleInterviewScreen(
+                                                bookingId: id,
+                                                recruiterId:
+                                                    recruiterId?.toString() ??
+                                                    '',
+                                              ),
                                         ),
                                       );
                                       if (result == true) {

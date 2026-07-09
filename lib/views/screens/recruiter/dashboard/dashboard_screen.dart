@@ -451,6 +451,96 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
 
+    final pendingActions = stats['pending_actions'] as Map<String, dynamic>? ?? {};
+    final pendingScreeningCount = (pendingActions['pending_screening'] as int?) ?? pendingScreening;
+    final staleJobsCount = (pendingActions['stale_jobs'] as int?) ?? 0;
+    final awaitingRepliesCount = (pendingActions['awaiting_replies'] as int?) ?? 0;
+    final hrInterviewsCount = (pendingActions['hr_interviews_today'] as int?) ?? hrInterviewsToday;
+
+    List<String> items = [];
+    if (pendingScreeningCount > 0) {
+      items.add('$pendingScreeningCount application${pendingScreeningCount == 1 ? '' : 's'} to screen');
+    }
+    if (staleJobsCount > 0) {
+      items.add('$staleJobsCount stale job${staleJobsCount == 1 ? '' : 's'} with no shortlist');
+    }
+    if (awaitingRepliesCount > 0) {
+      items.add('$awaitingRepliesCount candidate${awaitingRepliesCount == 1 ? '' : 's'} awaiting reply');
+    }
+    if (hrInterviewsCount > 0) {
+      items.add('$hrInterviewsCount interview${hrInterviewsCount == 1 ? '' : 's'} today');
+    }
+
+    if (items.isNotEmpty) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF171A14) : const Color(0xFFFEF7D8),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? const Color(0xFF3A3420) : const Color(0xFFF4E29A),
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: isDark ? const Color(0xFFD8C27A) : const Color(0xFF8A6A08),
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pending Actions',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? const Color(0xFFD8C27A) : const Color(0xFF8A6A08),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: items.asMap().entries.map((entry) {
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            entry.value,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: isDark ? const Color(0xFFD8C27A) : const Color(0xFF8A6A08),
+                            ),
+                          ),
+                          if (entry.key < items.length - 1)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 6),
+                              child: Text(
+                                '·',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? const Color(0xFFD8C27A) : const Color(0xFF8A6A08),
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return const SizedBox.shrink();
   }
 

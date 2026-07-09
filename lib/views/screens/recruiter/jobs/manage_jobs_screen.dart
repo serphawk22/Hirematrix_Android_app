@@ -82,6 +82,7 @@ class _ManageJobsScreenState extends State<ManageJobsScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 12),
+            _buildAttentionInbox(isDarkMode),
             _buildOperationalStatsGrid(isDarkMode),
             _buildSearchRow(isDarkMode),
             _buildEnterpriseFilterTabs(isDarkMode),
@@ -112,6 +113,235 @@ class _ManageJobsScreenState extends State<ManageJobsScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildAttentionInbox(bool isDark) {
+    return Consumer<JobsController>(
+      builder: (context, controller, _) {
+        final alerts = controller.recruiterAlerts;
+        if (alerts.isEmpty) return const SizedBox.shrink();
+        return Container(
+          margin: EdgeInsets.fromLTRB(Responsive.paddingH, 0, Responsive.paddingH, 12),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.getCard(isDark) : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isDark ? AppColors.getBorder(isDark) : const Color(0xFFE2E8F0),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+                child: Row(
+                  children: [
+                    Icon(Icons.notifications_active_rounded,
+                        size: 16, color: AppColors.getPrimary(isDark)),
+                    const SizedBox(width: 7),
+                    Text('Attention Inbox',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.getText(isDark),
+                        )),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.getPrimary(isDark).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: AppColors.getPrimary(isDark).withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Text('${alerts.length} active',
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.getPrimary(isDark),
+                          )),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 110,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                  itemCount: alerts.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  itemBuilder: (_, i) => _buildAlertCard(alerts[i], isDark),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  static const _toneColors = {
+    'danger': Color(0xFFEF4444),
+    'warning': Color(0xFFF59E0B),
+    'info': Color(0xFF1FB7B5),
+  };
+
+  Widget _buildAlertCard(Map<String, dynamic> alert, bool isDark) {
+    final tone = alert['tone']?.toString() ?? 'info';
+    final toneColor = _toneColors[tone] ?? const Color(0xFF1FB7B5);
+    final bgColor = isDark
+        ? AppColors.getBorder(isDark).withValues(alpha: 0.18)
+        : toneColor.withValues(alpha: 0.04);
+    return GestureDetector(
+      onTap: () {
+        final jobIdStr = alert['job_id']?.toString();
+        if (jobIdStr != null && jobIdStr.isNotEmpty) {
+          final jobsController = Provider.of<JobsController>(context, listen: false);
+          try {
+            final job = jobsController.jobs.firstWhere(
+              (j) => j.jobId.toString() == jobIdStr,
+            );
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => JobDetailResponsesScreen(job: job)),
+            );
+          } catch (e) {
+            // job not found in loaded list
+          }
+        }
+      },
+      child: Container(
+        width: 200,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isDark
+                ? AppColors.getBorder(isDark)
+                : toneColor.withValues(alpha: 0.2),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(color: toneColor, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text(
+                    alert['title']?.toString() ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.getText(isDark),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              alert['meta']?.toString() ?? '',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w600,
+                color: AppColors.getTextMuted(isDark),
+              ),
+            ),
+            const SizedBox(height: 3),
+            Expanded(
+              child: Text(
+                alert['detail']?.toString() ?? '',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  color: AppColors.getTextMuted(isDark),
+                ),
+              ),
+            ),
+            Text(
+              alert['action']?.toString() ?? 'Open →',
+              style: GoogleFonts.inter(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: AppColors.getPrimary(isDark),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildAttentionBlock(Job job, bool isDark) {
+    final isCritical = job.attentionLevel == 'critical';
+    final pillBg = isCritical
+        ? (isDark ? const Color(0xFF3B0A0A) : const Color(0xFFFEF2F2))
+        : (isDark ? const Color(0xFF3B2E00) : const Color(0xFFFFFBEB));
+    final pillBorder = isCritical
+        ? (isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5))
+        : (isDark ? const Color(0xFF78350F) : const Color(0xFFFCD34D));
+    final pillText = isCritical
+        ? (isDark ? const Color(0xFFFCA5A5) : const Color(0xFFB91C1C))
+        : (isDark ? const Color(0xFFFCD34D) : const Color(0xFF92400E));
+
+    final summaryParts = <String>[
+      if ((job.shortlistedCount ?? 0) == 0 && (job.applicationsCount ?? 0) > 0) '0 shortlisted',
+      if (job.averageAtsScore > 0) '${job.averageAtsScore}% avg match',
+      ...job.attentionFacts,
+    ];
+
+    return [
+      const SizedBox(height: 10),
+      Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+            decoration: BoxDecoration(
+              color: pillBg,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: pillBorder),
+            ),
+            child: Text(
+              isCritical ? 'Critical priority' : 'Watch',
+              style: GoogleFonts.inter(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w800,
+                color: pillText,
+              ),
+            ),
+          ),
+          if (summaryParts.isNotEmpty) ...[  
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                summaryParts.join(' · '),
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  color: AppColors.getTextMuted(isDark),
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ],
+      ),
+    ];
   }
 
   Widget _buildOperationalStatsGrid(bool isDark) {
@@ -591,6 +821,8 @@ class _ManageJobsScreenState extends State<ManageJobsScreen>
                     ],
                   ),
                 ),
+                // Attention pill + summary + quick actions
+                if (job.attentionLevel == 'critical' || job.attentionLevel == 'watch') ..._buildAttentionBlock(job, isDark),
               ],
             ),
           ),
@@ -625,11 +857,28 @@ class _ManageJobsScreenState extends State<ManageJobsScreen>
                         letterSpacing: 0.5,
                       ),
                     ),
-                    Icon(
-                      Icons.trending_up_rounded,
-                      size: 13,
-                      color: AppColors.getTextMuted(isDark),
-                    ),
+                    if (job.averageAtsScore > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.getPrimary(isDark).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          '${job.averageAtsScore}% avg match',
+                          style: GoogleFonts.inter(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.getPrimary(isDark),
+                          ),
+                        ),
+                      )
+                    else
+                      Icon(
+                        Icons.trending_up_rounded,
+                        size: 13,
+                        color: AppColors.getTextMuted(isDark),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 10),
