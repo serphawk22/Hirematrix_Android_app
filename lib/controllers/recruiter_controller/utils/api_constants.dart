@@ -32,4 +32,5 @@ class ApiConstants {
   static const String updateJobStatus = "jobs/update-status";
   static const String chatbotAsk = "chatbot/ask";
   static const String chatbotSuggestions = "chatbot/suggestions";
+  static const String exportJobsReport = "export-jobs-report";
 }

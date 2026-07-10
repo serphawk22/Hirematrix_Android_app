@@ -17,6 +17,7 @@ import 'package:hirematrix/views/screens/recruiter/jobs/interview_slots_screen.d
 import 'package:hirematrix/views/screens/recruiter/jobs/interview_bookings_screen.dart';
 import 'package:hirematrix/views/screens/recruiter/utils/theme_provider.dart';
 import 'package:hirematrix/views/screens/recruiter/settings/recruiter_settings_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/jobs/jobs_report_screen.dart';
 
 class MainDrawer extends StatelessWidget {
   const MainDrawer({super.key});
@@ -143,6 +144,21 @@ class MainDrawer extends StatelessWidget {
                             isDarkMode,
                           ),
                         ],
+                      ),
+                      _buildDrawerItem(
+                        context,
+                        Icons.file_download_outlined,
+                        'Export Jobs',
+                        () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const JobsReportScreen(),
+                            ),
+                          );
+                        },
+                        isDarkMode,
                       ),
                       _buildSectionLabel('PREFERENCES'),
                       _buildDrawerItem(
