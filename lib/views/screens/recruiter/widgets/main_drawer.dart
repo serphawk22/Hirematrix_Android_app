@@ -56,45 +56,6 @@ class MainDrawer extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      _buildSectionLabel('RESDEX'),
-                      _buildExpandableDrawerItem(
-                        context: context,
-                        icon: Icons.search_rounded,
-                        title: 'RESDEX',
-                        isDark: isDarkMode,
-                        children: [
-                          _buildDrawerItem(
-                            context,
-                            Icons.search,
-                            'Search Resumes',
-                            () {
-                              Navigator.pop(context);
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => const ResdexSearchScreen()));
-                            },
-                            isDarkMode,
-                          ),
-                          _buildDrawerItem(
-                            context,
-                            Icons.bookmark,
-                            'Manage Searches',
-                            () {
-                              Navigator.pop(context);
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => const ResdexManageSearchesScreen()));
-                            },
-                            isDarkMode,
-                          ),
-                          _buildDrawerItem(
-                            context,
-                            Icons.folder,
-                            'Manage Folders',
-                            () {
-                              Navigator.pop(context);
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => const ResdexManageFoldersScreen()));
-                            },
-                            isDarkMode,
-                          ),
-                        ],
-                      ),
                       _buildSectionLabel('RECRUITER WORKSPACE'),
                       _buildDrawerItem(
                         context,
@@ -202,6 +163,63 @@ class MainDrawer extends StatelessWidget {
                         },
                         isDarkMode,
                       ),
+                      _buildSectionLabel('RESDEX'),
+                      _buildExpandableDrawerItem(
+                        context: context,
+                        icon: Icons.search_rounded,
+                        title: 'RESDEX',
+                        isDark: isDarkMode,
+                        children: [
+                          _buildDrawerItem(
+                            context,
+                            Icons.search,
+                            'Search Resumes',
+                            () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ResdexSearchScreen(),
+                                ),
+                              );
+                            },
+                            isDarkMode,
+                          ),
+                          _buildDrawerItem(
+                            context,
+                            Icons.bookmark,
+                            'Manage Searches',
+                            () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ResdexManageSearchesScreen(),
+                                ),
+                              );
+                            },
+                            isDarkMode,
+                          ),
+                          _buildDrawerItem(
+                            context,
+                            Icons.folder,
+                            'Manage Folders',
+                            () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ResdexManageFoldersScreen(),
+                                ),
+                              );
+                            },
+                            isDarkMode,
+                          ),
+                        ],
+                      ),
                       _buildSectionLabel('PREFERENCES'),
                       _buildDrawerItem(
                         context,
@@ -212,7 +230,8 @@ class MainDrawer extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const RecruiterSettingsScreen(),
+                              builder: (context) =>
+                                  const RecruiterSettingsScreen(),
                             ),
                           );
                         },
