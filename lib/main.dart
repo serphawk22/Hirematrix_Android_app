@@ -24,6 +24,8 @@ import 'package:hirematrix/views/screens/recruiter/utils/theme_provider.dart'
     as rec_theme;
 import 'package:hirematrix/controllers/recruiter_controller/leaderboard_controller.dart'
     as rec_leaderboard_ctrl;
+import 'package:hirematrix/controllers/recruiter_controller/resdex_controller.dart'
+    as rec_resdex_ctrl;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -98,6 +100,9 @@ class HireMatrixApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => rec_theme.ThemeProvider()),
         ChangeNotifierProvider(
           create: (_) => rec_leaderboard_ctrl.LeaderboardController(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => rec_resdex_ctrl.ResdexController(),
         ),
       ],
       child: Obx(

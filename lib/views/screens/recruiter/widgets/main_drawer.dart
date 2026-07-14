@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:hirematrix/views/screens/landing_screen.dart';
-
-import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
-import 'package:hirematrix/views/screens/recruiter/drawer/company_details_screen.dart';
-import 'package:hirematrix/views/screens/recruiter/candidates/candidate_management_screen.dart';
+import 'package:provider/provider.dart';
 
-import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
+import 'package:hirematrix/views/screens/landing_screen.dart';
 import 'package:hirematrix/views/screens/login_screen.dart';
+import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dart';
 
-import 'package:hirematrix/views/screens/recruiter/dashboard/candidate_insights_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
+import 'package:hirematrix/views/screens/recruiter/utils/theme_provider.dart';
 
+import 'package:hirematrix/views/screens/recruiter/drawer/company_details_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/candidates/candidate_management_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/dashboard/candidate_insights_screen.dart';
 import 'package:hirematrix/views/screens/recruiter/jobs/interview_slots_screen.dart';
 import 'package:hirematrix/views/screens/recruiter/jobs/interview_bookings_screen.dart';
-import 'package:hirematrix/views/screens/recruiter/utils/theme_provider.dart';
 import 'package:hirematrix/views/screens/recruiter/settings/recruiter_settings_screen.dart';
 import 'package:hirematrix/views/screens/recruiter/jobs/jobs_report_screen.dart';
+
+import 'package:hirematrix/views/screens/recruiter/resdex/resdex_search_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/resdex/resdex_manage_searches_screen.dart';
+import 'package:hirematrix/views/screens/recruiter/resdex/resdex_manage_folders_screen.dart';
 
 class MainDrawer extends StatelessWidget {
   const MainDrawer({super.key});
@@ -53,6 +56,45 @@ class MainDrawer extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
+                      _buildSectionLabel('RESDEX'),
+                      _buildExpandableDrawerItem(
+                        context: context,
+                        icon: Icons.search_rounded,
+                        title: 'RESDEX',
+                        isDark: isDarkMode,
+                        children: [
+                          _buildDrawerItem(
+                            context,
+                            Icons.search,
+                            'Search Resumes',
+                            () {
+                              Navigator.pop(context);
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const ResdexSearchScreen()));
+                            },
+                            isDarkMode,
+                          ),
+                          _buildDrawerItem(
+                            context,
+                            Icons.bookmark,
+                            'Manage Searches',
+                            () {
+                              Navigator.pop(context);
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const ResdexManageSearchesScreen()));
+                            },
+                            isDarkMode,
+                          ),
+                          _buildDrawerItem(
+                            context,
+                            Icons.folder,
+                            'Manage Folders',
+                            () {
+                              Navigator.pop(context);
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const ResdexManageFoldersScreen()));
+                            },
+                            isDarkMode,
+                          ),
+                        ],
+                      ),
                       _buildSectionLabel('RECRUITER WORKSPACE'),
                       _buildDrawerItem(
                         context,
