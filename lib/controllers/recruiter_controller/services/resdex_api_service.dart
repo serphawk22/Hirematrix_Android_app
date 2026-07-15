@@ -216,6 +216,24 @@ class ResdexApiService {
     }
   }
 
+  Future<Map<String, dynamic>> bulkInviteCandidates(String recruiterId, List<int> candidateIds, int jobId, String message) async {
+    try {
+      final baseUrl = await _apiService.getBaseUrl();
+      final response = await http.post(
+        Uri.parse('$baseUrl/${ApiConstants.resdexBulkInvite}'),
+        body: {
+          'recruiter_id': recruiterId,
+          'candidate_ids': candidateIds.join(','),
+          'job_id': jobId.toString(),
+          'message': message,
+        },
+      );
+      return _handleResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
   Map<String, dynamic> _handleResponse(http.Response response) {
     if (response.statusCode == 200 || response.statusCode == 201) {
       try {

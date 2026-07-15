@@ -231,6 +231,18 @@ class _ResdexSearchScreenState extends State<ResdexSearchScreen> {
                         ),
                         label: const Text('Save to Folder'),
                       ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.mail_outline, size: 16),
+                        onPressed: () {
+                          _showBulkInviteDialog();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.getPrimary(isDark),
+                          foregroundColor: Colors.white,
+                        ),
+                        label: const Text('Bulk Invite'),
+                      ),
                     ],
                   ),
                 ),
@@ -586,6 +598,99 @@ class _ResdexSearchScreenState extends State<ResdexSearchScreen> {
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.getPrimary(isDark)),
                   child: const Text('Save', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          }
+        );
+      }
+    );
+  }
+  
+  void _showBulkInviteDialog() {
+    final resdex = Provider.of<ResdexController>(context, listen: false);
+    final auth = Provider.of<AuthController>(context, listen: false);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    int? selectedJobId;
+    final noteCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateSB) {
+            return AlertDialog(
+              backgroundColor: AppColors.getCard(isDark),
+              title: Text('Invite ${_selectedCandidates.length} Candidate(s)', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: AppColors.getText(isDark))),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (resdex.recruiterJobs.isEmpty)
+                      Text('You have no open jobs. Please post a job first.', style: GoogleFonts.inter(color: AppColors.getTextMuted(isDark)))
+                    else ...[
+                      DropdownButtonFormField<int>(
+                        value: selectedJobId,
+                        items: resdex.recruiterJobs.map<DropdownMenuItem<int>>((j) {
+                          return DropdownMenuItem<int>(
+                            value: int.parse(j['id'].toString()),
+                            child: Text(j['title'] ?? 'Unknown Job', style: GoogleFonts.inter(color: AppColors.getText(isDark))),
+                          );
+                        }).toList(),
+                        onChanged: (val) => setStateSB(() => selectedJobId = val),
+                        decoration: InputDecoration(
+                          labelText: 'Select Job',
+                          labelStyle: GoogleFonts.inter(color: AppColors.getTextMuted(isDark)),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.getBorder(isDark))),
+                        ),
+                        dropdownColor: AppColors.getCard(isDark),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: noteCtrl,
+                        maxLines: 3,
+                        style: GoogleFonts.inter(color: AppColors.getText(isDark)),
+                        decoration: InputDecoration(
+                          labelText: 'Message (optional)',
+                          labelStyle: GoogleFonts.inter(color: AppColors.getTextMuted(isDark)),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.getBorder(isDark))),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Cancel', style: GoogleFonts.inter(color: AppColors.getTextMuted(isDark))),
+                ),
+                ElevatedButton(
+                  onPressed: resdex.recruiterJobs.isEmpty ? null : () async {
+                    if (selectedJobId == null) return;
+                    Navigator.pop(context);
+                    if (auth.currentRecruiter?.id != null) {
+                      final res = await resdex.bulkInviteCandidates(
+                        auth.currentRecruiter!.id.toString(), 
+                        _selectedCandidates.toList(), 
+                        selectedJobId!,
+                        noteCtrl.text.trim()
+                      );
+                      if (res['success'] == true && mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${_selectedCandidates.length} candidate(s) invited!')));
+                        setState(() {
+                          _selectedCandidates.clear();
+                        });
+                      } else if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(res['message'] ?? 'Failed to invite candidates')));
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.getPrimary(isDark)),
+                  child: const Text('Send Invites', style: TextStyle(color: Colors.white)),
                 ),
               ],
             );

@@ -46,4 +46,5 @@ class ApiConstants {
   static const String resdexSearches = "resdex/searches";
   static const String resdexSaveSearch = "resdex/searches/save";
   static const String resdexDeleteSearches = "resdex/searches/delete";
+  static const String resdexBulkInvite = "candidates/bulk_invite";
 }

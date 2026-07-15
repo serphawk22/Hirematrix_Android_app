@@ -22,6 +22,9 @@ class ResdexController extends ChangeNotifier {
   List<dynamic> _savedSearches = [];
   List<dynamic> get savedSearches => _savedSearches;
 
+  List<dynamic> _recruiterJobs = [];
+  List<dynamic> get recruiterJobs => _recruiterJobs;
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
@@ -35,6 +38,7 @@ class ResdexController extends ChangeNotifier {
         _searchResults = response['results']?['results'] ?? [];
         _searchFilters = response['filters'] ?? {};
         _hasSearched = response['hasSearched'] ?? false;
+        _recruiterJobs = response['recruiterJobs'] ?? [];
         return true;
       }
       return false;
@@ -152,5 +156,9 @@ class ResdexController extends ChangeNotifier {
 
   Future<Map<String, dynamic>> getCandidate(String recruiterId, int candidateId) async {
     return await _apiService.getCandidate(recruiterId, candidateId);
+  }
+
+  Future<Map<String, dynamic>> bulkInviteCandidates(String recruiterId, List<int> candidateIds, int jobId, String message) async {
+    return await _apiService.bulkInviteCandidates(recruiterId, candidateIds, jobId, message);
   }
 }
