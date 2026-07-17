@@ -23,6 +23,10 @@ import 'package:hirematrix/views/screens/candidate/career_transition_screen.dart
 import 'package:hirematrix/views/screens/candidate/resume_studio_screen.dart';
 import 'package:hirematrix/views/screens/candidate/notification_screen.dart';
 import 'package:hirematrix/views/screens/candidate/messages_screen.dart';
+import 'package:hirematrix/views/screens/site/about_screen.dart';
+import 'package:hirematrix/views/screens/site/contact_screen.dart';
+import 'package:hirematrix/views/screens/site/privacy_policy_screen.dart';
+import 'package:hirematrix/views/screens/site/terms_of_service_screen.dart';
 
 // Recruiter Screen and Controller Imports
 import 'package:hirematrix/views/screens/recruiter/main_screen.dart'
@@ -57,6 +61,10 @@ class AppRoutes {
   static const String messages = '/candidate/messages';
   static const String recruiterDashboard = '/recruiter/dashboard';
   static const String recruiterLogin = '/recruiter/login';
+  static const String about = '/about';
+  static const String contact = '/contact';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String termsOfService = '/terms-of-service';
 
   static List<GetPage> pages = [
     GetPage(
@@ -163,6 +171,26 @@ class AppRoutes {
     GetPage(
       name: recruiterLogin,
       page: () => const LoginScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: about,
+      page: () => const AboutScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: contact,
+      page: () => const ContactScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: privacyPolicy,
+      page: () => const PrivacyPolicyScreen(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: termsOfService,
+      page: () => const TermsOfServiceScreen(),
       transition: Transition.fadeIn,
     ),
   ];

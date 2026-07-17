@@ -1908,8 +1908,42 @@ class FooterSection extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 36),
+          // Standard Mobile Links Row
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 16,
+            runSpacing: 12,
+            children: [
+              _buildFooterLink('About', AppRoutes.about),
+              _buildFooterLink('Contact', AppRoutes.contact),
+              _buildFooterLink('Privacy Policy', AppRoutes.privacyPolicy),
+              _buildFooterLink('Terms of Service', AppRoutes.termsOfService),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '© ${DateTime.now().year} HireMatrix. All rights reserved.',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF5F7288),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFooterLink(String title, String route) {
+    return InkWell(
+      onTap: () => Get.toNamed(route),
+      child: Text(
+        title,
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: AppColors.getPrimary(isDark),
+        ),
       ),
     );
   }
