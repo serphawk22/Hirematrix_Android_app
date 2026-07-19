@@ -338,16 +338,35 @@ class _JobDetailResponsesScreenState extends State<JobDetailResponsesScreen>
       Navigator.pop(context); // Close loading dialog
 
       if (res['success'] == true) {
+        final dynamic updatedApp = res['application'];
+        final String? newStatusLabel = updatedApp != null ? updatedApp['status']?.toString() : null;
+        final String? newStatusKey = updatedApp != null ? updatedApp['status_key']?.toString() : status;
+
         // ── Optimistic update: patch local list immediately so dropdown reflects new value ──
         setState(() {
           final idx = _applications.indexWhere(
             (a) => a['application_id']?.toString() == appId,
           );
           if (idx != -1) {
+            final oldStatusLabel = _applications[idx]['status']?.toString();
+            
+            // Optimistically update pipeline stats (tab counts)
+            if (oldStatusLabel != null && oldStatusLabel != newStatusLabel && _pipelineStats.containsKey(oldStatusLabel)) {
+              final currentCount = _pipelineStats[oldStatusLabel];
+              if (currentCount is int && currentCount > 0) {
+                _pipelineStats[oldStatusLabel] = currentCount - 1;
+              }
+            }
+            if (newStatusLabel != null && oldStatusLabel != newStatusLabel) {
+              final currentCount = _pipelineStats[newStatusLabel] ?? 0;
+              if (currentCount is int) {
+                _pipelineStats[newStatusLabel] = currentCount + 1;
+              }
+            }
+
             _applications[idx] = Map<String, dynamic>.from(_applications[idx])
-              ..['status_key'] =
-                  status // raw key — drives the dropdown
-              ..['status'] = status; // also keep the display label in sync
+              ..['status_key'] = newStatusKey ?? status
+              ..['status'] = newStatusLabel ?? status;
           }
         });
 

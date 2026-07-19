@@ -272,11 +272,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         notification['is_read'] == true ||
         notification['is_read'] == '1');
     final String dateStr = notification['created_at'] ?? '';
-    final String iconName = notification['icon'] ?? 'fas fa-bell';
+    String iconName = notification['icon'] ?? 'fas fa-bell';
     final String colorName = notification['color'] ?? 'info';
     final String? actionLink = notification['action_link'];
     final String actionText = notification['action_text'] ?? 'Open';
     final String? notifType = notification['type']?.toString();
+    if (notifType == 'candidate_email_reply') iconName = 'fas fa-envelope';
+    if (notifType == 'candidate_message_reply') iconName = 'fas fa-reply';
+    if (notifType == 'interview_scheduled' || notifType == 'interview_booked') iconName = 'fas fa-calendar-check';
+    if (notifType == 'interview_rescheduled') iconName = 'fas fa-calendar-alt';
+    if (notifType == 'application_status_changed') iconName = 'fas fa-tasks';
+    if (notifType == 'offer_sent') iconName = 'fas fa-file-alt';
 
     final Color badgeColor = _getIconColor(colorName, isDark);
     final dynamic icon = _getIconData(iconName);
@@ -339,6 +345,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     Expanded(
                                       child: Row(
                                         children: [
+                                          if (!isRead) ...[
+                                            Container(
+                                              width: 8,
+                                              height: 8,
+                                              margin: const EdgeInsets.only(right: 6),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.getPrimary(isDark),
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                          ],
                                           Flexible(
                                             child: Text(
                                               title,
@@ -351,31 +368,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
-                                          if (!isRead) ...[
-                                            const SizedBox(width: 6),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 5,
-                                                    vertical: 2,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: AppColors.getPrimary(
-                                                  isDark,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                'New',
-                                                style: GoogleFonts.inter(
-                                                  color: Colors.white,
-                                                  fontSize: 9,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
                                         ],
                                       ),
                                     ),
@@ -695,6 +687,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return FontAwesomeIcons.lightbulb;
       case 'fas fa-sun':
         return FontAwesomeIcons.sun;
+      case 'fas fa-envelope':
+        return FontAwesomeIcons.envelope;
+      case 'fas fa-tasks':
+        return FontAwesomeIcons.listCheck;
       default:
         return FontAwesomeIcons.bell;
     }
