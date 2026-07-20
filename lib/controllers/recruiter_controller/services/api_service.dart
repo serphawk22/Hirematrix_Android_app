@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
 
-import '../utils/api_constants.dart';
+import 'package:hirematrix/core/constants/api_constants.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -21,7 +21,7 @@ class ApiService {
   ApiService._internal();
 
   Future<String> getBaseUrl() {
-    return Future.value(ApiConstants.baseUrl);
+    return Future.value(ApiConstants.recruiterBaseUrl);
   }
 
   /// Returns absolute URL for assets/images

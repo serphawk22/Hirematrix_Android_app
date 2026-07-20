@@ -1,18 +1,20 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:hirematrix/controllers/recruiter_controller/utils/api_constants.dart';
+import 'package:hirematrix/core/constants/api_constants.dart';
 import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
 
 class ResdexApiService {
   final ApiService _apiService = ApiService();
 
-  Future<Map<String, dynamic>> search(String recruiterId, Map<String, String> filters) async {
+  Future<Map<String, dynamic>> search(
+    String recruiterId,
+    Map<String, String> filters,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
-      final uri = Uri.parse('$baseUrl/${ApiConstants.resdexSearch}').replace(queryParameters: {
-        'recruiter_id': recruiterId,
-        ...filters,
-      });
+      final uri = Uri.parse(
+        '$baseUrl/${ApiConstants.resdexSearch}',
+      ).replace(queryParameters: {'recruiter_id': recruiterId, ...filters});
 
       final response = await http.get(
         uri,
@@ -25,12 +27,15 @@ class ResdexApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getCandidate(String recruiterId, int candidateId) async {
+  Future<Map<String, dynamic>> getCandidate(
+    String recruiterId,
+    int candidateId,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
-      final uri = Uri.parse('$baseUrl/${ApiConstants.resdexCandidate}/$candidateId').replace(queryParameters: {
-        'recruiter_id': recruiterId,
-      });
+      final uri = Uri.parse(
+        '$baseUrl/${ApiConstants.resdexCandidate}/$candidateId',
+      ).replace(queryParameters: {'recruiter_id': recruiterId});
 
       final response = await http.get(
         uri,
@@ -46,9 +51,9 @@ class ResdexApiService {
   Future<Map<String, dynamic>> getFolders(String recruiterId) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
-      final uri = Uri.parse('$baseUrl/${ApiConstants.resdexFolders}').replace(queryParameters: {
-        'recruiter_id': recruiterId,
-      });
+      final uri = Uri.parse(
+        '$baseUrl/${ApiConstants.resdexFolders}',
+      ).replace(queryParameters: {'recruiter_id': recruiterId});
 
       final response = await http.get(
         uri,
@@ -61,15 +66,15 @@ class ResdexApiService {
     }
   }
 
-  Future<Map<String, dynamic>> createFolder(String recruiterId, String folderName) async {
+  Future<Map<String, dynamic>> createFolder(
+    String recruiterId,
+    String folderName,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
       final response = await http.post(
         Uri.parse('$baseUrl/${ApiConstants.resdexCreateFolder}'),
-        body: {
-          'recruiter_id': recruiterId,
-          'folder_name': folderName,
-        },
+        body: {'recruiter_id': recruiterId, 'folder_name': folderName},
       );
       return _handleResponse(response);
     } catch (e) {
@@ -77,15 +82,15 @@ class ResdexApiService {
     }
   }
 
-  Future<Map<String, dynamic>> deleteFolders(String recruiterId, List<int> folderIds) async {
+  Future<Map<String, dynamic>> deleteFolders(
+    String recruiterId,
+    List<int> folderIds,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
       final response = await http.post(
         Uri.parse('$baseUrl/${ApiConstants.resdexDeleteFolders}'),
-        body: {
-          'recruiter_id': recruiterId,
-          'folder_ids': folderIds.join(','),
-        },
+        body: {'recruiter_id': recruiterId, 'folder_ids': folderIds.join(',')},
       );
       return _handleResponse(response);
     } catch (e) {
@@ -93,12 +98,15 @@ class ResdexApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getFolderDetails(String recruiterId, int folderId) async {
+  Future<Map<String, dynamic>> getFolderDetails(
+    String recruiterId,
+    int folderId,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
-      final uri = Uri.parse('$baseUrl/${ApiConstants.resdexFolders}/$folderId').replace(queryParameters: {
-        'recruiter_id': recruiterId,
-      });
+      final uri = Uri.parse(
+        '$baseUrl/${ApiConstants.resdexFolders}/$folderId',
+      ).replace(queryParameters: {'recruiter_id': recruiterId});
 
       final response = await http.get(
         uri,
@@ -111,7 +119,12 @@ class ResdexApiService {
     }
   }
 
-  Future<Map<String, dynamic>> addToFolder(String recruiterId, int candidateId, int folderId, String newFolderName) async {
+  Future<Map<String, dynamic>> addToFolder(
+    String recruiterId,
+    int candidateId,
+    int folderId,
+    String newFolderName,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
       final response = await http.post(
@@ -129,7 +142,11 @@ class ResdexApiService {
     }
   }
 
-  Future<Map<String, dynamic>> bulkAddToFolder(String recruiterId, List<int> candidateIds, int folderId) async {
+  Future<Map<String, dynamic>> bulkAddToFolder(
+    String recruiterId,
+    List<int> candidateIds,
+    int folderId,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
       final response = await http.post(
@@ -146,7 +163,11 @@ class ResdexApiService {
     }
   }
 
-  Future<Map<String, dynamic>> removeFromFolder(String recruiterId, int folderId, List<int> candidateIds) async {
+  Future<Map<String, dynamic>> removeFromFolder(
+    String recruiterId,
+    int folderId,
+    List<int> candidateIds,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
       final response = await http.post(
@@ -163,13 +184,15 @@ class ResdexApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getSearches(String recruiterId, String tab) async {
+  Future<Map<String, dynamic>> getSearches(
+    String recruiterId,
+    String tab,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
-      final uri = Uri.parse('$baseUrl/${ApiConstants.resdexSearches}').replace(queryParameters: {
-        'recruiter_id': recruiterId,
-        'tab': tab,
-      });
+      final uri = Uri.parse(
+        '$baseUrl/${ApiConstants.resdexSearches}',
+      ).replace(queryParameters: {'recruiter_id': recruiterId, 'tab': tab});
 
       final response = await http.get(
         uri,
@@ -182,7 +205,12 @@ class ResdexApiService {
     }
   }
 
-  Future<Map<String, dynamic>> saveSearch(String recruiterId, int candidateId, String candidateName, Map<String, String> filters) async {
+  Future<Map<String, dynamic>> saveSearch(
+    String recruiterId,
+    int candidateId,
+    String candidateName,
+    Map<String, String> filters,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
       final response = await http.post(
@@ -200,15 +228,15 @@ class ResdexApiService {
     }
   }
 
-  Future<Map<String, dynamic>> deleteSearches(String recruiterId, List<int> searchIds) async {
+  Future<Map<String, dynamic>> deleteSearches(
+    String recruiterId,
+    List<int> searchIds,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
       final response = await http.post(
         Uri.parse('$baseUrl/${ApiConstants.resdexDeleteSearches}'),
-        body: {
-          'recruiter_id': recruiterId,
-          'ids': searchIds.join(','),
-        },
+        body: {'recruiter_id': recruiterId, 'ids': searchIds.join(',')},
       );
       return _handleResponse(response);
     } catch (e) {
@@ -216,7 +244,12 @@ class ResdexApiService {
     }
   }
 
-  Future<Map<String, dynamic>> bulkInviteCandidates(String recruiterId, List<int> candidateIds, int jobId, String message) async {
+  Future<Map<String, dynamic>> bulkInviteCandidates(
+    String recruiterId,
+    List<int> candidateIds,
+    int jobId,
+    String message,
+  ) async {
     try {
       final baseUrl = await _apiService.getBaseUrl();
       final response = await http.post(
@@ -246,15 +279,19 @@ class ResdexApiService {
         return {'success': false, 'message': 'Invalid response format'};
       }
     }
-    
+
     try {
       final data = json.decode(response.body);
       return {
-        'success': false, 
-        'message': data['message'] ?? data['messages']?['error'] ?? 'Server error'
+        'success': false,
+        'message':
+            data['message'] ?? data['messages']?['error'] ?? 'Server error',
       };
     } catch (e) {
-      return {'success': false, 'message': 'Server error (${response.statusCode})'};
+      return {
+        'success': false,
+        'message': 'Server error (${response.statusCode})',
+      };
     }
   }
 }

@@ -10,7 +10,7 @@ import 'package:open_file/open_file.dart';
 
 import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
-import 'package:hirematrix/controllers/recruiter_controller/utils/api_constants.dart';
+import 'package:hirematrix/core/constants/api_constants.dart';
 
 class JobsReportScreen extends StatefulWidget {
   const JobsReportScreen({super.key});
@@ -27,7 +27,13 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
   String _employmentType = '';
   final TextEditingController _keywordController = TextEditingController();
 
-  final List<String> _statusOptions = ['', 'open', 'closed', 'draft', 'archived'];
+  final List<String> _statusOptions = [
+    '',
+    'open',
+    'closed',
+    'draft',
+    'archived',
+  ];
   final List<String> _categoryOptions = [
     '',
     'Software Development',
@@ -51,7 +57,7 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
     'Full-time',
     'Part-time',
     'Contract',
-    'Internship'
+    'Internship',
   ];
 
   Future<void> _selectDate(BuildContext context, bool isFrom) async {
@@ -64,7 +70,9 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: AppColors.getPrimary(Theme.of(context).brightness == Brightness.dark),
+              primary: AppColors.getPrimary(
+                Theme.of(context).brightness == Brightness.dark,
+              ),
             ),
           ),
           child: child!,
@@ -87,25 +95,29 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
     final recruiterId = auth.currentRecruiter?.id;
     if (recruiterId == null) return;
 
-    final params = <String, String>{
-      'recruiter_id': recruiterId.toString(),
-    };
+    final params = <String, String>{'recruiter_id': recruiterId.toString()};
 
     if (period != null) {
       params['period'] = period;
     } else {
       if (_status.isNotEmpty) params['status'] = _status;
       if (_category.isNotEmpty) params['category'] = _category;
-      if (_employmentType.isNotEmpty) params['employment_type'] = _employmentType;
-      if (_keywordController.text.isNotEmpty) params['keyword'] = _keywordController.text.trim();
-      if (_dateFrom != null) params['date_from'] = DateFormat('yyyy-MM-dd').format(_dateFrom!);
-      if (_dateTo != null) params['date_to'] = DateFormat('yyyy-MM-dd').format(_dateTo!);
+      if (_employmentType.isNotEmpty)
+        params['employment_type'] = _employmentType;
+      if (_keywordController.text.isNotEmpty)
+        params['keyword'] = _keywordController.text.trim();
+      if (_dateFrom != null)
+        params['date_from'] = DateFormat('yyyy-MM-dd').format(_dateFrom!);
+      if (_dateTo != null)
+        params['date_to'] = DateFormat('yyyy-MM-dd').format(_dateTo!);
     }
 
-    final uri = Uri.parse('${ApiConstants.baseUrl}/${ApiConstants.exportJobsReport}').replace(queryParameters: params);
-    
+    final uri = Uri.parse(
+      '${ApiConstants.baseUrl}/${ApiConstants.exportJobsReport}',
+    ).replace(queryParameters: params);
+
     await Permission.storage.request();
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -138,7 +150,8 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
         }
 
         if (directory != null) {
-          final fileName = 'jobs_report_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+          final fileName =
+              'jobs_report_${DateTime.now().millisecondsSinceEpoch}.xlsx';
           final file = File('${directory.path}/$fileName');
           await file.writeAsBytes(response.bodyBytes);
 
@@ -177,9 +190,9 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error generating report: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error generating report: $e')));
       }
     }
   }
@@ -187,7 +200,7 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       backgroundColor: AppColors.getBackground(isDark),
       appBar: AppBar(
@@ -253,12 +266,27 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
-                  _buildOneClickButton('Yesterday', 'yesterday', Icons.today, isDark),
+
+                  _buildOneClickButton(
+                    'Yesterday',
+                    'yesterday',
+                    Icons.today,
+                    isDark,
+                  ),
                   const SizedBox(height: 12),
-                  _buildOneClickButton('This Week', 'week', Icons.date_range, isDark),
+                  _buildOneClickButton(
+                    'This Week',
+                    'week',
+                    Icons.date_range,
+                    isDark,
+                  ),
                   const SizedBox(height: 12),
-                  _buildOneClickButton('This Month', 'month', Icons.calendar_month, isDark),
+                  _buildOneClickButton(
+                    'This Month',
+                    'month',
+                    Icons.calendar_month,
+                    isDark,
+                  ),
                 ],
               ),
             ),
@@ -285,42 +313,84 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Date Row
                   Row(
                     children: [
-                      Expanded(child: _buildDatePicker(context, 'Date From', _dateFrom, true, isDark)),
+                      Expanded(
+                        child: _buildDatePicker(
+                          context,
+                          'Date From',
+                          _dateFrom,
+                          true,
+                          isDark,
+                        ),
+                      ),
                       const SizedBox(width: 16),
-                      Expanded(child: _buildDatePicker(context, 'Date To', _dateTo, false, isDark)),
+                      Expanded(
+                        child: _buildDatePicker(
+                          context,
+                          'Date To',
+                          _dateTo,
+                          false,
+                          isDark,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  _buildDropdown('Status', _status, _statusOptions, (v) => setState(() => _status = v!), isDark),
+                  _buildDropdown(
+                    'Status',
+                    _status,
+                    _statusOptions,
+                    (v) => setState(() => _status = v!),
+                    isDark,
+                  ),
                   const SizedBox(height: 16),
-                  
-                  _buildDropdown('Job Category', _category, _categoryOptions, (v) => setState(() => _category = v!), isDark),
+
+                  _buildDropdown(
+                    'Job Category',
+                    _category,
+                    _categoryOptions,
+                    (v) => setState(() => _category = v!),
+                    isDark,
+                  ),
                   const SizedBox(height: 16),
-                  
-                  _buildDropdown('Employment Type', _employmentType, _employmentTypeOptions, (v) => setState(() => _employmentType = v!), isDark),
+
+                  _buildDropdown(
+                    'Employment Type',
+                    _employmentType,
+                    _employmentTypeOptions,
+                    (v) => setState(() => _employmentType = v!),
+                    isDark,
+                  ),
                   const SizedBox(height: 16),
-                  
+
                   _buildTextField('Keyword', _keywordController, isDark),
                   const SizedBox(height: 24),
-                  
+
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton.icon(
                       onPressed: () => _generateReport(),
-                      icon: const Icon(Icons.file_download_outlined, color: Colors.white),
+                      icon: const Icon(
+                        Icons.file_download_outlined,
+                        color: Colors.white,
+                      ),
                       label: Text(
                         'Generate Customised Report',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white),
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.getPrimary(isDark),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
                     ),
@@ -335,7 +405,13 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
     );
   }
 
-  Widget _buildDatePicker(BuildContext context, String label, DateTime? date, bool isFrom, bool isDark) {
+  Widget _buildDatePicker(
+    BuildContext context,
+    String label,
+    DateTime? date,
+    bool isFrom,
+    bool isDark,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -362,13 +438,21 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  date != null ? DateFormat('yyyy-MM-dd').format(date) : 'Select',
+                  date != null
+                      ? DateFormat('yyyy-MM-dd').format(date)
+                      : 'Select',
                   style: GoogleFonts.inter(
                     fontSize: 13,
-                    color: date != null ? AppColors.getText(isDark) : AppColors.getTextMuted(isDark),
+                    color: date != null
+                        ? AppColors.getText(isDark)
+                        : AppColors.getTextMuted(isDark),
                   ),
                 ),
-                Icon(Icons.calendar_today, size: 16, color: AppColors.getTextMuted(isDark)),
+                Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: AppColors.getTextMuted(isDark),
+                ),
               ],
             ),
           ),
@@ -377,7 +461,13 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
     );
   }
 
-  Widget _buildDropdown(String label, String value, List<String> options, void Function(String?) onChanged, bool isDark) {
+  Widget _buildDropdown(
+    String label,
+    String value,
+    List<String> options,
+    void Function(String?) onChanged,
+    bool isDark,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -401,9 +491,15 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
             child: DropdownButton<String>(
               isExpanded: true,
               value: value,
-              icon: Icon(Icons.arrow_drop_down, color: AppColors.getTextMuted(isDark)),
+              icon: Icon(
+                Icons.arrow_drop_down,
+                color: AppColors.getTextMuted(isDark),
+              ),
               dropdownColor: AppColors.getCard(isDark),
-              style: GoogleFonts.inter(fontSize: 13, color: AppColors.getText(isDark)),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppColors.getText(isDark),
+              ),
               onChanged: onChanged,
               items: options.map<DropdownMenuItem<String>>((String val) {
                 return DropdownMenuItem<String>(
@@ -418,7 +514,11 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, bool isDark) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    bool isDark,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -433,13 +533,24 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
         const SizedBox(height: 6),
         TextField(
           controller: controller,
-          style: GoogleFonts.inter(fontSize: 13, color: AppColors.getText(isDark)),
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: AppColors.getText(isDark),
+          ),
           decoration: InputDecoration(
             hintText: 'e.g. Developer',
-            hintStyle: GoogleFonts.inter(fontSize: 13, color: AppColors.getTextMuted(isDark)),
+            hintStyle: GoogleFonts.inter(
+              fontSize: 13,
+              color: AppColors.getTextMuted(isDark),
+            ),
             filled: true,
-            fillColor: isDark ? const Color(0xFF000000) : const Color(0xFFF8FCFB),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            fillColor: isDark
+                ? const Color(0xFF000000)
+                : const Color(0xFFF8FCFB),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: AppColors.getBorder(isDark)),
@@ -450,7 +561,10 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColors.getPrimary(isDark), width: 1.5),
+              borderSide: BorderSide(
+                color: AppColors.getPrimary(isDark),
+                width: 1.5,
+              ),
             ),
           ),
         ),
@@ -458,7 +572,12 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
     );
   }
 
-  Widget _buildOneClickButton(String label, String period, IconData icon, bool isDark) {
+  Widget _buildOneClickButton(
+    String label,
+    String period,
+    IconData icon,
+    bool isDark,
+  ) {
     return SizedBox(
       width: double.infinity,
       height: 44,
@@ -474,7 +593,9 @@ class _JobsReportScreenState extends State<JobsReportScreen> {
         ),
         style: OutlinedButton.styleFrom(
           side: BorderSide(color: AppColors.getBorder(isDark)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
