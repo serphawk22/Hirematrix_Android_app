@@ -761,8 +761,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> getChatbotBrief(String recruiterId) async {
-    // We assume getChatbotBrief is mapped to ApiConstants.chatbotBrief, or we can use the endpoint directly
-    final data = await _performGet("recruiter/chatbot/brief", {
+    final data = await _performGet(ApiConstants.chatbotBrief, {
       'recruiter_id': recruiterId,
     });
     return data;

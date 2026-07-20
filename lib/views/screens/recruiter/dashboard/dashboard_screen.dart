@@ -721,19 +721,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
         <String, dynamic>{};
     final dashboardStats =
         (data['stats'] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
+    final funnel =
+        (data['funnel'] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
     final int totalApps =
         int.tryParse(dashboardStats['total_applications']?.toString() ?? '0') ??
         0;
 
     final int shortlisted =
+        int.tryParse(funnel['shortlisted']?.toString() ?? '0') ??
         int.tryParse(stats['Shortlisted']?.toString() ?? '0') ?? 0;
     final int rejected =
+        int.tryParse(funnel['rejected']?.toString() ?? '0') ??
         int.tryParse(stats['Rejected']?.toString() ?? '0') ?? 0;
-    final int aiInterviewCompleted =
-        int.tryParse(stats['ai_interview_completed']?.toString() ?? '0') ?? 0;
     final int screeningCompleted =
-        shortlisted + rejected + aiInterviewCompleted;
+        int.tryParse(funnel['screening_completed']?.toString() ?? '0') ?? 0;
     final int interviewSlotBooked =
+        int.tryParse(funnel['interview_slot_booked']?.toString() ?? '0') ??
         int.tryParse(stats['Interview']?.toString() ?? '0') ?? 0;
 
     double calcPct(int numerator, int denominator) {
@@ -1416,19 +1419,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.flash_on_rounded, color: Colors.amber, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Action Center',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.getText(isDark),
-                ),
-              ),
-            ],
+          Text(
+            'Action Center',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppColors.getText(isDark),
+            ),
           ),
           Divider(color: AppColors.getBorder(isDark)),
           const SizedBox(height: 16),

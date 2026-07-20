@@ -85,7 +85,7 @@ class Job {
       salary: json['salary_range'],
       description: json['description'] ?? json['job_description'],
       status: (() {
-        final rawStatus = (json['job_status'] ?? json['status'] ?? 'Active').toString().toLowerCase();
+        final rawStatus = (json['job_status'] ?? json['status'] ?? '').toString().toLowerCase().trim();
         if (rawStatus == 'open' || rawStatus == 'active') return 'Active';
         if (rawStatus == 'closed') return 'Closed';
         if (rawStatus == 'draft') return 'Draft';
@@ -94,7 +94,7 @@ class Job {
         if (rawStatus.isNotEmpty) {
           return rawStatus[0].toUpperCase() + rawStatus.substring(1);
         }
-        return 'Active';
+        return 'Ignore';
       })(),
       pipeline: json['pipeline'] != null ? Map<String, int>.from(json['pipeline']) : null,
       applicationsCount: int.tryParse(json['applications_count']?.toString() ?? '') ?? 0,

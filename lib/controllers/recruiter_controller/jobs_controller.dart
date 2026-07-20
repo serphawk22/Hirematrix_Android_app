@@ -19,7 +19,10 @@ class JobsController extends ChangeNotifier {
     try {
       final Map<String, dynamic> data = await _apiService.fetchJobs(recruiterId, query: query);
       final List<dynamic> jobsList = data['jobs'] ?? [];
-      _jobs = jobsList.map((json) => Job.fromJson(json)).toList();
+      _jobs = jobsList
+          .map((json) => Job.fromJson(json))
+          .where((job) => job.status != 'Ignore')
+          .toList();
       final List<dynamic> alertsList = data['recruiter_alerts'] ?? [];
       _recruiterAlerts = alertsList.map((e) => e as Map<String, dynamic>).toList();
     } catch (e) {

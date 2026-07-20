@@ -1,11 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:open_file/open_file.dart';
 
 import 'package:hirematrix/views/screens/landing_screen.dart';
 import 'package:hirematrix/views/screens/login_screen.dart';
 import 'package:hirematrix/controllers/recruiter_controller/auth_controller.dart';
 import 'package:hirematrix/controllers/recruiter_controller/models/recruiter.dart';
+import 'package:hirematrix/controllers/recruiter_controller/services/api_service.dart';
 
 import 'package:hirematrix/views/screens/recruiter/utils/app_constants.dart';
 import 'package:hirematrix/views/screens/recruiter/utils/theme_provider.dart';
@@ -57,40 +63,40 @@ class MainDrawer extends StatelessWidget {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       _buildSectionLabel('RECRUITER WORKSPACE'),
-                      _buildDrawerItem(
-                        context,
-                        Icons.storage_rounded,
-                        'Candidate Database',
-                        () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const CandidateManagementScreen(
-                                    isStandalone: true,
-                                  ),
-                            ),
-                          );
-                        },
-                        isDarkMode,
-                      ),
-                      _buildDrawerItem(
-                        context,
-                        Icons.emoji_events_outlined,
-                        'Candidate Insights',
-                        () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const CandidateInsightsScreen(),
-                            ),
-                          );
-                        },
-                        isDarkMode,
-                      ),
+                      // _buildDrawerItem(
+                      //   context,
+                      //   Icons.storage_rounded,
+                      //   'Candidate Database',
+                      //   () {
+                      //     Navigator.pop(context);
+                      //     Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         builder: (context) =>
+                      //             const CandidateManagementScreen(
+                      //               isStandalone: true,
+                      //             ),
+                      //       ),
+                      //     );
+                      //   },
+                      //   isDarkMode,
+                      // ),
+                      // _buildDrawerItem(
+                      //   context,
+                      //   Icons.emoji_events_outlined,
+                      //   'Candidate Insights',
+                      //   () {
+                      //     Navigator.pop(context);
+                      //     Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         builder: (context) =>
+                      //             const CandidateInsightsScreen(),
+                      //       ),
+                      //     );
+                      //   },
+                      //   isDarkMode,
+                      // ),
                       _buildDrawerItem(
                         context,
                         Icons.business_center_outlined,
@@ -163,7 +169,146 @@ class MainDrawer extends StatelessWidget {
                         },
                         isDarkMode,
                       ),
-                      _buildSectionLabel('RESDEX'),
+                      _buildDrawerItem(
+                        context,
+                        Icons.download_for_offline_outlined,
+                        'Export Overview',
+                        () async {
+                          Navigator.pop(context);
+                          final auth = Provider.of<AuthController>(
+                            context,
+                            listen: false,
+                          );
+                          final recruiterId = auth.currentRecruiter?.id;
+                          if (recruiterId != null) {
+                            await Permission.storage.request();
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    'Downloading report...',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                ),
+                              ),
+                            );
+
+                            try {
+                              final apiService = ApiService();
+                              final baseUrl = await apiService.getBaseUrl();
+                              final url = Uri.parse(
+                                '$baseUrl/export/excel?recruiter_id=$recruiterId',
+                              );
+
+                              final response = await http.get(url);
+                              if (response.statusCode == 200) {
+                                Directory? directory;
+                                if (Platform.isAndroid) {
+                                  directory = Directory(
+                                    '/storage/emulated/0/Download',
+                                  );
+                                  if (!await directory.exists()) {
+                                    directory =
+                                        await getExternalStorageDirectory();
+                                  }
+                                } else {
+                                  directory =
+                                      await getApplicationDocumentsDirectory();
+                                }
+
+                                if (directory != null) {
+                                  final fileName =
+                                      'recruitment_overview_${DateTime.now().millisecondsSinceEpoch}.xlsx';
+                                  final file = File(
+                                    '${directory.path}/$fileName',
+                                  );
+                                  await file.writeAsBytes(response.bodyBytes);
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 8.0,
+                                        ),
+                                        child: Text(
+                                          'Saved to Downloads',
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                      ),
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(10),
+                                        ),
+                                      ),
+                                      action: SnackBarAction(
+                                        label: 'OPEN',
+                                        textColor: Colors.white,
+                                        backgroundColor: Theme.of(
+                                          context,
+                                        ).primaryColor,
+                                        onPressed: () {
+                                          OpenFile.open(file.path);
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 8.0,
+                                      ),
+                                      child: Text(
+                                        'Failed to download report',
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                    ),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(10),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8.0,
+                                    ),
+                                    child: Text(
+                                      'Error: $e',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(10),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        isDarkMode,
+                      ),
+                      _buildSectionLabel('RESUME DATABASE'),
                       _buildExpandableDrawerItem(
                         context: context,
                         icon: Icons.search_rounded,
