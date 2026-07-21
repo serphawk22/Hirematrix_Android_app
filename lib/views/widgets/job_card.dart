@@ -10,6 +10,7 @@ class JobCard extends StatelessWidget {
   final int matchScore;
   final bool isDark;
   final bool isVisited;
+  final String? logoUrl;
   final VoidCallback? onTap;
 
   const JobCard({
@@ -21,6 +22,7 @@ class JobCard extends StatelessWidget {
     required this.matchScore,
     required this.isDark,
     this.isVisited = false,
+    this.logoUrl,
     this.onTap,
   });
 
@@ -58,19 +60,45 @@ class JobCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Icon
+                // Icon / Logo
                 Container(
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.getPrimary(isDark),
+                    color: AppColors.getPrimary(isDark).withValues(alpha: logoUrl != null && logoUrl!.isNotEmpty ? 0.1 : 1.0),
                     borderRadius: BorderRadius.circular(12),
+                    border: logoUrl != null && logoUrl!.isNotEmpty
+                        ? Border.all(color: AppColors.getPrimary(isDark).withValues(alpha: 0.2))
+                        : null,
                   ),
-                  child: Icon(
-                    _getIconForTitle(title),
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  child: logoUrl != null && logoUrl!.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            logoUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Center(
+                              child: Text(
+                                company.isNotEmpty ? company[0].toUpperCase() : 'C',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.getPrimary(isDark),
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Text(
+                            company.isNotEmpty ? company[0].toUpperCase() : 'C',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
                 ),
                 const SizedBox(height: 16),
 

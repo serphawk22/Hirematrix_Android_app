@@ -44,6 +44,10 @@ class AuthController extends GetxController {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('currentUser');
       currentUser.value = {};
+      
+      // Clear login controllers so they don't auto-fill with previous credentials
+      emailController.clear();
+      passwordController.clear();
 
       if (Get.isRegistered<NotificationController>()) {
         Get.find<NotificationController>().clearNotifications();
@@ -393,6 +397,17 @@ class AuthController extends GetxController {
             colorText: Colors.white,
             duration: const Duration(seconds: 3),
           );
+          // Clear registration controllers
+          regEmailController.clear();
+          regPasswordController.clear();
+          confirmPasswordController.clear();
+          nameController.clear();
+          phoneController.clear();
+          
+          // Clear login controllers to avoid auto-filling previous credentials
+          emailController.clear();
+          passwordController.clear();
+
           // Navigate to login after registration
           Get.offAllNamed(AppRoutes.login);
         } else {
@@ -588,6 +603,10 @@ class AuthController extends GetxController {
           recruiterPhoneController.clear();
           recruiterPasswordController.clear();
           recruiterConfirmPasswordController.clear();
+          
+          // Clear login controllers to avoid auto-filling previous credentials
+          emailController.clear();
+          passwordController.clear();
 
           // Navigate to verification screen
           Get.offAllNamed(

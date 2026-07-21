@@ -398,16 +398,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Get.to(() => const MyInterviewBookingsScreen());
                       },
                     ),
-                    _buildDrawerItem(
-                      icon: Icons.business_outlined,
-                      title: 'Local Companies',
-                      isDark: isDark,
-                      isActive: false,
-                      onTap: () {
-                        Get.back();
-                        Get.toNamed(AppRoutes.localCompanies);
-                      },
-                    ),
+                    // _buildDrawerItem(
+                    //   icon: Icons.business_outlined,
+                    //   title: 'Local Companies',
+                    //   isDark: isDark,
+                    //   isActive: false,
+                    //   onTap: () {
+                    //     Get.back();
+                    //     Get.toNamed(AppRoutes.localCompanies);
+                    //   },
+                    // ),
                     _buildDrawerItem(
                       icon: Icons.hub_outlined, // Replaces FontAwesome building
                       title: 'Company Intelligence',
@@ -1463,6 +1463,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           final matchScore = scoreDouble > 0
               ? (scoreDouble.round()).clamp(10, 100)
               : 80;
+          final rawLogo = job['company_logo']?.toString() ?? '';
+          final logoUrl = rawLogo.isNotEmpty
+              ? ApiConstants.resolveImageUrl(rawLogo)
+              : null;
           final isVisited =
               job['visited_flag'] == 1 || job['visited_flag'] == '1';
 
@@ -1476,11 +1480,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               matchScore: matchScore,
               isDark: isDark,
               isVisited: isVisited,
+              logoUrl: logoUrl,
               onTap: () {
                 final isExternal =
                     (job['posted_for']?.toString() == 'client' ||
                     job['external_apply_url'] != null);
-
+                final jobId = int.tryParse(job['id']?.toString() ?? '0') ?? 0;
+                if (jobId > 0) {
+                  Get.find<JobsController>().markJobVisited(jobId);
+                }
                 job['visited_flag'] = 1;
                 dashboardController.topSuggestedJobs.refresh();
 

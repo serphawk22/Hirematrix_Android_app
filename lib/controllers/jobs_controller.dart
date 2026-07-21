@@ -204,6 +204,19 @@ class JobsController extends GetxController {
     }
   }
 
+  Future<void> markJobVisited(int jobId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/api/jobs/mark-visited/$jobId'),
+      );
+      if (response.statusCode == 200) {
+        // Successfully marked as visited
+      }
+    } catch (e) {
+      print('Error marking job as visited: $e');
+    }
+  }
+
   Future<Map<String, dynamic>?> generateCoverLetter(int jobId) async {
     try {
       final authController = Get.find<AuthController>();

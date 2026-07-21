@@ -407,7 +407,7 @@ class OnboardingController extends GetxController {
       // Submit and Go to Dashboard
       final success = await completeOnboarding();
       if (success) {
-        skipToDashboard();
+        goToDashboard();
       }
     }
   }
@@ -666,7 +666,7 @@ class OnboardingController extends GetxController {
     return false;
   }
 
-  void skipToDashboard() async {
+  void goToDashboard() async {
     final authController = Get.find<AuthController>();
     final currentUser = authController.currentUser;
     if (currentUser.isNotEmpty) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hirematrix/core/constants/api_constants.dart';
 import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:hirematrix/controllers/theme_controller.dart';
 import 'package:hirematrix/controllers/company_discovery_controller.dart';
@@ -687,7 +688,10 @@ class CompanyDiscoveryScreen extends StatelessWidget {
   ) {
     final name = company['name']?.toString() ?? 'Company';
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'C';
-    final logo = company['logo']?.toString() ?? '';
+    final rawLogo = company['logo']?.toString() ?? '';
+    final logo = rawLogo.isNotEmpty
+        ? ApiConstants.resolveImageUrl(rawLogo)
+        : '';
     final hq = company['hq']?.toString() ?? '';
     final tags =
         (company['discovery_tags'] as List?)

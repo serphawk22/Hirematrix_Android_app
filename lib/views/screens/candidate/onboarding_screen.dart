@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hirematrix/controllers/onboarding_controller.dart';
 import 'package:hirematrix/controllers/theme_controller.dart';
-import 'package:hirematrix/views/widgets/animated_gradient_background.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -247,49 +246,7 @@ class OnboardingScreen extends StatelessWidget {
                                     ],
                                   ],
                                 ),
-                                if (step > 0) ...[
-                                  const SizedBox(height: 12),
-                                  GestureDetector(
-                                    onTap: controller.skipToDashboard,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 10,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: isDark
-                                              ? Colors.white24
-                                              : Colors.black26,
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.skip_next_rounded,
-                                            size: 18,
-                                            color: isDark
-                                                ? Colors.white54
-                                                : Colors.black45,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            'Skip & Go to Dashboard',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: isDark
-                                                  ? Colors.white54
-                                                  : Colors.black45,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                if (step > 0) ...[const SizedBox(height: 12)],
                               ],
                             ),
                           );
@@ -810,8 +767,8 @@ class OnboardingScreen extends StatelessWidget {
                                     suffixIcon: Icon(
                                       Icons.calendar_today,
                                       color: isDark
-                                          ? Colors.white54
-                                          : Colors.black54,
+                                          ? Colors.white.withValues(alpha: 0.7)
+                                          : Colors.black.withValues(alpha: 0.7),
                                     ),
                                   ),
                               style: TextStyle(
@@ -836,8 +793,12 @@ class OnboardingScreen extends StatelessWidget {
                                       suffixIcon: Icon(
                                         Icons.calendar_today,
                                         color: isDark
-                                            ? Colors.white54
-                                            : Colors.black54,
+                                            ? Colors.white.withValues(
+                                                alpha: 0.7,
+                                              )
+                                            : Colors.black.withValues(
+                                                alpha: 0.7,
+                                              ),
                                       ),
                                     ),
                                 style: TextStyle(
@@ -870,7 +831,7 @@ class OnboardingScreen extends StatelessWidget {
                           }
                           controller.experiences.refresh();
                         },
-                        activeColor: AppColors.getPrimary(isDark),
+                        activeThumbColor: AppColors.getPrimary(isDark),
                         contentPadding: EdgeInsets.zero,
                       ),
                       const SizedBox(height: 8),
@@ -936,7 +897,7 @@ class OnboardingScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),

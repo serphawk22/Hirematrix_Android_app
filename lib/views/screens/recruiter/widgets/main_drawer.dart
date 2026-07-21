@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:get/get.dart';
+import 'package:hirematrix/controllers/auth_controller.dart' as getx_auth;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -605,6 +607,12 @@ class MainDrawer extends StatelessWidget {
               Navigator.pop(context);
               final savedCount = authController.savedAccounts.length;
               await authController.logout();
+              try {
+                if (Get.isRegistered<getx_auth.AuthController>()) {
+                  Get.find<getx_auth.AuthController>().emailController.clear();
+                  Get.find<getx_auth.AuthController>().passwordController.clear();
+                }
+              } catch (_) {}
               if (context.mounted) {
                 Navigator.pushAndRemoveUntil(
                   context,

@@ -1504,6 +1504,11 @@ class _SmartJobsScreenState extends State<SmartJobsScreen>
                       (job['posted_for']?.toString() == 'client' ||
                       job['external_apply_url'] != null);
                   
+                  final jId = int.tryParse(job['id']?.toString() ?? '0') ?? 0;
+                  if (jId > 0) {
+                    jobsController.markJobVisited(jId);
+                  }
+                  
                   job['visited_flag'] = 1;
                   jobsController.browseJobs.refresh();
                   jobsController.recSkillsJobs.refresh();

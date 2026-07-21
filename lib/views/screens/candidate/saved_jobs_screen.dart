@@ -1,3 +1,4 @@
+import 'package:hirematrix/controllers/jobs_controller.dart';
 import 'package:hirematrix/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -312,7 +313,8 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
         job['is_external'] == 1 ||
         job['is_external'] == '1' ||
         job['posted_for']?.toString() == 'client' ||
-        (job['external_apply_url'] != null && job['external_apply_url'].toString().isNotEmpty);
+        (job['external_apply_url'] != null &&
+            job['external_apply_url'].toString().isNotEmpty);
     final logoUrl = job['company_logo'] ?? '';
     final initial = company.isNotEmpty ? company[0].toUpperCase() : 'J';
     final isVisited = job['visited_flag'] == 1 || job['visited_flag'] == '1';
@@ -333,6 +335,13 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
 
     return InkWell(
       onTap: () {
+        final jId = int.tryParse(job['id']?.toString() ?? '0') ?? 0;
+        if (jId > 0) {
+          Get.find<JobsController>().markJobVisited(jId);
+        }
+        job['visited_flag'] = 1;
+        _savedJobsController.savedJobsList.refresh();
+
         if (isExternal) {
           ExternalJobBottomSheet.show(
             job,
@@ -342,239 +351,251 @@ class _SavedJobsScreenState extends State<SavedJobsScreen> {
             subtitleColor,
           );
         } else {
-          job['visited_flag'] = 1;
-          _savedJobsController.savedJobsList.refresh();
           Get.to(() => JobDetailsScreen(job: job));
         }
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? Colors.grey[850]! : Colors.grey[200]!,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.01),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? Colors.grey[850]! : Colors.grey[200]!,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Bookmark & Icon row
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Company Logo
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.getBackground(isDark)
-                      : Colors.grey[100],
-                  borderRadius: BorderRadius.circular(10),
-                  image: logoUrl.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(
-                            ApiConstants.resolveImageUrl(logoUrl.toString()),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.01),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Bookmark & Icon row
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Company Logo
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppColors.getBackground(isDark)
+                        : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(10),
+                    image: logoUrl.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(
+                              ApiConstants.resolveImageUrl(logoUrl.toString()),
+                            ),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: logoUrl.isEmpty
+                      ? Center(
+                          child: Text(
+                            initial,
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: AppColors.getPrimary(isDark),
+                            ),
                           ),
-                          fit: BoxFit.cover,
                         )
                       : null,
                 ),
-                child: logoUrl.isEmpty
-                    ? Center(
-                        child: Text(
-                          initial,
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: AppColors.getPrimary(isDark),
+                const SizedBox(width: 12),
+
+                // Title and Company
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: textColor,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        company,
+                        style: GoogleFonts.inter(
+                          color: subtitleColor,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Active Bookmark toggle button
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: Icon(
+                    Icons.bookmark,
+                    color: AppColors.getPrimary(isDark),
+                    size: 24,
+                  ),
+                  onPressed: () {
+                    // Confirm dialog
+                    Get.defaultDialog(
+                      title: 'Remove Bookmark?',
+                      middleText:
+                          'Are you sure you want to remove this job from your saved list?',
+                      textCancel: 'Cancel',
+                      textConfirm: 'Remove',
+                      confirmTextColor: Colors.white,
+                      buttonColor: Colors.redAccent,
+                      onConfirm: () {
+                        Get.back();
+                        _savedJobsController.handleUnsaveJob(
+                          jobIdInt,
+                          isExternal,
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Metadata row
+            Wrap(
+              spacing: 14,
+              runSpacing: 6,
+              children: [
+                _buildMetaTile(Icons.location_on_outlined, location, isDark),
+                if (experience.isNotEmpty)
+                  _buildMetaTile(Icons.work_outline, experience, isDark),
+                if (salary.isNotEmpty)
+                  _buildMetaTile(
+                    Icons.monetization_on_outlined,
+                    salary,
+                    isDark,
+                  ),
+                _buildMetaTile(Icons.access_time, postedAt, isDark),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Tags & View detail row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Tags & Visited
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          _buildTagBadge(
+                            job['employment_type']?.toString() ??
+                                (isExternal ? 'External' : 'Full Time'),
+                            AppColors.getPrimary(isDark),
+                            isDark,
                           ),
-                        ),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 12),
-
-              // Title and Company
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: textColor,
+                          _buildTagBadge(
+                            isExternal ? 'MNC Discovery' : 'Local Job',
+                            const Color(0xFF10B981),
+                            isDark,
+                          ),
+                        ],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      company,
-                      style: GoogleFonts.inter(
-                        color: subtitleColor,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Active Bookmark toggle button
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: Icon(
-                  Icons.bookmark,
-                  color: AppColors.getPrimary(isDark),
-                  size: 24,
-                ),
-                onPressed: () {
-                  // Confirm dialog
-                  Get.defaultDialog(
-                    title: 'Remove Bookmark?',
-                    middleText:
-                        'Are you sure you want to remove this job from your saved list?',
-                    textCancel: 'Cancel',
-                    textConfirm: 'Remove',
-                    confirmTextColor: Colors.white,
-                    buttonColor: Colors.redAccent,
-                    onConfirm: () {
-                      Get.back();
-                      _savedJobsController.handleUnsaveJob(
-                        jobIdInt,
-                        isExternal,
-                      );
-                    },
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // Metadata row
-          Wrap(
-            spacing: 14,
-            runSpacing: 6,
-            children: [
-              _buildMetaTile(Icons.location_on_outlined, location, isDark),
-              if (experience.isNotEmpty)
-                _buildMetaTile(Icons.work_outline, experience, isDark),
-              if (salary.isNotEmpty)
-                _buildMetaTile(Icons.monetization_on_outlined, salary, isDark),
-              _buildMetaTile(Icons.access_time, postedAt, isDark),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // Tags & View detail row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Tags & Visited
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        _buildTagBadge(
-                          job['employment_type']?.toString() ??
-                              (isExternal ? 'External' : 'Full Time'),
-                          AppColors.getPrimary(isDark),
-                          isDark,
-                        ),
-                        _buildTagBadge(
-                          isExternal ? 'MNC Discovery' : 'Local Job',
-                          const Color(0xFF10B981),
-                          isDark,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Icon(
-                          isVisited ? Icons.visibility : Icons.visibility_off,
-                          size: 14,
-                          color: isVisited
-                              ? AppColors.getPrimary(isDark)
-                              : (isDark ? Colors.grey[500] : const Color(0xFF9CA3AF)),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          isVisited ? 'Viewed' : 'Not viewed',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Icon(
+                            isVisited ? Icons.visibility : Icons.visibility_off,
+                            size: 14,
                             color: isVisited
                                 ? AppColors.getPrimary(isDark)
-                                : (isDark ? Colors.grey[500] : const Color(0xFF9CA3AF)),
+                                : (isDark
+                                      ? Colors.grey[500]
+                                      : const Color(0xFF9CA3AF)),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 4),
+                          Text(
+                            isVisited ? 'Viewed' : 'Not viewed',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: isVisited
+                                  ? AppColors.getPrimary(isDark)
+                                  : (isDark
+                                        ? Colors.grey[500]
+                                        : const Color(0xFF9CA3AF)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              // Action view details link
-              TextButton(
-                onPressed: () {
-                  if (isExternal) {
-                    ExternalJobBottomSheet.show(
-                      job,
-                      isDark,
-                      cardColor,
-                      textColor,
-                      subtitleColor,
-                    );
-                  } else {
+                // Action view details link
+                TextButton(
+                  onPressed: () {
+                    final jId = int.tryParse(job['id']?.toString() ?? '0') ?? 0;
+                    if (jId > 0) {
+                      Get.find<JobsController>().markJobVisited(jId);
+                    }
                     job['visited_flag'] = 1;
                     _savedJobsController.savedJobsList.refresh();
-                    Get.to(() => JobDetailsScreen(job: job));
-                  }
-                },
-                child: Row(
-                  children: [
-                    Text(
-                      'View Details',
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+
+                    if (isExternal) {
+                      ExternalJobBottomSheet.show(
+                        job,
+                        isDark,
+                        cardColor,
+                        textColor,
+                        subtitleColor,
+                      );
+                    } else {
+                      Get.to(() => JobDetailsScreen(job: job));
+                    }
+                  },
+                  child: Row(
+                    children: [
+                      Text(
+                        'View Details',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: AppColors.getPrimary(isDark),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward,
+                        size: 14,
                         color: AppColors.getPrimary(isDark),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.arrow_forward,
-                      size: 14,
-                      color: AppColors.getPrimary(isDark),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   Widget _buildMetaTile(IconData icon, String text, bool isDark) {
