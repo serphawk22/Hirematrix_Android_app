@@ -3,17 +3,18 @@ class ApiConstants {
   // Using the machine's specific local IPv4 address so that a physical
   // device on the same Wi-Fi/Network can connect to XAMPP.
 
-  // Candidate API  (general /api)
-  static const String baseUrl =
-      'http://10.32.221.26/ai-job-portal/public/api';
+  // // Candidate API  (general /api)
+  // static const String baseUrl =
+  //     'http://10.32.221.26/ai-job-portal/public/api';
 
-  // Recruiter mobile API  (/api/mobile)
-  static const String recruiterBaseUrl =
-      'http://10.32.221.26/ai-job-portal/public/api/mobile';
+  // // Recruiter mobile API  (/api/mobile)
+  // static const String recruiterBaseUrl =
+  //     'http://10.32.221.26/ai-job-portal/public/api/mobile';
 
   // Live URLs — uncomment and comment out the local ones above to switch:
-  // static const String baseUrl          = 'https://hirematrix.serphawk.in/api';
-  // static const String recruiterBaseUrl = 'https://hirematrix.serphawk.in/api/mobile';
+  static const String baseUrl = 'https://hirematrix.serphawk.in/api';
+  static const String recruiterBaseUrl =
+      'https://hirematrix.serphawk.in/api/mobile';
 
   // ── Image URL resolver ────────────────────────────────────────────────────
 
